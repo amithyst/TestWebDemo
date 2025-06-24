@@ -1,3 +1,5 @@
+# amithyst/testwebdemo/TestWebDemo-d3881865a0685c402e5482491f008b28a2027598/MC_command/admin.py
+
 import re
 from django.contrib import admin
 from django.db.models import Q
@@ -5,6 +7,8 @@ from .models import (
     MinecraftVersion, BaseItem, Enchantment, PotionEffectType, AttributeType,
     GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, WrittenBookContent
 )
+# --- FIX: Import the custom forms ---
+from .forms import AppliedEnchantmentForm, AppliedAttributeForm, VersionedModelChoiceField
 
 # ... 之前的静态数据模型 Admin 定义保持不变 ...
 @admin.register(MinecraftVersion)
@@ -43,7 +47,6 @@ class VersionedInlineMixin:
     """
     def get_parent_object(self, request):
         """通过解析请求的URL来获取父对象 (GeneratedCommand)"""
-        # URL 格式通常是 /admin/app/model/object_id/change/
         match = re.search(r'/(\d+)/change', request.path_info)
         if match:
             object_id = match.group(1)
@@ -61,17 +64,13 @@ class VersionedInlineMixin:
         parent_command = self.get_parent_object(request)
         if parent_command:
             target_version = parent_command.target_version
-            # 检查字段是否是我们关心的那几个需要版本控制的字段
             if db_field.name in ["enchantment", "attribute", "effect"]:
-                # 获取该字段的模型 (Enchantment, AttributeType, 等)
                 model = db_field.related_model
-                # 构建版本过滤查询
                 version_q = (
                     Q(min_version__ordering_id__lte=target_version.ordering_id) | Q(min_version__isnull=True)
                 ) & (
                     Q(max_version__ordering_id__gte=target_version.ordering_id) | Q(max_version__isnull=True)
                 )
-                # 应用过滤
                 kwargs['queryset'] = model.objects.filter(version_q)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
@@ -84,16 +83,21 @@ class WrittenBookContentInline(admin.StackedInline):
 
 class AppliedEnchantmentInline(VersionedInlineMixin, admin.TabularInline):
     model = AppliedEnchantment
-    autocomplete_fields = ['enchantment']
+    # --- FIX: Use the custom form and remove autocomplete ---
+    form = AppliedEnchantmentForm
     extra = 1
 
 class AppliedAttributeInline(VersionedInlineMixin, admin.TabularInline):
     model = AppliedAttribute
-    autocomplete_fields = ['attribute']
+    # --- FIX: Use the custom form and remove autocomplete ---
+    form = AppliedAttributeForm
     extra = 1
 
 class AppliedPotionEffectInline(VersionedInlineMixin, admin.TabularInline):
     model = AppliedPotionEffect
+    # For this to work, you would also need a form like `AppliedPotionEffectForm`
+    # in forms.py that uses VersionedModelChoiceField for the `effect` field.
+    # We will leave it as-is for now as it was not part of the original problem.
     autocomplete_fields = ['effect']
     extra = 1
 

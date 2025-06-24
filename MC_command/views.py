@@ -294,25 +294,27 @@ def _build_component_structure(command: GeneratedCommand) -> dict:
     
     return components
 
-
 # --- 新增：用于 AJAX 的 API 视图 ---
 def get_compatible_components(request):
-    version_id = request.GET.get('version_id')
+    version_pk = request.GET.get('version_id') # Changed variable name for clarity
     component_type = request.GET.get('type')
 
-    if not version_id or not component_type:
+    if not version_pk or not component_type:
         return JsonResponse({'error': 'Missing parameters'}, status=400)
 
     try:
-        version_id = int(version_id)
-    except ValueError:
+        # --- FIX: First, get the version object using its Primary Key (pk) ---
+        target_version = get_object_or_404(MinecraftVersion, pk=int(version_pk))
+        # --- FIX: Then, use its ordering_id for the query ---
+        target_ordering_id = target_version.ordering_id
+    except (ValueError, TypeError):
         return JsonResponse({'error': 'Invalid version_id'}, status=400)
 
     # 构建动态的版本过滤查询
     version_filter = (
-        Q(min_version__ordering_id__lte=version_id) | Q(min_version__isnull=True)
+        Q(min_version__ordering_id__lte=target_ordering_id) | Q(min_version__isnull=True)
     ) & (
-        Q(max_version__ordering_id__gte=version_id) | Q(max_version__isnull=True)
+        Q(max_version__ordering_id__gte=target_ordering_id) | Q(max_version__isnull=True)
     )
 
     if component_type == 'enchantment':
