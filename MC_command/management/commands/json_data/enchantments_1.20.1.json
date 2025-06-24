@@ -1,0 +1,200 @@
+{
+    "version": "1.20.1",
+    "data": [
+        {
+            "id": "minecraft:protection",
+            "name": "保护",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:fire_protection",
+            "name": "火焰保护",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:feather_falling",
+            "name": "摔落保护",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:blast_protection",
+            "name": "爆炸保护",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:projectile_protection",
+            "name": "弹射物保护",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:respiration",
+            "name": "水下呼吸",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:aqua_affinity",
+            "name": "水下速掘",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:thorns",
+            "name": "荆棘",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:depth_strider",
+            "name": "深海探索者",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:frost_walker",
+            "name": "冰霜行者",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:soul_speed",
+            "name": "灵魂疾行",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:swift_sneak",
+            "name": "迅捷潜行",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:sharpness",
+            "name": "锋利",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:smite",
+            "name": "亡灵杀手",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:bane_of_arthropods",
+            "name": "节肢杀手",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:knockback",
+            "name": "击退",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:fire_aspect",
+            "name": "火焰附加",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:looting",
+            "name": "抢夺",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:sweeping_edge",
+            "name": "横扫之刃",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:efficiency",
+            "name": "效率",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:silk_touch",
+            "name": "精准采集",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:unbreaking",
+            "name": "耐久",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:fortune",
+            "name": "时运",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:power",
+            "name": "力量",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:punch",
+            "name": "冲击",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:flame",
+            "name": "火矢",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:infinity",
+            "name": "无限",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:luck_of_the_sea",
+            "name": "海之眷顾",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:lure",
+            "name": "饵钓",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:loyalty",
+            "name": "忠诚",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:impaling",
+            "name": "引雷",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:riptide",
+            "name": "激流",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:channeling",
+            "name": "引雷",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:multishot",
+            "name": "多重射击",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:quick_charge",
+            "name": "快速装填",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:piercing",
+            "name": "穿透",
+            "max_level": 127
+        },
+        {
+            "id": "minecraft:mending",
+            "name": "经验修补",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:binding_curse",
+            "name": "绑定诅咒",
+            "max_level": 1
+        },
+        {
+            "id": "minecraft:vanishing_curse",
+            "name": "消失诅咒",
+            "max_level": 1
+        }
+    ]
+}
