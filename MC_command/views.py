@@ -1,232 +1,332 @@
-from django.http import HttpResponse
-from .models import GeneratedCommand
+# amithyst/testwebdemo/TestWebDemo-aa984f0e28b37ace0788b6c8c16a1b3d096ffd1a/MC_command/views.py
+from django import forms
+# --- 在文件顶部，确保导入以下所有内容 ---
+import json
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.forms import inlineformset_factory
+from django.db import transaction
 
-from django.template import loader # 导入模板加载器
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import Enchantment, AttributeType
 
-from django.shortcuts import get_object_or_404, render
+from .models import GeneratedCommand, AppliedEnchantment, AppliedAttribute, MinecraftVersion
+from .forms import GeneratedCommandForm, AppliedEnchantmentForm, AppliedAttributeForm, VersionedModelChoiceField
 
 
-from django.http import Http404
+# --- 核心视图 ---
 
-
+@login_required
 def index(request):
-    """
-    显示当前登录用户的所有命令配置列表。
-    """
-    # 仅查询属于当前登录用户的命令
-    # 如果用户未登录, command_list 将是一个空集
-    if request.user.is_authenticated:
-        command_list = GeneratedCommand.objects.filter(user=request.user).order_by("-updated_at")
-    else:
-        command_list = GeneratedCommand.objects.none() # 返回一个空的 QuerySet
-    
+    command_list = GeneratedCommand.objects.filter(user=request.user).order_by("-updated_at")
     context = {
         'command_list': command_list,
     }
     return render(request, 'MC_command/index.html', context)
 
-
-
-
-def generate(request, command_id):
-    response = f"你正在查看命令配置 {command_id} 的生成结果。"
-    return HttpResponse(response)
-
-def delete(request, command_id):
-    return HttpResponse(f"你正在删除命令配置 {command_id}。")
-
-# MC_command/views.py
-
-import json
-import uuid
-from django.shortcuts import get_object_or_404, render
-from .models import GeneratedCommand
-
-# --- 核心视图 ---
-
+@login_required
 def detail(request, command_id):
-    """
-    显示单个命令配置的详细信息，并生成最终的命令。
-    """
-    command_obj = get_object_or_404(GeneratedCommand, pk=command_id)
-    
-    # 调用帮助函数来生成命令数据
+    command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
     command_context = _generate_command_context(command_obj)
-    
     context = {
         'command': command_obj,
         'give_command_string': command_context['give_command'],
         'data_structure_json': command_context['data_json'],
     }
-    
     return render(request, 'MC_command/detail.html', context)
 
-# --- 帮助函数 (Helper Functions) ---
+# --- 增删改查 (CRUD) 视图 ---
+# --- 完全替换旧的 CREATE 和 EDIT 视图 ---
+
+@login_required
+def create(request):
+    """处理创建新命令及其关联的附魔和属性。"""
+    EnchantmentFormSet = inlineformset_factory(GeneratedCommand, AppliedEnchantment, form=AppliedEnchantmentForm, extra=1, can_delete=True, min_num=0)
+    AttributeFormSet = inlineformset_factory(GeneratedCommand, AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True, min_num=0)
+
+    if request.method == 'POST':
+        form = GeneratedCommandForm(request.POST)
+        enchant_formset = EnchantmentFormSet(request.POST, prefix='enchantments')
+        attribute_formset = AttributeFormSet(request.POST, prefix='attributes')
+
+        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid():
+            try:
+                with transaction.atomic(): # 保证数据库操作的原子性
+                    # 版本兼容性验证 (优化 1)
+                    target_version = form.cleaned_data['target_version']
+                    _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version)
+
+                    command_instance = form.save(commit=False)
+                    command_instance.user = request.user
+                    command_instance.save()
+
+                    enchant_formset.instance = command_instance
+                    enchant_formset.save()
+
+                    attribute_formset.instance = command_instance
+                    attribute_formset.save()
+                    
+                    return redirect(reverse('MC_command:detail', args=[command_instance.id]))
+            except forms.ValidationError:
+                # 如果验证失败，会抛出此异常，让表单显示错误
+                pass
+
+    else: # GET
+        form = GeneratedCommandForm()
+        enchant_formset = EnchantmentFormSet(prefix='enchantments')
+        attribute_formset = AttributeFormSet(prefix='attributes')
+
+    context = {
+        'form': form,
+        'enchant_formset': enchant_formset,
+        'attribute_formset': attribute_formset,
+        'form_title': '创建新命令'
+    }
+    return render(request, 'MC_command/command_form.html', context)
+
+
+@login_required
+def edit(request, command_id):
+    """处理编辑命令及其关联的附魔和属性。"""
+    command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
+    EnchantmentFormSet = inlineformset_factory(GeneratedCommand, AppliedEnchantment, form=AppliedEnchantmentForm, extra=1, can_delete=True, min_num=0)
+    AttributeFormSet = inlineformset_factory(GeneratedCommand, AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True, min_num=0)
+
+    if request.method == 'POST':
+        form = GeneratedCommandForm(request.POST, instance=command_obj)
+        enchant_formset = EnchantmentFormSet(request.POST, instance=command_obj, prefix='enchantments')
+        attribute_formset = AttributeFormSet(request.POST, instance=command_obj, prefix='attributes')
+
+        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid():
+            try:
+                with transaction.atomic():
+                    target_version = form.cleaned_data['target_version']
+                    _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version)
+                    
+                    form.save()
+                    enchant_formset.save()
+                    attribute_formset.save()
+
+                    return redirect(reverse('MC_command:detail', args=[command_obj.id]))
+            except forms.ValidationError:
+                pass
+    else: # GET
+        form = GeneratedCommandForm(instance=command_obj)
+        enchant_formset = EnchantmentFormSet(instance=command_obj, prefix='enchantments')
+        attribute_formset = AttributeFormSet(instance=command_obj, prefix='attributes')
+    
+    context = {
+        'form': form,
+        'command': command_obj,
+        'enchant_formset': enchant_formset,
+        'attribute_formset': attribute_formset,
+        'form_title': f'编辑: {command_obj.title}'
+    }
+    return render(request, 'MC_command/command_form.html', context)
+
+# C:\Github\djangotutorial\MC_command\views.py
+
+# ... (文件其他部分不变) ...
+
+def _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version):
+    """
+    一个辅助函数，用于检查所选版本是否与所有组件兼容。
+    如果不兼容，则会向主表单添加一个错误并引发 ValidationError。
+    """
+    all_components = [form.cleaned_data.get('base_item')]
+    for enchant_form in enchant_formset.cleaned_data:
+        if enchant_form and not enchant_form.get('DELETE'):
+            all_components.append(enchant_form.get('enchantment'))
+    for attr_form in attribute_formset.cleaned_data:
+        if attr_form and not attr_form.get('DELETE'):
+            all_components.append(attr_form.get('attribute'))
+
+    min_v_id = 0
+    max_v_id = float('inf')
+
+    # 计算所有组件版本号的交集
+    for component in filter(None, all_components):
+        # 修复: 在访问 .ordering_id 前检查对象是否存在
+        if component.min_version:
+            min_v_id = max(min_v_id, component.min_version.ordering_id)
+        
+        # 修复: 同样检查 max_version
+        if component.max_version:
+            max_v_id = min(max_v_id, component.max_version.ordering_id)
+
+    # 新增: 检查是否存在有效的版本范围交集
+    if min_v_id > max_v_id:
+        min_v_str = MinecraftVersion.objects.get(ordering_id=min_v_id).version_number
+        max_v_str = "更早版本"
+        if max_v_id != float('inf'):
+            max_v_str = MinecraftVersion.objects.get(ordering_id=max_v_id).version_number
+        
+        error_msg = f"组件冲突：所选组件之间没有兼容的Minecraft版本 (计算出的最低版本需求为 {min_v_str}，最高为 {max_v_str})。请调整您的选择。"
+        # 引发一个非字段错误，它将显示在表单顶部
+        raise forms.ValidationError(error_msg)
+
+    # 现有逻辑: 检查用户选择的版本是否在有效范围内
+    if not (min_v_id <= target_version.ordering_id <= max_v_id):
+        min_v_str = MinecraftVersion.objects.get(ordering_id=min_v_id).version_number
+        max_v_str = "最新"
+        if max_v_id != float('inf'):
+            max_v_str = MinecraftVersion.objects.get(ordering_id=max_v_id).version_number
+        
+        error_msg = f"版本不兼容。根据所选组件，可用版本应在 {min_v_str} 和 {max_v_str} 之间。"
+        form.add_error('target_version', error_msg)
+        raise forms.ValidationError(error_msg)
+    
+
+@login_required
+@require_POST
+def delete(request, command_id):
+    command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
+    command_obj.delete()
+    return redirect(reverse('MC_command:index'))
+
+# --- 辅助函数 ---
+
+
+# --- 辅助函数 (Helper Functions) ---
+
+def _uuid_to_int_array(uuid_obj):
+    """将 UUID 对象转换为 Minecraft NBT 所需的整数数组格式。"""
+    int_val = uuid_obj.int
+    # 将128位整数分割为4个32位整数
+    part1 = (int_val >> 96) & 0xFFFFFFFF
+    part2 = (int_val >> 64) & 0xFFFFFFFF
+    part3 = (int_val >> 32) & 0xFFFFFFFF
+    part4 = int_val & 0xFFFFFFFF
+    # 转换为有符号32位整数
+    def to_signed(n):
+        return n if n < 2**31 else n - 2**32
+    return f"[I;{to_signed(part1)},{to_signed(part2)},{to_signed(part3)},{to_signed(part4)}]"
+
+
 
 def _generate_command_context(command: GeneratedCommand) -> dict:
-    """
-    版本判断的“路由器”，根据目标版本选择使用哪种生成策略。
-    返回一个包含最终命令字符串和数据结构JSON的字典。
-    """
     target_version_id = command.target_version.ordering_id
     base_item_id = command.base_item.item_id
-
-    # 假设 1.20.5 的 ordering_id 是 12005
-    if target_version_id >= 12005:
-        # --- 新版 Component 格式 ---
+    if target_version_id >= 12005: # Minecraft 1.20.5+
         data_structure = _build_component_structure(command)
-        # 新版组件格式紧凑，可以直接嵌入
         data_string = ",".join([f"{key}={value}" for key, value in data_structure.items()])
         give_command = f"/give @p {base_item_id}[{data_string}] {command.count}"
-    else:
-        # --- 旧版 NBT Tag 格式 ---
+    else: # Older versions
         data_structure = _build_nbt_tag_structure(command)
-        # 旧版NBT需要转为紧凑的JSON字符串
         data_string = json.dumps(data_structure, separators=(',', ':'))
         give_command = f"/give @p {base_item_id}{data_string} {command.count}"
-
     return {
         'give_command': give_command,
-        'data_json': json.dumps(data_structure, indent=4, ensure_ascii=False), # 用于美化显示的JSON
+        'data_json': json.dumps(data_structure, indent=4, ensure_ascii=False),
     }
 
 def _build_nbt_tag_structure(command: GeneratedCommand) -> dict:
-    """为 1.20.4 及更早版本构建 NBT Tag 字典"""
+    """构建旧版 (<=1.20.4) 的 NBT 标签结构"""
     nbt_data = {}
-    
-    # 显示属性
     display = {}
+
     if command.custom_name:
-        display['Name'] = f'"{command.custom_name}"' # JSON 文本格式
+        display['Name'] = json.dumps(command.custom_name, ensure_ascii=False)
+
     if command.lore:
-        lore_lines = [f'"{line}"' for line in command.lore.splitlines()]
-        display['Lore'] = f'[{",".join(lore_lines)}]'
+        lore_lines = [json.dumps(line, ensure_ascii=False) for line in command.lore.splitlines() if line.strip()]
+        if lore_lines:
+            display['Lore'] = f'[{",".join(lore_lines)}]'
+
     if display:
         nbt_data['display'] = display
-        
-    # 附魔
-    enchantments = []
-    for ench in command.enchantments.all():
-        enchantments.append({'id': ench.enchantment.enchant_id, 'lvl': ench.level})
-    if enchantments:
-        nbt_data['Enchantments'] = enchantments
-        
-    # 属性修饰符 (需要 UUID 和 Name)
-    attributes = []
-    for attr in command.attributes.all():
-        name = attr.modifier_name if attr.modifier_name else attr.attribute.attribute_id
-        # 旧版UUID是必需的，且格式复杂，这里用字符串简化表示
-        # 一个真正的实现需要生成符合格式的 [I; int, int, int, int]
-        random_uuid_str = f"[I; {uuid.uuid4().int & 0xFFFFFFFF}, {uuid.uuid4().int & 0xFFFFFFFF}, {uuid.uuid4().int & 0xFFFFFFFF}, {uuid.uuid4().int & 0xFFFFFFFF}]"
-        attributes.append({
-            'AttributeName': attr.attribute.attribute_id,
-            'Name': name,
-            'Amount': float(attr.amount),
-            'Operation': attr.operation,
-            'Slot': attr.slot,
-            'UUID': random_uuid_str # 这是一个简化表示
-        })
-    if attributes:
-        nbt_data['AttributeModifiers'] = attributes
-        
-    # 其他...
-    if command.book_content:
-        nbt_data['title'] = command.book_content.title
-        nbt_data['author'] = command.book_content.author
-        nbt_data['pages'] = [f'"{page}"' for page in command.book_content.pages.splitlines()]
+
+    if command.enchantments.exists():
+        nbt_data['Enchantments'] = [{'id': ench.enchantment.enchant_id, 'lvl': ench.level} for ench in command.enchantments.all()]
+    
+    # --- 新增：处理属性修饰符 ---
+    if command.attributes.exists():
+        modifier_list = []
+        for attr in command.attributes.all():
+            modifier = {
+                "AttributeName": attr.attribute.attribute_id,
+                "Name": attr.modifier_name,
+                "Amount": attr.amount,
+                "Operation": attr.operation,
+                "Slot": attr.slot,
+                "UUID": _uuid_to_int_array(attr.uuid) # 使用新的辅助函数
+            }
+            modifier_list.append(modifier)
+        # NBT 的 AttributeModifiers 是一个字典列表，JSON 转换时会自动处理
+        nbt_data['AttributeModifiers'] = modifier_list
 
     return nbt_data
 
 def _build_component_structure(command: GeneratedCommand) -> dict:
-    """为 1.20.5 及更新版本构建 Components 字典"""
+    """构建新版 (>=1.20.5) 的 Component 结构"""
     components = {}
-    
-    # 显示属性
+    op_map = {0: "add_value", 1: "add_multiplied_base", 2: "add_multiplied_total"}
+
     if command.custom_name:
-        components['minecraft:custom_name'] = f'"{command.custom_name}"'
+        components['minecraft:custom_name'] = json.dumps(command.custom_name, ensure_ascii=False)
+
     if command.lore:
-        lore_lines = [f'"{line}"' for line in command.lore.splitlines()]
-        components['minecraft:lore'] = f'[{",".join(lore_lines)}]'
-        
-    # 附魔 (新格式是 key:level 的字典)
-    enchantments = {f'"{ench.enchantment.enchant_id}"': ench.level for ench in command.enchantments.all()}
-    if enchantments:
-        # 注意新格式的结构
-        components['minecraft:enchantments'] = f'{{levels:{json.dumps(enchantments)}}}'
+        lore_lines = [json.dumps(line, ensure_ascii=False) for line in command.lore.splitlines() if line.strip()]
+        if lore_lines:
+            components['minecraft:lore'] = f'[{",".join(lore_lines)}]'
 
-    # 属性修饰符 (新格式更简洁，无 UUID 和 Name)
-    attributes = []
-    operation_map = {0: "add_value", 1: "add_multiplied_base", 2: "add_multiplied_total"}
-    for attr in command.attributes.all():
-        attributes.append(
-            f'{{type:"{attr.attribute.attribute_id}", '
-            f'slot:"{attr.slot}", '
-            f'amount:{attr.amount}, '
-            f'operation:"{operation_map[attr.operation]}"}}'
-        )
-    if attributes:
-        components['minecraft:attribute_modifiers'] = f'{{modifiers:[{",".join(attributes)}]}}'
+    if command.enchantments.exists():
+        enchantment_dict = {f"{ench.enchantment.enchant_id}": ench.level for ench in command.enchantments.all()}
+        components['minecraft:enchantments'] = f'{{levels:{json.dumps(enchantment_dict)}}}'
+
+    # --- 新增：处理属性修饰符 ---
+    if command.attributes.exists():
+        modifier_list = []
+        for attr in command.attributes.all():
+            modifier = {
+                "attribute": attr.attribute.attribute_id,
+                "name": attr.modifier_name,
+                "amount": attr.amount,
+                "operation": op_map.get(attr.operation, "add_value"), # 将数字映射为字符串
+                "slot": attr.slot
+            }
+            modifier_list.append(modifier)
+        # component 格式需要手动构造成字符串
+        components['minecraft:attribute_modifiers'] = f'{{modifiers:{json.dumps(modifier_list, ensure_ascii=False)}}}'
     
-    # 其他...
-    # ... 新版的药水、书本等组件有不同的结构，可以在此添加 ...
-
     return components
 
-import uuid # 用于旧版命令
 
-def generate_final_command_string(command_obj):
-    """根据命令配置对象，生成最终的命令字符串"""
-    
-    target_version_id = command_obj.target_version.ordering_id
+# --- 新增：用于 AJAX 的 API 视图 ---
+def get_compatible_components(request):
+    version_id = request.GET.get('version_id')
+    component_type = request.GET.get('type')
 
-    # 假设 1.20.5 的 ordering_id 是 12005
-    if target_version_id >= 12005:
-        # --- 使用新的 Component 格式 ---
-        return generate_component_style_command(command_obj)
+    if not version_id or not component_type:
+        return JsonResponse({'error': 'Missing parameters'}, status=400)
+
+    try:
+        version_id = int(version_id)
+    except ValueError:
+        return JsonResponse({'error': 'Invalid version_id'}, status=400)
+
+    # 构建动态的版本过滤查询
+    version_filter = (
+        Q(min_version__ordering_id__lte=version_id) | Q(min_version__isnull=True)
+    ) & (
+        Q(max_version__ordering_id__gte=version_id) | Q(max_version__isnull=True)
+    )
+
+    if component_type == 'enchantment':
+        queryset = Enchantment.objects.filter(version_filter)
+    elif component_type == 'attribute':
+        queryset = AttributeType.objects.filter(version_filter)
     else:
-        # --- 使用旧的 NBT Tag 格式 ---
-        return generate_nbt_tag_style_command(command_obj)
-
-
-def generate_component_style_command(command_obj):
-    # ...
-    # 在这里构建属性修饰符部分
-    attribute_components = []
-    operation_map = {0: "add_value", 1: "add_multiplied_base", 2: "add_multiplied_total"}
-
-    for attr in command_obj.attributes.all():
-        component = (
-            f'{{type:"{attr.attribute.attribute_id}", '
-            f'amount:{attr.amount}, '
-            f'operation:"{operation_map[attr.operation]}", '
-            f'slot:"{attr.slot}"}}'
-        )
-        attribute_components.append(component)
+        return JsonResponse({'error': 'Invalid component type'}, status=400)
     
-    # ... 最终将所有组件组合成 /give @p item[comp1={...},comp2={...}] 格式
-    # ... 注意：此处忽略 attr.modifier_name
-    pass
-
-
-def generate_nbt_tag_style_command(command_obj):
-    # ...
-    # 在这里构建属性修饰符部分
-    attribute_nbt = []
-    for attr in command_obj.attributes.all():
-        # 旧版需要一个名字，如果用户没填，我们可以用 attribute id 代替
-        name = attr.modifier_name if attr.modifier_name else attr.attribute.attribute_id
-        # 旧版需要 UUID
-        random_uuid = str(uuid.uuid4())
-
-        nbt_part = (
-            f'{{AttributeName:"{attr.attribute.attribute_id}", '
-            f'Name:"{name}", '
-            f'Amount:{attr.amount}, '
-            f'Operation:{attr.operation}, '
-            f'Slot:"{attr.slot}", '
-            f'UUID:"{random_uuid}"}}'  # 注意：实际的UUID格式更复杂，这里是简化示例
-        )
-        attribute_nbt.append(nbt_part)
-
-    # ... 最终将所有 NBT 组合成 /give @p item{tag1:[...],tag2:{...}} 格式
-    pass
+    # 格式化数据以便在前端使用
+    field = VersionedModelChoiceField(queryset=queryset) # 使用我们自定义的字段来生成标签
+    data = [
+        {'id': obj.pk, 'text': field.label_from_instance(obj)}
+        for obj in queryset
+    ]
+    
+    return JsonResponse(data, safe=False)

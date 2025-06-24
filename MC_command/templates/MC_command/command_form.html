@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ form_title }}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f7f9; color: #333; max-width: 960px; margin: 20px auto; padding: 15px; }
+        .card { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.07); }
+        .card-header { background-color: #f7f7f7; padding: 15px 20px; border-bottom: 1px solid #e0e0e0; }
+        .card-header h1 { margin: 0; font-size: 1.5em; color: #2c3e50; }
+        .card-body { padding: 25px; }
+        .form-field { margin-bottom: 20px; }
+        .form-field label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+        .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .form-actions { margin-top: 25px; display: flex; align-items: center; gap: 15px; }
+        .btn { text-decoration: none; background-color: #007bff; color: white; padding: 12px 20px; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; }
+        .btn:hover { background-color: #0056b3; }
+        .cancel-link { color: #555; text-decoration: none; }
+        .cancel-link:hover { text-decoration: underline; }
+        /* Inline Formset Styles */
+        .inline-group { border: 1px solid #e0e0e0; border-radius: 5px; margin-top: 20px; }
+        .inline-group h2 { font-size: 1.2em; padding: 10px 15px; background-color: #f0f3f5; margin: 0; border-bottom: 1px solid #e0e0e0; border-radius: 5px 5px 0 0; }
+        .inline-group table { width: 100%; border-collapse: collapse; }
+        .inline-group th, .inline-group td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
+        .inline-group th { font-weight: bold; background-color: #f9f9f9; }
+        .inline-group tr:last-child td { border-bottom: none; }
+        .inline-group .form-row { display: flex; flex-direction: column; gap: 5px; }
+        .inline-group input, .inline-group select { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+        .form-row .errorlist { color: red; font-size: 0.9em; margin: 0; padding: 0; list-style-type: none; }
+        .delete-cell { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header"><h1>{{ form_title }}</h1></div>
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <fieldset>
+                    <legend style="font-weight: bold; font-size: 1.2em; margin-bottom: 10px;">基本配置</legend>
+                    {% for field in form %}
+                        <div class="form-field">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                            {% for error in field.errors %}<p style="color: red;">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}<p style="color: red;">{{ error }}</p>{% endfor %}
+                </fieldset>
+
+                <div class="inline-group">
+                    <h2>附魔</h2>
+                    {{ enchant_formset.management_form }}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>附魔</th>
+                                <th>等级</th>
+                                <th class="delete-cell">删除?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in enchant_formset %}
+                                <tr>
+                                    {{ form.id }} {# Important hidden field #}
+                                    <td>{{ form.enchantment }}{{ form.enchantment.errors }}</td>
+                                    <td>{{ form.level }}{{ form.level.errors }}</td>
+                                    <td class="delete-cell">
+                                        {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="inline-group">
+                    <h2>属性修饰符</h2>
+                    {{ attribute_formset.management_form }}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>属性</th>
+                                <th>修饰符名称 (旧版)</th>
+                                <th>数量</th>
+                                <th>操作</th>
+                                <th>槽位</th>
+                                <th class="delete-cell">删除?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in attribute_formset %}
+                                <tr>
+                                    {{ form.id }}
+                                    <td>{{ form.attribute }}{{ form.attribute.errors }}</td>
+                                    <td>{{ form.modifier_name }}{{ form.modifier_name.errors }}</td>
+                                    <td>{{ form.amount }}{{ form.amount.errors }}</td>
+                                    <td>{{ form.operation }}{{ form.operation.errors }}</td>
+                                    <td>{{ form.slot }}{{ form.slot.errors }}</td>
+                                    <td class="delete-cell">
+                                        {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn">保存</button>
+                    <a href="{{ command.get_absolute_url|default_if_none:request.META.HTTP_REFERER|default_if_none:'/' }}" class="cancel-link">取消</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    {# --- 新增：JavaScript 动态过滤逻辑 --- #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const targetVersionSelect = document.getElementById('id_target_version');
+            
+            // 更新下拉菜单的函数
+            const updateSelectOptions = (selectElement, options) => {
+                const currentVal = selectElement.value;
+                selectElement.innerHTML = ''; // 清空现有选项
+                
+                // 添加一个默认的空选项
+                const defaultOption = new Option('---------', '', true, true);
+                selectElement.add(defaultOption);
+
+                options.forEach(opt => {
+                    const option = new Option(opt.text, opt.id);
+                    selectElement.add(option);
+                });
+                
+                // 尝试保留之前选中的值
+                selectElement.value = currentVal;
+                if (!selectElement.value) {
+                    selectElement.value = ''; // 如果旧值无效，则重置为空
+                }
+            };
+
+            // 获取组件数据的函数
+            const fetchComponents = async (versionId, componentType) => {
+                const url = `/MC_command/api/get-components/?version_id=${versionId}&type=${componentType}`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Failed to fetch ${componentType}s:`, error);
+                    return [];
+                }
+            };
+
+            // 主更新函数
+            const handleVersionChange = async () => {
+                const selectedVersionId = targetVersionSelect.value;
+                if (!selectedVersionId) return;
+
+                // 并行获取附魔和属性数据
+                const [enchantments, attributes] = await Promise.all([
+                    fetchComponents(selectedVersionId, 'enchantment'),
+                    fetchComponents(selectedVersionId, 'attribute')
+                ]);
+                
+                // 更新所有附魔下拉菜单
+                document.querySelectorAll('select[name$="-enchantment"]').forEach(select => {
+                    updateSelectOptions(select, enchantments);
+                });
+
+                // 更新所有属性下拉菜单
+                document.querySelectorAll('select[name$="-attribute"]').forEach(select => {
+                    updateSelectOptions(select, attributes);
+                });
+            };
+
+            // 绑定事件监听器
+            targetVersionSelect.addEventListener('change', handleVersionChange);
+            
+            // 页面加载时执行一次，以防表单加载时已有版本被选中（例如编辑页面）
+            handleVersionChange();
+        });
+    </script>
+</body>
+</html>

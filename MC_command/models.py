@@ -1,5 +1,5 @@
 # mc_commands/models.py
-
+import uuid # <--- 在文件顶部添加此行
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -114,6 +114,7 @@ class AppliedAttribute(models.Model):
     amount = models.FloatField()
     operation = models.IntegerField(choices=[(0, "add_value"), (1, "add_multiplied_base"), (2, "add_multiplied_total")], default=0)
     slot = models.CharField(max_length=20, choices=[("any", "Any"), ("mainhand", "Main Hand"), ("offhand", "Off Hand"), ("head", "Head"), ("chest", "Chest"), ("legs", "Legs"), ("feet", "Feet")], default="any")
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="修饰符的唯一ID，自动生成。")
     
     # --- 这里是关键改动 ---
     modifier_name = models.CharField(
