@@ -3,7 +3,7 @@
 ```bash
 git remote add origin https://github.com/amithyst/TestWebDemo.git
 git add .
-git commit -m "卡住了"
+git commit -m "下班了"
 git push -u origin master
 ```
 
