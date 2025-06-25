@@ -1,97 +1,97 @@
 [
   {
     "id": "minecraft:generic.max_health",
-    "name": "生命值上限",
+    "name": "🩸生命值上限",
     "min_version": null,
     "max_version": null
   },
   {
     "id": "minecraft:generic.follow_range",
-    "name": "生物跟随距离",
+    "name": "🐕生物跟随距离",
     "min_version": null,
     "max_version": null
   },
   {
     "id": "minecraft:generic.knockback_resistance",
-    "name": "击退抗性",
+    "name": "🦍击退抗性",
     "min_version": null,
     "max_version": null
   },
   {
     "id": "minecraft:generic.movement_speed",
-    "name": "移动速度",
+    "name": "🦅移动速度",
     "min_version": null,
     "max_version": null
   },
   {
     "id": "minecraft:generic.attack_damage",
-    "name": "攻击伤害",
+    "name": "💪攻击伤害",
     "min_version": null,
     "max_version": null
   },
   {
     "id": "minecraft:generic.attack_knockback",
-    "name": "攻击击退",
+    "name": "🦘攻击击退",
     "min_version": "1.9",
     "max_version": null
   },
   {
     "id": "minecraft:generic.attack_speed",
-    "name": "攻击速度",
+    "name": "🦾攻击速度",
     "min_version": "1.9",
     "max_version": null
   },
   {
     "id": "minecraft:generic.armor",
-    "name": "盔甲值",
+    "name": "🛡盔甲值",
     "min_version": null,
     "max_version": null
   },
   {
     "id": "minecraft:generic.armor_toughness",
-    "name": "盔甲韧性",
+    "name": "🎽盔甲韧性",
     "min_version": "1.9",
     "max_version": null
   },
   {
     "id": "minecraft:generic.luck",
-    "name": "幸运",
+    "name": "🍀幸运",
     "min_version": "1.9",
     "max_version": null
   },
   {
     "id": "minecraft:player.block_interaction_range",
-    "name": "方块交互范围 (玩家)",
+    "name": "🙌方块交互范围 (玩家)",
     "min_version": "1.20.5",
     "max_version": null
   },
   {
     "id": "minecraft:player.entity_interaction_range",
-    "name": "实体交互范围 (玩家)",
+    "name": "🫴实体交互范围 (玩家)",
     "min_version": "1.20.5",
     "max_version": null
   },
   {
     "id": "minecraft:generic.gravity",
-    "name": "重力",
+    "name": "🟰重力",
     "min_version": "1.20.5",
     "max_version": null
   },
   {
     "id": "minecraft:generic.safe_fall_distance",
-    "name": "安全掉落距离",
+    "name": "🦺安全掉落距离",
     "min_version": "1.20.5",
     "max_version": null
   },
   {
     "id": "minecraft:generic.fall_damage_multiplier",
-    "name": "摔落伤害倍率",
+    "name": "⛑摔落伤害倍率",
     "min_version": "1.20.5",
     "max_version": null
   },
   {
     "id": "minecraft:player.block_break_speed",
-    "name": "方块破坏速度 (玩家)",
+    "name": "⛏方块破坏速度 (玩家)",
     "min_version": "1.20.2",
     "max_version": null
   }

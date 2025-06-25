@@ -34,4 +34,6 @@ django-admin startproject mysite djangotutorial
 python manage.py import_components enchantments.json
 python manage.py import_components attributes.json
 python manage.py import_components effects.json
+python manage.py import_components materials.json
+python manage.py import_components item_types.json
 ```

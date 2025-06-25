@@ -1,10 +1,11 @@
 import os
 import json
 from django.core.management.base import BaseCommand, CommandError
-from MC_command.models import MinecraftVersion, BaseItem, Enchantment, AttributeType, PotionEffectType
+# 核心改动：导入 Material 和 ItemType 模型
+from MC_command.models import MinecraftVersion, Material, ItemType, Enchantment, AttributeType, PotionEffectType
 
 class Command(BaseCommand):
-    help = 'Imports Minecraft components like versions, items, enchantments, attributes, and effects from a specified JSON file into the database.'
+    help = 'Imports Minecraft components like versions, materials, item types, enchantments, attributes, and effects from a specified JSON file into the database.'
 
     def add_arguments(self, parser):
         parser.add_argument('file_path', type=str, help='The name of the JSON file in the json_data directory to import (e.g., versions.json).')
@@ -37,21 +38,36 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'  Successfully created version: {version.version_number}'))
         self.stdout.write(self.style.SUCCESS(f'Total {count} new versions imported.'))
 
-    def import_base_items(self, data):
-        """导入基础物品"""
+    # --- 新增：导入材质 ---
+    def import_materials(self, data):
+        """导入物品材质"""
         count = 0
-        for item_data in data:
-            item, created = BaseItem.objects.update_or_create(
-                item_id=item_data['item_id'],
+        for mat_data in data:
+            material, created = Material.objects.update_or_create(
+                system_name=mat_data['system_name'],
+                defaults={'display_name': mat_data.get('display_name', mat_data['system_name'])}
+            )
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created material: {material.display_name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new materials imported.'))
+
+    # --- 新增：导入物品类型 ---
+    def import_item_types(self, data):
+        """导入物品类型"""
+        count = 0
+        for type_data in data:
+            item_type, created = ItemType.objects.update_or_create(
+                system_name=type_data['system_name'],
                 defaults={
-                    'name': item_data['name'],
-                    'function_type': item_data.get('function_type', 'other') 
+                    'display_name': type_data.get('display_name', type_data['system_name']),
+                    'function_type': type_data.get('function_type', 'all')
                 }
             )
             if created:
                 count += 1
-                self.stdout.write(self.style.SUCCESS(f'  Successfully created item: {item.name}'))
-        self.stdout.write(self.style.SUCCESS(f'Total {count} new items imported.'))
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created item type: {item_type.display_name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new item types imported.'))
     
     def import_enchantments(self, data):
         """导入附魔"""
@@ -117,6 +133,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         file_path = options['file_path']
+        # 修正：移除旧的 '..' 片段，因为 'BASE_DIR' 已经指向项目根目录
+        # 为了兼容性，我们保留原有逻辑，因为它能正确找到 'json_data' 目录
         json_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'json_data', file_path)
 
         try:
@@ -130,9 +148,14 @@ class Command(BaseCommand):
         if file_path == 'versions.json':
             self.stdout.write(self.style.HTTP_INFO('Importing Minecraft versions...'))
             self.import_versions(data)
-        elif file_path == 'base_items.json':
-            self.stdout.write(self.style.HTTP_INFO('Importing base items...'))
-            self.import_base_items(data)
+        # --- 新增：处理 materials.json ---
+        elif file_path == 'materials.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing materials...'))
+            self.import_materials(data)
+        # --- 新增：处理 item_types.json ---
+        elif file_path == 'item_types.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing item types...'))
+            self.import_item_types(data)
         elif file_path == 'enchantments.json':
             self.stdout.write(self.style.HTTP_INFO('Importing enchantments...'))
             self.import_enchantments(data)
@@ -144,6 +167,7 @@ class Command(BaseCommand):
             self.import_potion_effects(data)
         else:
             self.stdout.write(self.style.WARNING(f'No specific importer for "{file_path}". Please check the filename.'))
-            self.stdout.write(self.style.WARNING('Available files: versions.json, base_items.json, enchantments.json, attributes.json, effects.json'))
+            # 更新提示信息，加入新的可用文件
+            self.stdout.write(self.style.WARNING('Available files: versions.json, materials.json, item_types.json, enchantments.json, attributes.json, effects.json'))
 
         self.stdout.write(self.style.SUCCESS('Import process finished.'))

@@ -211,17 +211,107 @@ body {
 .cancel-link {
     color: #555;
     text-decoration: none;
+    font-weight: bold;
 }
 
 .cancel-link:hover {
     text-decoration: underline;
 }
 
-/* 为了确保复制按钮不影响textarea的宽度，可以给textarea容器一个明确的最小高度 */
+/* --- Styles for Form Inlines (Moved from command_form.html and Improved) --- */
+.inline-group {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-top: 25px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+
+.inline-group h2 {
+    font-size: 1.3em;
+    padding: 15px 20px;
+    background-color: #f7f7f7;
+    margin: 0;
+    border-bottom: 1px solid #e0e0e0;
+    color: #2c3e50;
+}
+
+.inline-group-content {
+    padding: 0;
+}
+
+.add-row-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 15px 20px;
+    display: inline-block;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+.add-row-btn:hover {
+    background-color: #218838;
+}
+
+/* --- New, Improved Table Styles for Formsets --- */
+.inline-group table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.inline-group th,
+.inline-group td {
+    padding: 12px 20px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.inline-group thead th {
+    background-color: #fcfcfc;
+    font-weight: 600;
+    color: #555;
+}
+
+.inline-group tbody tr:last-of-type td {
+    border-bottom: none;
+}
+
+.inline-group tbody tr:hover {
+    background-color: #f8faff;
+}
+
+.inline-group td input[type="text"],
+.inline-group td input[type="number"],
+.inline-group td select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.inline-group td input[type="checkbox"] {
+    height: 1.2em;
+    width: 1.2em;
+    vertical-align: middle;
+}
+
+.inline-group th:last-child,
+.inline-group td:last-child {
+    text-align: center;
+    width: 100px;
+}
+/* End of new table styles */
+
 .textarea-container {
     position: relative;
     margin-bottom: 15px;
-    min-height: 120px; /* 确保有足够空间容纳textarea和按钮 */
+    min-height: 120px;
 }
 
 textarea {
@@ -235,7 +325,7 @@ textarea {
     white-space: pre;
     word-wrap: normal;
     overflow-x: auto;
-    resize: vertical; /* 允许用户垂直拖动调整大小 */
+    resize: vertical;
 }
 
 .copy-btn {
@@ -258,7 +348,7 @@ textarea {
 .details-grid {
     display: grid;
     grid-template-columns: 150px 1fr;
-    gap: 10px;
+    gap: 15px;
     align-items: center;
 }
 
@@ -280,14 +370,10 @@ hr {
 }
 
 .errorlist {
-    color: red;
+    color: #dc3545;
     font-size: 0.9em;
     margin: 5px 0 0;
     padding: 0;
     list-style-type: none;
-}
-
-/* Ensure original list item styling for MC_command/style.css is kept */
-li a {
-    color: green;
+    font-weight: bold;
 }

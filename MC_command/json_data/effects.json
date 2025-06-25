@@ -1,187 +1,187 @@
 [
   {
     "id": "minecraft:speed",
-    "name": "速度 (Speed)",
+    "name": "🦅速度 (Speed)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:slowness",
-    "name": "缓慢 (Slowness)",
+    "name": "🐌缓慢 (Slowness)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:haste",
-    "name": "急迫 (Haste)",
+    "name": "🦾急迫 (Haste)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:mining_fatigue",
-    "name": "挖掘疲劳 (Mining Fatigue)",
+    "name": "😴挖掘疲劳 (Mining Fatigue)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:strength",
-    "name": "力量 (Strength)",
+    "name": "💪力量 (Strength)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:instant_health",
-    "name": "瞬间治疗 (Instant Health)",
+    "name": "🩸瞬间治疗 (Instant Health)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:instant_damage",
-    "name": "瞬间伤害 (Instant Damage)",
+    "name": "👿瞬间伤害 (Instant Damage)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:jump_boost",
-    "name": "跳跃提升 (Jump Boost)",
+    "name": "🦿跳跃提升 (Jump Boost)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:nausea",
-    "name": "反胃 (Nausea)",
+    "name": "🤮反胃 (Nausea)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:regeneration",
-    "name": "生命恢复 (Regeneration)",
+    "name": "❤生命恢复 (Regeneration)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:resistance",
-    "name": "抗性提升 (Resistance)",
+    "name": "🛡抗性提升 (Resistance)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:fire_resistance",
-    "name": "防火 (Fire Resistance)",
+    "name": "🔥防火 (Fire Resistance)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:water_breathing",
-    "name": "水下呼吸 (Water Breathing)",
+    "name": "🫧水下呼吸 (Water Breathing)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:invisibility",
-    "name": "隐身 (Invisibility)",
+    "name": "🪞隐身 (Invisibility)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:blindness",
-    "name": "失明 (Blindness)",
+    "name": "🙈失明 (Blindness)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:night_vision",
-    "name": "夜视 (Night Vision)",
+    "name": "🦉夜视 (Night Vision)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:hunger",
-    "name": "饥饿 (Hunger)",
+    "name": "🥵饥饿 (Hunger)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:weakness",
-    "name": "虚弱 (Weakness)",
+    "name": "🤕虚弱 (Weakness)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:poison",
-    "name": "中毒 (Poison)",
+    "name": "☠中毒 (Poison)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:wither",
-    "name": "凋零 (Wither)",
+    "name": "🖤凋零 (Wither)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:health_boost",
-    "name": "生命提升 (Health Boost)",
+    "name": "❣生命提升 (Health Boost)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:absorption",
-    "name": "伤害吸收 (Absorption)",
+    "name": "💛伤害吸收 (Absorption)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:saturation",
-    "name": "饱和 (Saturation)",
+    "name": "💖饱和 (Saturation)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:glowing",
-    "name": "发光 (Glowing)",
+    "name": "🌟发光 (Glowing)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:levitation",
-    "name": "悬浮 (Levitation)",
+    "name": "☁悬浮 (Levitation)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:luck",
-    "name": "幸运 (Luck)",
+    "name": "🍀幸运 (Luck)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:unluck",
-    "name": "霉运 (Unluck)",
+    "name": "🤡霉运 (Unluck)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:slow_falling",
-    "name": "缓降 (Slow Falling)",
+    "name": "🪶缓降 (Slow Falling)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:conduit_power",
-    "name": "潮涌能量 (Conduit Power)",
+    "name": "🌊潮涌能量 (Conduit Power)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:dolphins_grace",
-    "name": "海豚的恩惠 (Dolphin's Grace)",
+    "name": "🐬海豚的恩惠 (Dolphin's Grace)",
     "min_version": "1.13"
   },
   {
     "id": "minecraft:bad_omen",
-    "name": "不祥之兆 (Bad Omen)",
+    "name": "🪬不祥之兆 (Bad Omen)",
     "min_version": "1.14"
   },
   {
     "id": "minecraft:hero_of_the_village",
-    "name": "村庄英雄 (Hero of the Village)",
+    "name": "💹村庄英雄 (Hero of the Village)",
     "min_version": "1.14"
   },
   {
     "id": "minecraft:darkness",
-    "name": "黑暗 (Darkness)",
+    "name": "🌑黑暗 (Darkness)",
     "min_version": "1.19"
   },
   {
     "id": "minecraft:wind_charged",
-    "name": "风射 (Wind Charged)",
+    "name": "🌬风射 (Wind Charged)",
     "min_version": "1.21"
   },
   {
     "id": "minecraft:weaving",
-    "name": "织网 (Weaving)",
+    "name": "🕸织网 (Weaving)",
     "min_version": "1.21"
   },
   {
     "id": "minecraft:oozing",
-    "name": "渗浆 (Oozing)",
+    "name": "🦠渗浆 (Oozing)",
     "min_version": "1.21"
   },
   {
     "id": "minecraft:infested",
-    "name": "侵袭 (Infested)",
+    "name": "🪱侵袭 (Infested)",
     "min_version": "1.21"
   }
 ]

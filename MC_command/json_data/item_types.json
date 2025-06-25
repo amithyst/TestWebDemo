@@ -1,6 +1,21 @@
 [
-  {"system_name": "sword", "display_name": "剑"},
-  {"system_name": "pickaxe", "display_name": "镐"},
-  {"system_name": "ingot", "display_name": "锭"},
-  {"system_name": "trident", "display_name": "三叉戟"}
+  { "system_name": "sword", "display_name": "🗡剑", "function_type": "weapon" },
+  { "system_name": "pickaxe", "display_name": "⛏镐", "function_type": "all" },
+  { "system_name": "axe", "display_name": "🪓斧", "function_type": "weapon" },
+  { "system_name": "shovel", "display_name": "🥄锹", "function_type": "all" },
+  { "system_name": "hoe", "display_name": "🦯锄", "function_type": "all" },
+  { "system_name": "helmet", "display_name": "🪖头盔", "function_type": "helmet" },
+  { "system_name": "chestplate", "display_name": "👕胸甲", "function_type": "armor" },
+  { "system_name": "leggings", "display_name": "👖护腿", "function_type": "armor" },
+  { "system_name": "boots", "display_name": "👢靴子", "function_type": "boots" },
+  { "system_name": "bow", "display_name": "🏹弓", "function_type": "bow" },
+  { "system_name": "crossbow", "display_name": "🏹弩", "function_type": "crossbow" },
+  { "system_name": "trident", "display_name": "🔱三叉戟", "function_type": "trident" },
+  { "system_name": "fishing_rod", "display_name": "🎣钓鱼竿", "function_type": "fishing_rod" },
+  { "system_name": "potion", "display_name": "🍹药水", "function_type": "potion" },
+  { "system_name": "splash_potion", "display_name": "💦喷溅药水", "function_type": "potion" },
+  { "system_name": "lingering_potion", "display_name": "🌫滞留药水", "function_type": "potion" },
+  { "system_name": "tipped_arrow", "display_name": "💘药箭", "function_type": "potion" },
+  { "system_name": "firework_rocket", "display_name": "🧨烟花火箭", "function_type": "firework" },
+  { "system_name": "written_book", "display_name": "📕成书", "function_type": "written_book" }
 ]

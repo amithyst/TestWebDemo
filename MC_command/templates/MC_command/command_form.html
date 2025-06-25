@@ -3,16 +3,7 @@
 {% block title %}{{ form_title }}{% endblock %}
 
 {% block extra_head %}
-<style>
-    /* 样式部分保持不变 */
-    .inline-group { border: 1px solid #e0e0e0; border-radius: 5px; margin-top: 20px; }
-    .inline-group h2 { font-size: 1.2em; padding: 10px 15px; background-color: #f0f3f5; margin: 0; border-bottom: 1px solid #e0e0e0; border-radius: 5px 5px 0 0; }
-    .form-field { margin-bottom: 1.2rem; }
-    .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-    .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
-    .errorlist { color: #dc3545; list-style: none; padding: 0; margin-top: 5px; }
-    .add-row-btn { background-color: #28a745; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-</style>
+{# The inline styles have been moved to style.css for better maintainability #}
 {% endblock %}
 
 {% block content %}
@@ -48,32 +39,34 @@
                  data-supported-types="{{ data.supported_types }}"
                  style="display: none;">
                 <h2>{{ data.verbose_name }}</h2>
-                {{ data.formset.management_form }}
-                <table>
-                    <thead>
+                <div class="inline-group-content">
+                    {{ data.formset.management_form }}
+                    <table>
+                        <thead>
+                            <tr>
+                                {% for field in data.formset.empty_form %}{% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}{% endfor %}
+                                {% if data.formset.can_delete %}<th>☯</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody id="{{ prefix }}-form-container">
+                            {% for form in data.formset %}
+                            <tr id="{{ form.prefix }}-row">
+                                {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                                {% for field in form.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}{{ field.errors }}</td>{% endif %}{% endfor %}
+                                {% if data.formset.can_delete %}<td>{{ form.DELETE }}</td>{% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
+                    <template id="{{ prefix }}-empty-form-template">
                         <tr>
-                            {% for field in data.formset.empty_form %}{% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}{% endfor %}
-                            <th>delete</th>
+                            {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+                            {% for field in data.formset.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}{% endfor %}
+                            {% if data.formset.can_delete %}<td>{{ data.formset.empty_form.DELETE }}</td>{% endif %}
                         </tr>
-                    </thead>
-                    <tbody id="{{ prefix }}-form-container">
-                        {% for form in data.formset %}
-                        <tr id="{{ form.prefix }}-row">
-                            {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-                            {% for field in form.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}{{ field.errors }}</td>{% endif %}{% endfor %}
-                            {% if data.formset.can_delete %}<td>{{ form.DELETE }}</td>{% endif %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
-                <template id="{{ prefix }}-empty-form-template">
-                    <tr>
-                        {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
-                        {% for field in data.formset.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}{% endfor %}
-                        {% if data.formset.can_delete %}<td>{{ data.formset.empty_form.DELETE }}</td>{% endif %}
-                    </tr>
-                </template>
+                    </template>
+                </div>
             </div>
             {% endfor %}
 
