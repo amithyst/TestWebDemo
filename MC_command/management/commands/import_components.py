@@ -83,7 +83,7 @@ class Command(BaseCommand):
                     'max_level': ench_data.get('max_level', 1),
                     'min_version': min_version,
                     'max_version': max_version,
-                    'enchant_type': ench_data.get('type', 'general')
+                    'enchant_type': ench_data.get('enchant_type', 'general')
                 }
             )
             if created:
