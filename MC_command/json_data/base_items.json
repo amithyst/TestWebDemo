@@ -1,0 +1,6 @@
+[
+  {"material": "diamond", "item_type": "sword", "function_type": "all"},
+  {"material": "iron", "item_type": "ingot", "function_type": "all"},
+  {"material": null, "item_type": "trident", "function_type": "all"},
+  {"material": "diamond", "item_type": null, "function_type": "all"}
+]

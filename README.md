@@ -1,5 +1,9 @@
 # 常用命令
 
+`pip install django==5.2`
+
+`python manage.py runserver`
+
 ```bash
 git remote add origin https://github.com/amithyst/TestWebDemo.git
 git add .

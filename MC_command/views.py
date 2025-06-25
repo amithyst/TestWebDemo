@@ -88,14 +88,14 @@ def create(request):
 
     # Prepare data for the template
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
-    base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()}
+    base_item_data = {i.pk: {'type': i.function_type} for i in BaseItem.objects.all()}
     
     # NEW: Pass component info to the template for dynamic rendering
     component_data = {
         prefix: {
             'formset': formsets[prefix],
             'verbose_name': config['verbose_name'],
-            'supported_types': json.dumps(config['supported_item_types'])
+            'supported_types': json.dumps(config['supported_function_types'])
         }
         for prefix, config in COMPONENT_REGISTRY.items()
     }
@@ -145,12 +145,12 @@ def edit(request, command_id):
         }
         
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
-    base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()}
+    base_item_data = {i.pk: {'type': i.function_type} for i in BaseItem.objects.all()}
     component_data = {
         prefix: {
             'formset': formsets[prefix],
             'verbose_name': config['verbose_name'],
-            'supported_types': json.dumps(config['supported_item_types'])
+            'supported_types': json.dumps(config['supported_function_types'])
         }
         for prefix, config in COMPONENT_REGISTRY.items()
     }

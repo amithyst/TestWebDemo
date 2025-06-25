@@ -38,28 +38,135 @@ class VersionedItem(models.Model):
     class Meta:
         abstract = True
 
+# --- 新增模型：Material ---
+
+class Material(models.Model):
+    """存储物品材质，例如：钻石 (diamond)"""
+    system_name = models.CharField(max_length=50, unique=True, help_text="系统内部名称, e.g., 'diamond'"
+                                   ,
+        null=True,  # 允许数据库中的值为 NULL
+        blank=True  # 允许在表单中该字段为空
+        )
+    # --- 在这里进行修改 ---
+    display_name = models.CharField(
+        max_length=50,
+        help_text="用于显示的名称, e.g., '钻石'",
+        null=True,  # 允许数据库中的值为 NULL
+        blank=True  # 允许在表单中该字段为空
+    )
+
+    class Meta:
+        verbose_name = "材质"
+        verbose_name_plural = "材质"
+        ordering = ['display_name']
+
+    def __str__(self):
+        # 如果显示名称为空，则返回系统名称，避免显示空白
+        return self.display_name or self.system_name
+
+class ItemType(models.Model):
+    """存储物品基础类型，例如：剑 (sword)"""
+    system_name = models.CharField(max_length=50, unique=True, help_text="系统内部名称, e.g., 'sword'",
+        null=True,  # 允许数据库中的值为 NULL
+        blank=True  # 允许在表单中该字段为空
+    )
+    # --- 在这里进行修改 ---
+    display_name = models.CharField(
+        max_length=50,
+        help_text="用于显示的名称, e.g., '剑'",
+        null=True,  # 允许数据库中的值为 NULL
+        blank=True  # 允许在表单中该字段为空
+    )
+
+    class Meta:
+        verbose_name = "物品类型"
+        verbose_name_plural = "物品类型"
+        ordering = ['display_name']
+
+    def __str__(self):
+        # 同样，如果显示名称为空，则返回系统名称
+        return self.display_name or self.system_name
+
 class BaseItem(VersionedItem):
-    """存储所有可用的基础物品及其版本范围"""
-    item_id = models.CharField(max_length=100, help_text="Minecraft 的物品ID, 例如 'minecraft:diamond_sword'")
-    name = models.CharField(max_length=100, help_text="人类可读的名称, 例如 'Diamond Sword'")
-    item_type = models.CharField(
-        max_length=50, help_text="物品类型, 例如 'all','spawn_egg','potion','written_book'等",
+    """基础物品，其核心属性由材质和类型自动生成"""
+    material = models.ForeignKey(
+        Material, on_delete=models.PROTECT, null=True, blank=True,
+        help_text="物品的材质", db_index=True
+    )
+    item_type = models.ForeignKey(
+        ItemType, on_delete=models.PROTECT, null=True, blank=True,
+        help_text="物品的基础类型", db_index=True
+    )
+
+    # 这两个字段将由 save() 方法自动填充，并且不可编辑
+    item_id = models.CharField(
+        max_length=100, unique=True, editable=False,
+        help_text="自动生成的 Minecraft ID"
+    )
+    name = models.CharField(
+        max_length=100, editable=False,
+        help_text="自动生成的显示名称"
+    )
+
+    function_type = models.CharField(
+        max_length=50, help_text="物品的功能分类",
         choices=[
             ('all', '普通物品'),
             ('spawn_egg', '生成蛋'),
             ('potion', '药水(箭/食物)'),
             ('written_book', '成书'),
             ('firework', '烟花火箭'),
-        ],default='all'
+        ],default='all', verbose_name="功能类型"
     )
 
     class Meta:
         verbose_name = "基础物品"
         verbose_name_plural = "基础物品"
+        unique_together = ('material', 'item_type')
         ordering = ['name']
 
     def __str__(self):
-        return f"{self.name} ({self.item_id})"
+        return self.name
+
+    def clean(self):
+        # 验证：材质和物品类型不能同时为空
+        if not self.material and not self.item_type:
+            raise ValidationError("材质 (Material) 和物品类型 (ItemType) 不能同时为空。")
+
+    def _generate_name_and_id(self):
+        """根据材质和类型生成名称和ID的内部逻辑"""
+        material_dn = self.material.display_name if self.material else ""
+        material_sn = self.material.system_name if self.material else ""
+        
+        type_dn = self.item_type.display_name if self.item_type else ""
+        type_sn = self.item_type.system_name if self.item_type else ""
+
+        # 生成显示名称 (name)
+        if material_dn and type_dn:
+            self.name = f"{material_dn} {type_dn}"
+        else:
+            self.name = material_dn or type_dn
+
+        # 生成系统ID (item_id)
+        # 规则: material_sn + "_" + type_sn (如果都有)
+        # 例如: diamond_sword, iron_ingot, diamond, trident
+        if material_sn and type_sn:
+            # 特殊规则：如果物品类型本身就包含材质（如 netherite_sword），则以物品类型为准
+            if material_sn in type_sn:
+                 base_id = type_sn
+            else:
+                 base_id = f"{material_sn}_{type_sn}"
+        else:
+            base_id = material_sn or type_sn
+        
+        self.item_id = f"minecraft:{base_id}"
+
+
+    def save(self, *args, **kwargs):
+        # 在保存前，自动生成 name 和 item_id
+        self._generate_name_and_id()
+        # 调用父类的save方法，完成保存
+        super().save(*args, **kwargs)
 
 class Enchantment(VersionedItem):
     """存储所有可用的附魔类型及其版本范围"""

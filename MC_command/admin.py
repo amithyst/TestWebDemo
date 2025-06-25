@@ -4,9 +4,10 @@ import re
 from django.contrib import admin
 from django.db.models import Q
 from .models import (
-    MinecraftVersion, BaseItem, Enchantment, PotionEffectType, AttributeType,
+    MinecraftVersion, BaseItem, Material, ItemType, Enchantment, PotionEffectType, AttributeType,
     GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, WrittenBookContent
 )
+
 # --- FIX: Import the custom forms ---
 from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField
 
@@ -17,13 +18,29 @@ class MinecraftVersionAdmin(admin.ModelAdmin):
     list_display = ('version_number', 'ordering_id')
     search_fields = ('version_number',)
 
+
+@admin.register(Material)
+class MaterialAdmin(admin.ModelAdmin):
+    # 修正: 使用模型中真实存在的字段 'display_name' 和 'system_name'
+    list_display = ('display_name', 'system_name')
+    search_fields = ('display_name', 'system_name')
+
+@admin.register(ItemType)
+class ItemTypeAdmin(admin.ModelAdmin):
+    # 修正: 使用模型中真实存在的字段 'display_name' 和 'system_name'
+    list_display = ('display_name', 'system_name')
+    search_fields = ('display_name', 'system_name')
+
 @admin.register(BaseItem)
 class BaseItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'item_id', 'item_type', 'min_version'
-                    # , 'max_version'
-                    )
+    list_display = ('name', 'item_id', 'material', 'item_type', 'function_type')
+    list_filter = ('material', 'item_type', 'function_type')
     search_fields = ('name', 'item_id')
-    list_filter = ('min_version', 'item_type')
+    # 关键：将自动生成的字段设为只读
+    readonly_fields = ('name', 'item_id')
+    
+    # 为了更好的后台创建体验
+    fields = ('material', 'item_type', 'function_type', 'min_version', 'max_version', 'name', 'item_id')
 
 @admin.register(Enchantment)
 class EnchantmentAdmin(admin.ModelAdmin):
@@ -123,6 +140,6 @@ class GeneratedCommandAdmin(admin.ModelAdmin):
         Dynamically show the potion effects inline form ONLY if the base item type is 'potion'.
         """
         inlines = [WrittenBookContentInline, AppliedEnchantmentInline, AppliedAttributeInline]
-        if obj and obj.base_item.item_type == 'potion':
+        if obj and obj.base_item.function_type == 'potion':
             inlines.append(AppliedPotionEffectInline)
         return inlines

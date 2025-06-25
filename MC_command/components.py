@@ -86,7 +86,7 @@ COMPONENT_REGISTRY = {
         'form': AppliedEnchantmentForm,
         'template_path': 'MC_command/formsets/_enchantment_formset.html',
         # 'all' means it applies to every item type.
-        'supported_item_types': ['all', 'weapon', 'armor', 'fishing_rod', 'trident', 'bow', 'crossbow', 'helmet', 'boots'],
+        'supported_function_types': ['all', 'weapon', 'armor', 'fishing_rod', 'trident', 'bow', 'crossbow', 'helmet', 'boots'],
         'generate_nbt': generate_nbt_enchantments,
         'generate_component': generate_component_enchantments,
     },
@@ -95,7 +95,7 @@ COMPONENT_REGISTRY = {
         'model': AppliedAttribute,
         'form': AppliedAttributeForm,
         'template_path': 'MC_command/formsets/_attribute_formset.html',
-        'supported_item_types': ['all'], # Attributes can be applied to any item.
+        'supported_function_types': ['all'], # Attributes can be applied to any item.
         'generate_nbt': generate_nbt_attributes,
         'generate_component': generate_component_attributes,
     },
@@ -104,7 +104,7 @@ COMPONENT_REGISTRY = {
         'model': AppliedPotionEffect,
         'form': AppliedPotionEffectForm,
         'template_path': 'MC_command/formsets/_potion_effect_formset.html',
-        'supported_item_types': ['potion'], # VULNERABILITY: This can now be easily changed to ['all'] or ['potion', 'food']
+        'supported_function_types': ['potion'], # VULNERABILITY: This can now be easily changed to ['all'] or ['potion', 'food']
         'generate_nbt': generate_nbt_potion_effects,
         'generate_component': generate_component_potion_effects,
     },

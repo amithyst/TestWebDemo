@@ -1,0 +1,6 @@
+[
+  {"system_name": "sword", "display_name": "剑"},
+  {"system_name": "pickaxe", "display_name": "镐"},
+  {"system_name": "ingot", "display_name": "锭"},
+  {"system_name": "trident", "display_name": "三叉戟"}
+]

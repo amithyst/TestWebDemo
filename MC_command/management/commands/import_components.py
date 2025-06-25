@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 item_id=item_data['item_id'],
                 defaults={
                     'name': item_data['name'],
-                    'item_type': item_data.get('item_type', 'other') 
+                    'function_type': item_data.get('function_type', 'other') 
                 }
             )
             if created:
