@@ -15,6 +15,7 @@ from .models import Enchantment, AttributeType
 
 from .models import GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, MinecraftVersion, BaseItem # Add AppliedPotionEffect, BaseItem
 from .forms import GeneratedCommandForm, AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField # Add AppliedPotionEffectForm
+from .components import COMPONENT_REGISTRY
 
 # --- 核心视图 ---
 
@@ -39,119 +40,130 @@ def detail(request, command_id):
 
 # --- 增删改查 (CRUD) 视图 ---
 # --- 完全替换旧的 CREATE 和 EDIT 视图 ---
+# --- Replace the create and edit views with these refactored versions ---
 
 @login_required
 def create(request):
-    """处理创建新命令及其关联的附魔和属性。"""
-    EnchantmentFormSet = inlineformset_factory(GeneratedCommand, AppliedEnchantment, form=AppliedEnchantmentForm, extra=1, can_delete=True, min_num=0)
-    AttributeFormSet = inlineformset_factory(GeneratedCommand, AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True, min_num=0)
-    PotionEffectFormSet = inlineformset_factory(GeneratedCommand, AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True, min_num=0)
+    """REFACTORED: Handles creation of a command and its dynamically-registered components."""
+    # Dynamically create a mapping of prefixes to FormSet classes
+    FormSetClasses = {
+        prefix: inlineformset_factory(
+            GeneratedCommand, config['model'], form=config['form'],
+            extra=1, can_delete=True, min_num=0
+        )
+        for prefix, config in COMPONENT_REGISTRY.items()
+    }
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST)
-        enchant_formset = EnchantmentFormSet(request.POST, prefix='enchantments')
-        attribute_formset = AttributeFormSet(request.POST, prefix='attributes')
-        potion_formset = PotionEffectFormSet(request.POST, prefix='potions') # Add this
+        # Instantiate all formsets from the request data
+        formsets = {
+            prefix: FormSetClasses[prefix](request.POST, prefix=prefix)
+            for prefix in COMPONENT_REGISTRY.keys()
+        }
 
-        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid() and potion_formset.is_valid():
+        # Validate the main form and all formsets
+        if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
             try:
-                with transaction.atomic(): # 保证数据库操作的原子性
-                    # 版本兼容性验证 (优化 1)
-                    target_version = form.cleaned_data['target_version']
-                    _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version)
-
+                with transaction.atomic():
                     command_instance = form.save(commit=False)
                     command_instance.user = request.user
                     command_instance.save()
 
-                    enchant_formset.instance = command_instance
-                    enchant_formset.save()
+                    # Save data for each formset
+                    for prefix, formset in formsets.items():
+                        formset.instance = command_instance
+                        formset.save()
 
-                    attribute_formset.instance = command_instance
-                    attribute_formset.save()
-
-                    potion_formset.instance = command_instance
-                    potion_formset.save()
-                    
                     return redirect(reverse('MC_command:detail', args=[command_instance.id]))
             except forms.ValidationError:
-                # 如果验证失败，会抛出此异常，让表单显示错误
-                pass
-
+                pass # Validation errors will be handled by the form rendering below
     else: # GET
         form = GeneratedCommandForm()
-        enchant_formset = EnchantmentFormSet(prefix='enchantments')
-        attribute_formset = AttributeFormSet(prefix='attributes')
-        potion_formset = PotionEffectFormSet(prefix='potions') # Add this
+        # Instantiate empty formsets
+        formsets = {
+            prefix: FormSetClasses[prefix](prefix=prefix)
+            for prefix in COMPONENT_REGISTRY.keys()
+        }
 
-    # ADD: Provide version data to the template
+    # Prepare data for the template
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
-    base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()} # Add this
+    base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()}
+    
+    # NEW: Pass component info to the template for dynamic rendering
+    component_data = {
+        prefix: {
+            'formset': formsets[prefix],
+            'verbose_name': config['verbose_name'],
+            'supported_types': json.dumps(config['supported_item_types'])
+        }
+        for prefix, config in COMPONENT_REGISTRY.items()
+    }
 
     context = {
         'form': form,
-        'enchant_formset': enchant_formset,
-        'attribute_formset': attribute_formset,
-        'potion_formset': potion_formset, # Add this
+        'component_data': component_data, # Replaces individual formsets
         'form_title': '创建新命令',
         'version_data_json': json.dumps(version_data),
-        'base_item_data_json': json.dumps(base_item_data) # Add this
+        'base_item_data_json': json.dumps(base_item_data),
     }
     return render(request, 'MC_command/command_form.html', context)
 
-
-
 @login_required
 def edit(request, command_id):
-    """处理编辑命令及其关联的附魔和属性。"""
+    """REFACTORED: Handles editing of a command and its dynamically-registered components."""
     command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
-    EnchantmentFormSet = inlineformset_factory(GeneratedCommand, AppliedEnchantment, form=AppliedEnchantmentForm, extra=1, can_delete=True, min_num=0)
-    AttributeFormSet = inlineformset_factory(GeneratedCommand, AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True, min_num=0)
-    PotionEffectFormSet = inlineformset_factory(GeneratedCommand, AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True, min_num=0) # Add this
+    FormSetClasses = {
+        prefix: inlineformset_factory(
+            GeneratedCommand, config['model'], form=config['form'],
+            extra=1, can_delete=True, min_num=0
+        )
+        for prefix, config in COMPONENT_REGISTRY.items()
+    }
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST, instance=command_obj)
-        enchant_formset = EnchantmentFormSet(request.POST, instance=command_obj, prefix='enchantments')
-        attribute_formset = AttributeFormSet(request.POST, instance=command_obj, prefix='attributes')
-        potion_formset = PotionEffectFormSet(request.POST, instance=command_obj, prefix='potions') # Add this
+        formsets = {
+            prefix: FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix)
+            for prefix in COMPONENT_REGISTRY.keys()
+        }
 
-        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid() and potion_formset.is_valid():
+        if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
             try:
                 with transaction.atomic():
-                    target_version = form.cleaned_data['target_version']
-                    _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version)
-                    
                     form.save()
-                    enchant_formset.save()
-                    attribute_formset.save()
-                    potion_formset.save()
-
+                    for formset in formsets.values():
+                        formset.save()
                     return redirect(reverse('MC_command:detail', args=[command_obj.id]))
             except forms.ValidationError:
                 pass
     else: # GET
         form = GeneratedCommandForm(instance=command_obj)
-        enchant_formset = EnchantmentFormSet(instance=command_obj, prefix='enchantments')
-        attribute_formset = AttributeFormSet(instance=command_obj, prefix='attributes')
-        potion_formset = PotionEffectFormSet(instance=command_obj, prefix='potions')
-    
-    # ADD: Provide version data to the template
+        formsets = {
+            prefix: FormSetClasses[prefix](instance=command_obj, prefix=prefix)
+            for prefix in COMPONENT_REGISTRY.keys()
+        }
+        
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
     base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()}
+    component_data = {
+        prefix: {
+            'formset': formsets[prefix],
+            'verbose_name': config['verbose_name'],
+            'supported_types': json.dumps(config['supported_item_types'])
+        }
+        for prefix, config in COMPONENT_REGISTRY.items()
+    }
     
     context = {
         'form': form,
-        'enchant_formset': enchant_formset,
-        'attribute_formset': attribute_formset,
-        'potion_formset': potion_formset,
+        'component_data': component_data,
         'command': command_obj,
         'form_title': '编辑命令',
         'version_data_json': json.dumps(version_data),
-        # --- 确保下面这行代码存在且没有被注释 ---
         'base_item_data_json': json.dumps(base_item_data),
     }
     return render(request, 'MC_command/command_form.html', context)
-
 
 # C:\Github\djangotutorial\MC_command\views.py
 
@@ -213,27 +225,11 @@ def delete(request, command_id):
     command_obj.delete()
     return redirect(reverse('MC_command:index'))
 
-# --- 辅助函数 ---
-
 
 # --- 辅助函数 (Helper Functions) ---
 
-def _uuid_to_int_array(uuid_obj):
-    """将 UUID 对象转换为 Minecraft NBT 所需的整数数组格式。"""
-    int_val = uuid_obj.int
-    # 将128位整数分割为4个32位整数
-    part1 = (int_val >> 96) & 0xFFFFFFFF
-    part2 = (int_val >> 64) & 0xFFFFFFFF
-    part3 = (int_val >> 32) & 0xFFFFFFFF
-    part4 = int_val & 0xFFFFFFFF
-    # 转换为有符号32位整数
-    def to_signed(n):
-        return n if n < 2**31 else n - 2**32
-    return f"[I;{to_signed(part1)},{to_signed(part2)},{to_signed(part3)},{to_signed(part4)}]"
-
-
-
 def _generate_command_context(command: GeneratedCommand) -> dict:
+    # This function remains mostly the same, but calls the refactored builders.
     target_version_id = command.target_version.ordering_id
     base_item_id = command.base_item.item_id
     if target_version_id >= 12005: # Minecraft 1.20.5+
@@ -242,7 +238,7 @@ def _generate_command_context(command: GeneratedCommand) -> dict:
         give_command = f"/give @p {base_item_id}[{data_string}] {command.count}"
     else: # Older versions
         data_structure = _build_nbt_tag_structure(command)
-        data_string = json.dumps(data_structure, separators=(',', ':'))
+        data_string = json.dumps(data_structure, separators=(',', ':')) if data_structure else ''
         give_command = f"/give @p {base_item_id}{data_string} {command.count}"
     return {
         'give_command': give_command,
@@ -250,105 +246,45 @@ def _generate_command_context(command: GeneratedCommand) -> dict:
     }
 
 def _build_nbt_tag_structure(command: GeneratedCommand) -> dict:
-    """构建旧版 (<=1.20.4) 的 NBT 标签结构"""
+    """REFACTORED: Builds the NBT tag structure by iterating through the component registry."""
     nbt_data = {}
     display = {}
 
     if command.custom_name:
         display['Name'] = json.dumps(command.custom_name, ensure_ascii=False)
-
     if command.lore:
         lore_lines = [json.dumps(line, ensure_ascii=False) for line in command.lore.splitlines() if line.strip()]
         if lore_lines:
             display['Lore'] = f'[{",".join(lore_lines)}]'
-
     if display:
         nbt_data['display'] = display
 
-    if command.enchantments.exists():
-        nbt_data['Enchantments'] = [{'id': ench.enchantment.enchant_id, 'lvl': ench.level} for ench in command.enchantments.all()]
-    
-    # --- 新增：处理属性修饰符 ---
-    if command.attributes.exists():
-        modifier_list = []
-        for attr in command.attributes.all():
-            modifier = {
-                "AttributeName": attr.attribute.attribute_id,
-                "Name": attr.modifier_name,
-                "Amount": attr.amount,
-                "Operation": attr.operation,
-                "Slot": attr.slot,
-                "UUID": _uuid_to_int_array(attr.uuid) # 使用新的辅助函数
-            }
-            modifier_list.append(modifier)
-        # NBT 的 AttributeModifiers 是一个字典列表，JSON 转换时会自动处理
-        nbt_data['AttributeModifiers'] = modifier_list
-
-    # --- ADDED: Handle Potion Effects for old versions ---
-    if command.potion_effects.exists():
-        effects_list = []
-        for effect in command.potion_effects.all():
-            effects_list.append({
-                'Id': effect.effect.effect_id,
-                'Amplifier': effect.amplifier,
-                'Duration': effect.duration,
-                'Ambient': 1 if effect.is_ambient else 0,
-                'ShowParticles': 1 if effect.show_particles else 0,
-                'ShowIcon': 1 if effect.show_icon else 0
-            })
-        nbt_data['CustomPotionEffects'] = effects_list
+    # Dynamic part using the registry
+    for prefix, config in COMPONENT_REGISTRY.items():
+        related_manager = getattr(command, prefix)
+        if related_manager.exists():
+            nbt_part = config['generate_nbt'](related_manager)
+            nbt_data.update(nbt_part)
 
     return nbt_data
 
 def _build_component_structure(command: GeneratedCommand) -> dict:
-    """构建新版 (>=1.20.5) 的 Component 结构"""
+    """REFACTORED: Builds the component structure by iterating through the component registry."""
     components = {}
-    op_map = {0: "add_value", 1: "add_multiplied_base", 2: "add_multiplied_total"}
 
     if command.custom_name:
         components['minecraft:custom_name'] = json.dumps(command.custom_name, ensure_ascii=False)
-
     if command.lore:
         lore_lines = [json.dumps(line, ensure_ascii=False) for line in command.lore.splitlines() if line.strip()]
         if lore_lines:
             components['minecraft:lore'] = f'[{",".join(lore_lines)}]'
 
-    if command.enchantments.exists():
-        enchantment_dict = {f"{ench.enchantment.enchant_id}": ench.level for ench in command.enchantments.all()}
-        components['minecraft:enchantments'] = f'{{levels:{json.dumps(enchantment_dict)}}}'
-
-    # --- 新增：处理属性修饰符 ---
-    if command.attributes.exists():
-        modifier_list = []
-        for attr in command.attributes.all():
-            modifier = {
-                "attribute": attr.attribute.attribute_id,
-                # "name": attr.modifier_name,
-                "amount": attr.amount,
-                "operation": op_map.get(attr.operation, "add_value"), # 将数字映射为字符串
-                "slot": attr.slot
-            }
-            modifier_list.append(modifier)
-        # component 格式需要手动构造成字符串
-        components['minecraft:attribute_modifiers'] = f'{{modifiers:{json.dumps(modifier_list, ensure_ascii=False)}}}'
-    
-    # --- ADDED: Handle Potion Effects for new versions ---
-    if command.potion_effects.exists():
-        effects_list = []
-        for effect in command.potion_effects.all():
-            effects_list.append({
-                "id": effect.effect.effect_id,
-                "amplifier": effect.amplifier,
-                "duration": effect.duration,
-                "ambient": effect.is_ambient,
-                "show_particles": effect.show_particles,
-                "show_icon": effect.show_icon
-            })
-
-        # Note the nested structure required by the component
-        potion_contents = {'custom_effects': effects_list}
-        components['minecraft:potion_contents'] = json.dumps(potion_contents, ensure_ascii=False, separators=(',', ':'))
-
+    # Dynamic part using the registry
+    for prefix, config in COMPONENT_REGISTRY.items():
+        related_manager = getattr(command, prefix)
+        if related_manager.exists():
+            component_part = config['generate_component'](related_manager)
+            components.update(component_part)
 
     return components
 

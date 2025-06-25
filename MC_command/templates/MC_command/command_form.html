@@ -50,23 +50,30 @@
                     {% for error in form.non_field_errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
                 </fieldset>
 
-                <div class="inline-group" id="enchantment-group">
-                    <h2>附魔</h2>
-                    {{ enchant_formset.management_form }}
+                {% for prefix, data in component_data.items %}
+                <div class.="inline-group component-group" id="{{ prefix }}-group" 
+                     data-prefix="{{ prefix }}" 
+                     data-supported-types="{{ data.supported_types|escapejs }}" 
+                     style="display: none;">
+                    
+                    <h2>{{ data.verbose_name }}</h2>
+                    {{ data.formset.management_form }}
                     <table>
                         <thead>
                             <tr>
-                                <th>附魔</th>
-                                <th>等级</th>
+                                {% for field in data.formset.empty_form %}
+                                    {% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}
+                                {% endfor %}
                                 <th class="delete-cell">删除?</th>
                             </tr>
                         </thead>
-                        <tbody id="enchantment-form-container">
-                            {% for form in enchant_formset %}
-                                <tr class="enchantment-formset-row {% if form.instance.pk %}existing-row{% endif %}">
-                                    {{ form.id }} {# Important hidden field #}
-                                    <td>{{ form.enchantment }}{{ form.enchantment.errors }}</td>
-                                    <td>{{ form.level }}{{ form.level.errors }}</td>
+                        <tbody id="{{ prefix }}-form-container">
+                            {% for form in data.formset %}
+                                <tr class="{{ prefix }}-formset-row {% if form.instance.pk %}existing-row{% endif %}">
+                                    {{ form.id }} {# Hidden ID field #}
+                                    {% for field in form.visible_fields %}
+                                        <td>{{ field }}{{ field.errors }}</td>
+                                    {% endfor %}
                                     <td class="delete-cell">
                                         {% if form.instance.pk %}
                                             {{ form.DELETE }}
@@ -78,331 +85,106 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <button type="button" class="add-row-btn" data-formset-prefix="enchantments">添加附魔</button>
-                </div>
-
-                <div class="inline-group" id="attribute-group">
-                    <h2>属性修饰符</h2>
-                    {{ attribute_formset.management_form }}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>属性</th>
-                                <th>修饰符名称 (旧版)</th>
-                                <th>数量</th>
-                                <th>操作</th>
-                                <th>槽位</th>
-                                <th class="delete-cell">删除?</th>
-                            </tr>
-                        </thead>
-                        <tbody id="attribute-form-container">
-                            {% for form in attribute_formset %}
-                                <tr class="attribute-formset-row {% if form.instance.pk %}existing-row{% endif %}">
-                                    {{ form.id }}
-                                    <td>{{ form.attribute }}{{ form.attribute.errors }}</td>
-                                    <td>{{ form.modifier_name }}{{ form.modifier_name.errors }}</td>
-                                    <td>{{ form.amount }}{{ form.amount.errors }}</td>
-                                    <td>{{ form.operation }}{{ form.operation.errors }}</td>
-                                    <td>{{ form.slot }}{{ form.slot.errors }}</td>
-                                    <td class="delete-cell">
-                                        {% if form.instance.pk %}
-                                            {{ form.DELETE }}
-                                        {% else %}
-                                            <input type="checkbox" class="row-delete-checkbox">
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                    <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
+                    
+                    <template id="{{ prefix }}-empty-form-template">
+                         <tr class="{{ prefix }}-formset-row">
+                            {{ data.formset.empty_form.id }}
+                            {% for field in data.formset.empty_form.visible_fields %}
+                                <td>{{ field }}</td>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                    <button type="button" class="add-row-btn" data-formset-prefix="attributes">添加属性</button>
+                            <td class="delete-cell">
+                                <input type="checkbox" class="row-delete-checkbox">
+                            </td>
+                        </tr>
+                    </template>
                 </div>
-
-                <div class="inline-group" id="potion-effect-group" style="display: none;"> <h2>药水效果</h2>
-                    {{ potion_formset.management_form }}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>药水效果</th>
-                                <th>等级</th>
-                                <th>持续时间</th>
-                                <th>Is Ambient</th>
-                                <th>显示粒子</th>
-                                <th>显示图标</th>
-                                <th class="delete-cell">删除?</th>
-                            </tr>
-                        </thead>
-                        <tbody id="potion-effect-form-container">
-                            {% for form in potion_formset %}
-                                <tr class="potion-effect-formset-row">
-                                    {{ form.id }}
-                                    <td>{{ form.effect }}</td>
-                                    <td>{{ form.amplifier }}</td>
-                                    <td>{{ form.duration }}</td>
-                                    <td>{{ form.is_ambient }}</td>
-                                    <td>{{ form.show_particles }}</td>
-                                    <td>{{ form.show_icon }}</td>
-                                    <td class="delete-cell">
-                                        {% if form.instance.pk %}{{ form.DELETE }}{% else %}<input type="checkbox" class="row-delete-checkbox">{% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <button type="button" class="add-row-btn" data-formset-prefix="potions">添加药水效果</button>
-                </div>
+                {% endfor %}
 
                 <div class="form-actions">
                     <button type="submit" class="btn">保存</button>
-                    <a href="{{ command.get_absolute_url|default_if_none:request.META.HTTP_REFERER|default_if_none:'/MC_command/' }}" class="cancel-link">取消</a>
-                </div>
-
-
-                <div id="formset-templates" style="display: none;">
-                    <table id="enchantment-empty-form-table">
-                        <tbody id="enchantment-empty-form">
-                            <tr class="enchantment-formset-row">
-                                {{ enchant_formset_empty|safe }}
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table id="attribute-empty-form-table">
-                        <tbody id="attribute-empty-form">
-                            <tr class="attribute-formset-row">
-                                {{ attribute_formset_empty|safe }}
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table id="potion-effect-empty-form-table">
-                        <tbody id="potion-effect-empty-form">
-                            <tr class="potion-effect-formset-row">
-                                {{ potion_formset_empty|safe }}
-                            </tr>
-                        </tbody>
-                    </table>
+                    <a href="javascript:void(0);" class="cancel-link" onclick="history.go(-2);">取消</a>
                 </div>
             </form>
         </div>
     </div>
 {% endblock %}
+
 {% block extra_js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // --- DATA SETUP ---
-            const versionData = JSON.parse('{{ version_data_json|escapejs|default:"{}" }}');
-            const baseItemData = JSON.parse('{{ base_item_data_json|escapejs|default:"{}" }}'); // Add this
-            const targetVersionSelect = document.getElementById('id_target_version');
-            const baseItemSelect = document.getElementById('id_base_item'); // Add this
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- DATA SETUP ---
+    const versionData = JSON.parse('{{ version_data_json|escapejs|default:"{}" }}');
+    const baseItemData = JSON.parse('{{ base_item_data_json|escapejs|default:"{}" }}');
+    const targetVersionSelect = document.getElementById('id_target_version');
+    const baseItemSelect = document.getElementById('id_base_item');
+    const componentGroups = document.querySelectorAll('.component-group');
 
-            // --- UI ELEMENTS & CACHE ---
-            const attributeGroup = document.getElementById('attribute-group');
-            const modifierNameHeader = attributeGroup.querySelector('thead th:nth-child(2)');
-            const potionEffectGroup = document.getElementById('potion-effect-group'); // Add this
-            let attributeDataCache = [];
+    // --- HELPER FUNCTIONS ---
+    const updateComponentVisibility = () => {
+        // 您可以加这行日志来调试
+        console.log('Checking component visibility for item:', baseItemSelect.value);
 
-            // --- HELPER FUNCTIONS ---
-            const toPascalCase = (str) => {
-                if (!str) return '';
-                const camelCase = str.replace(/_(\w)/g, (_, p1) => p1.toUpperCase());
-                return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-            };
+        const selectedItemId = baseItemSelect.value;
+        if (!selectedItemId || !baseItemData[selectedItemId]) {
+            componentGroups.forEach(group => group.style.display = 'none');
+            return;
+        }
 
-            // ... inside HELPER FUNCTIONS ...
-            const updatePotionFormVisibility = () => {
-                const selectedItemId = baseItemSelect.value;
-                if (selectedItemId && baseItemData[selectedItemId]) {
-                    const isPotion = baseItemData[selectedItemId].type === 'potion';
-                    potionEffectGroup.style.display = isPotion ? '' : 'none';
+        const currentItemType = baseItemData[selectedItemId].type;
+        
+        componentGroups.forEach(group => {
+            try {
+                const supportedTypes = JSON.parse(group.dataset.supportedTypes);
+                // Show if 'all' is supported OR if the specific item type is supported
+                if (supportedTypes.includes('all') || supportedTypes.includes(currentItemType)) {
+                    group.style.display = '';
                 } else {
-                    potionEffectGroup.style.display = 'none';
+                    group.style.display = 'none';
                 }
-            };
-
-            const updateModifierNameVisibility = () => {
-                const selectedVersionId = targetVersionSelect.value;
-                if (!selectedVersionId) return;
-
-                const orderingId = versionData[selectedVersionId];
-                const isNewVersion = orderingId >= 12005;
-
-                modifierNameHeader.style.display = isNewVersion ? 'none' : '';
-                attributeGroup.querySelectorAll('tbody tr').forEach(row => {
-                    const cell = row.querySelector('td:nth-child(3)');
-                    if (cell) cell.style.display = isNewVersion ? 'none' : '';
-                });
-            };
-            
-            const updateSelectOptions = (selectElement, options, componentType) => {
-                const currentVal = selectElement.value;
-                selectElement.innerHTML = '';
-                selectElement.add(new Option('---------', '', true, true));
-
-                options.forEach(opt => {
-                    const option = new Option(opt.text, opt.id);
-                    if (componentType === 'attribute' && opt.attribute_id) {
-                        option.dataset.attributeId = opt.attribute_id;
-                    }
-                    selectElement.add(option);
-                });
-                
-                selectElement.value = currentVal || '';
-            };
-
-            const fetchComponents = async (versionId, componentType) => {
-                if (componentType === 'attribute' && attributeDataCache.length > 0) {
-                    return attributeDataCache;
-                }
-                const url = `/MC_command/api/get-components/?version_id=${versionId}&type=${componentType}`;
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-                    if (componentType === 'attribute') attributeDataCache = data;
-                    return data;
-                } catch (error) {
-                    console.error(`Failed to fetch ${componentType}s:`, error);
-                    return [];
-                }
-            };
-
-            const handleVersionChange = async () => {
-                attributeDataCache = [];
-                updateModifierNameVisibility();
-                const selectedVersionId = targetVersionSelect.value;
-
-                if (!selectedVersionId) {
-                    document.querySelectorAll('select[name$="-enchantment"]').forEach(s => updateSelectOptions(s, [], 'enchantment'));
-                    document.querySelectorAll('select[name$="-attribute"]').forEach(s => updateSelectOptions(s, [], 'attribute'));
-                    return;
-                }
-
-                const [enchantments, attributes] = await Promise.all([
-                    fetchComponents(selectedVersionId, 'enchantment'),
-                    fetchComponents(selectedVersionId, 'attribute')
-                ]);
-                
-                document.querySelectorAll('select[name$="-enchantment"]').forEach(s => updateSelectOptions(s, enchantments, 'enchantment'));
-                document.querySelectorAll('select[name$="-attribute"]').forEach(s => updateSelectOptions(s, attributes, 'attribute'));
-            };
-
-            // --- DYNAMIC FORMSET LOGIC ---
-            const addFormsetRow = (prefix) => {
-                const container = document.getElementById(`${prefix}-form-container`);
-                const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
-                let totalForms = parseInt(totalFormsInput.value);
-
-                const newRow = document.createElement('tr');
-                newRow.classList.add(`${prefix}-formset-row`);
-
-                // FIX: Corrected HTML generation for all formset types
-                let rowHtml = '';
-                if (prefix === 'enchantments') {
-                    rowHtml = `
-                        <td><select name="${prefix}-${totalForms}-enchantment" id="id_${prefix}-${totalForms}-enchantment"></select></td>
-                        <td><input type="number" name="${prefix}-${totalForms}-level" value="1" id="id_${prefix}-${totalForms}-level"></td>
-                        <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
-                    `;
-                } else if (prefix === 'attributes') {
-                    rowHtml = `
-                        <td><select name="${prefix}-${totalForms}-attribute" id="id_${prefix}-${totalForms}-attribute"></select></td>
-                        <td><input type="text" name="${prefix}-${totalForms}-modifier_name" id="id_${prefix}-${totalForms}-modifier_name"></td>
-                        <td><input type="number" step="any" name="${prefix}-${totalForms}-amount" value="0.0" id="id_${prefix}-${totalForms}-amount"></td>
-                        <td>
-                            <select name="${prefix}-${totalForms}-operation" id="id_${prefix}-${totalForms}-operation">
-                                <option value="0">add_value</option><option value="1">add_multiplied_base</option><option value="2">add_multiplied_total</option>
-                            </select>
-                        </td>
-                        <td>
-                            <select name="${prefix}-${totalForms}-slot" id="id_${prefix}-${totalForms}-slot">
-                                <option value="any">Any</option><option value="mainhand">Main Hand</option><option value="offhand">Off Hand</option><option value="head">Head</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option>
-                            </select>
-                        </td>
-                        <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
-                    `;
-                } else if (prefix === 'potions') {
-                    const firstEffectSelect = document.querySelector('select[name^="potions-"][name$="-effect"]');
-                    const effectOptions = firstEffectSelect ? firstEffectSelect.innerHTML : '';
-                    
-                    rowHtml = `
-                        <td><select name="${prefix}-${totalForms}-effect" id="id_${prefix}-${totalForms}-effect">${effectOptions}</select></td>
-                        <td><input type="number" name="${prefix}-${totalForms}-amplifier" value="0" id="id_${prefix}-${totalForms}-amplifier"></td>
-                        <td><input type="number" name="${prefix}-${totalForms}-duration" value="600" id="id_${prefix}-${totalForms}-duration"></td>
-                        <td><input type="checkbox" name="${prefix}-${totalForms}-is_ambient" id="id_${prefix}-${totalForms}-is_ambient"></td>
-                        <td><input type="checkbox" name="${prefix}-${totalForms}-show_particles" id="id_${prefix}-${totalForms}-show_particles" checked></td>
-                        <td><input type="checkbox" name="${prefix}-${totalForms}-show_icon" id="id_${prefix}-${totalForms}-show_icon" checked></td>
-                        <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
-                    `;
-                }
-                
-                newRow.innerHTML = rowHtml;
-                container.appendChild(newRow);
-                totalFormsInput.value = totalForms + 1;
-                
-                // Populate new select & update visibility
-                const selectedVersionId = targetVersionSelect.value;
-                if (selectedVersionId) {
-                    if (prefix === 'enchantments') {
-                        fetchComponents(selectedVersionId, 'enchantment').then(opts => updateSelectOptions(newRow.querySelector('select'), opts, 'enchantment'));
-                    } else if (prefix === 'attributes') {
-                        fetchComponents(selectedVersionId, 'attribute').then(opts => updateSelectOptions(newRow.querySelector('select'), opts, 'attribute'));
-                        updateModifierNameVisibility();
-                    }
-                }
-
-                newRow.querySelector('.row-delete-checkbox')?.addEventListener('change', function() {
-                    newRow.style.display = this.checked ? 'none' : '';
-                });
-            };
-
-            // --- EVENT LISTENERS ---
-            targetVersionSelect.addEventListener('change', handleVersionChange);
-            baseItemSelect.addEventListener('change', updatePotionFormVisibility); // Add this listener
-
-            attributeGroup.querySelector('tbody').addEventListener('change', (e) => {
-                if (e.target && e.target.matches('select[name$="-attribute"]')) {
-                    const attributeSelect = e.target;
-                    const selectedOption = attributeSelect.options[attributeSelect.selectedIndex];
-                    const attributeId = selectedOption.dataset.attributeId;
-
-                    if (!attributeId) return;
-
-                    const orderingId = versionData[targetVersionSelect.value];
-                    if (orderingId && orderingId < 12005) {
-                        const namePart = attributeId.split('.').pop().split(':').pop();
-                        const modifierName = toPascalCase(namePart);
-                        const row = attributeSelect.closest('tr');
-                        const nameInput = row.querySelector('input[name$="-modifier_name"]');
-                        if (nameInput) nameInput.value = modifierName;
-                    }
-                }
-            });
-
-
-            // 为所有“添加行”按钮绑定点击事件
-            document.querySelectorAll('.add-row-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    addFormsetRow(btn.dataset.formsetPrefix);
-                });
-            });
-
-            // 为“删除行”复选框绑定事件 (这段逻辑是好的，保留即可)
-            // 注意：此事件监听器需要能监听到动态添加的行，可以采用事件委托的方式进行优化
-            document.querySelector('form').addEventListener('change', function(event) {
-                if (event.target.classList.contains('row-delete-checkbox')) {
-                    const row = event.target.closest('tr');
-                    const realDeleteCheckbox = row.querySelector('input[id$="-DELETE"]');
-                    if (realDeleteCheckbox) {
-                        // 如果是已保存的行，勾选真正的DELETE复选框
-                        realDeleteCheckbox.checked = event.target.checked;
-                    }
-                    // 隐藏行
-                    row.style.display = event.target.checked ? 'none' : '';
-                }
-            });
-
-            // --- INITIALIZATION ---
-            handleVersionChange();
-            updatePotionFormVisibility(); // Add this for initial page load
+            } catch (e) {
+                console.error('Failed to parse supported-types for group:', group.id, e);
+                group.style.display = 'none'; // Hide if data is broken
+            }
         });
-    </script>
+    };
+    
+    // --- DYNAMIC FORMSET LOGIC (Add/Remove Rows) ---
+    document.querySelectorAll('.add-row-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const prefix = this.dataset.formsetPrefix;
+            const container = document.getElementById(`${prefix}-form-container`);
+            const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+            let totalForms = parseInt(totalFormsInput.value);
+
+            const template = document.getElementById(`${prefix}-empty-form-template`);
+            const newRow = template.content.cloneNode(true);
+            
+            const newRowHtml = newRow.firstElementChild.outerHTML.replace(/__prefix__/g, totalForms);
+            container.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            totalFormsInput.value = totalForms + 1;
+        });
+    });
+
+    // Remove row logic (delegated)
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('row-delete-checkbox')) {
+             const row = e.target.closest('tr');
+             if (row) {
+                 row.style.display = e.target.checked ? 'none' : '';
+             }
+        }
+    });
+
+    // --- EVENT LISTENERS ---
+    baseItemSelect.addEventListener('change', updateComponentVisibility);
+    // TODO: Add other listeners like handleVersionChange if you still need it.
+    
+    // --- INITIALIZATION ---
+    // 这是最关键的一步！确保这一行存在。
+    // 它保证了在页面加载时，无论创建还是编辑，都会根据当前选择的物品更新一次组件的可见性。
+    updateComponentVisibility();
+});
+</script>
 {% endblock %}
