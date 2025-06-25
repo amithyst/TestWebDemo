@@ -59,6 +59,9 @@ class Command(BaseCommand):
             if hasattr(Model, 'max_level'):
                 defaults['max_level'] = comp_data.get('max_level', 1)
             
+            if hasattr(Model, 'enchant_type'):
+                defaults['enchant_type'] = comp_data.get('enchant_type', 'all')
+            
             # 处理版本外键
             min_version_id = comp_data.get('min_version_id')
             max_version_id = comp_data.get('max_version_id')

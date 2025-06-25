@@ -40,6 +40,17 @@ class BaseItem(VersionedItem):
     """存储所有可用的基础物品及其版本范围"""
     item_id = models.CharField(max_length=100, help_text="Minecraft 的物品ID, 例如 'minecraft:diamond_sword'")
     name = models.CharField(max_length=100, help_text="人类可读的名称, 例如 'Diamond Sword'")
+    item_type = models.CharField(
+        max_length=50, help_text="物品类型, 例如 'all','spawn_egg','potion','written_book'等",
+        choices=[
+            ('all', '所有'),
+            ('spawn_egg', '生成蛋'),
+            ('potion', '药水'),
+            ('written_book', '成书'),
+        ],default='all'
+    )
+
+
 
     def __str__(self):
         return f"{self.name} ({self.item_id})"
@@ -49,6 +60,21 @@ class Enchantment(VersionedItem):
     enchant_id = models.CharField(max_length=100, help_text="附魔ID, 例如 'minecraft:sharpness'")
     name = models.CharField(max_length=100, help_text="人类可读的名称, 例如 'Sharpness'")
     max_level = models.PositiveIntegerField(default=127, help_text="附魔的最大等级, 例如 Sharpness 的最大等级是 127")
+    enchant_type = models.CharField(
+        max_length=50,help_text="附魔类型, 例如 'weapon', 'armor', 'fishing_rod', 'trident' 等",
+        choices=[
+            ('weapon', '武器'),
+            ('armor', '盔甲'),
+            ('fishing_rod', '钓鱼竿'),
+            ('trident', '三叉戟'),
+            ('bow', '弓'),
+            ('crossbow', '弩'),
+            ('all', '所有'),
+            ('helmet', '头盔'),
+            ('boots', '靴子'),
+        ],
+        default='all'
+    )
 
     def __str__(self):
         return self.name

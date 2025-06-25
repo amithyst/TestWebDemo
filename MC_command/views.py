@@ -283,7 +283,7 @@ def _build_component_structure(command: GeneratedCommand) -> dict:
         for attr in command.attributes.all():
             modifier = {
                 "attribute": attr.attribute.attribute_id,
-                "name": attr.modifier_name,
+                # "name": attr.modifier_name,
                 "amount": attr.amount,
                 "operation": op_map.get(attr.operation, "add_value"), # 将数字映射为字符串
                 "slot": attr.slot

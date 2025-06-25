@@ -18,13 +18,18 @@ class MinecraftVersionAdmin(admin.ModelAdmin):
 
 @admin.register(BaseItem)
 class BaseItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'item_id', 'min_version', 'max_version')
+    list_display = ('name', 'item_id', 'item_type', 'min_version'
+                    # , 'max_version'
+                    )
     search_fields = ('name', 'item_id')
-    list_filter = ('min_version', 'max_version')
+    list_filter = ('min_version', 'item_type')
 
 @admin.register(Enchantment)
 class EnchantmentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'enchant_id', 'min_version', 'max_version','max_level')
+    list_display = ('name', 'enchant_id', 'min_version'
+                    # , 'max_version'
+                    ,'max_level', 'enchant_type')
+    list_filter = ('min_version', 'enchant_type')
     search_fields = ('name', 'enchant_id')
 
 @admin.register(PotionEffectType)
