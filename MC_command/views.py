@@ -79,13 +79,18 @@ def create(request):
         enchant_formset = EnchantmentFormSet(prefix='enchantments')
         attribute_formset = AttributeFormSet(prefix='attributes')
 
+    # ADD: Provide version data to the template
+    version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
+
     context = {
         'form': form,
         'enchant_formset': enchant_formset,
         'attribute_formset': attribute_formset,
-        'form_title': '创建新命令'
+        'form_title': '创建新命令',
+        'version_data_json': json.dumps(version_data) # ADD this line
     }
     return render(request, 'MC_command/command_form.html', context)
+
 
 
 @login_required
@@ -118,14 +123,19 @@ def edit(request, command_id):
         enchant_formset = EnchantmentFormSet(instance=command_obj, prefix='enchantments')
         attribute_formset = AttributeFormSet(instance=command_obj, prefix='attributes')
     
+    # ADD: Provide version data to the template
+    version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
+    
     context = {
         'form': form,
         'command': command_obj,
         'enchant_formset': enchant_formset,
         'attribute_formset': attribute_formset,
-        'form_title': f'编辑: {command_obj.title}'
+        'form_title': f'编辑: {command_obj.title}',
+        'version_data_json': json.dumps(version_data) # ADD this line
     }
     return render(request, 'MC_command/command_form.html', context)
+
 
 # C:\Github\djangotutorial\MC_command\views.py
 
@@ -319,16 +329,21 @@ def get_compatible_components(request):
 
     if component_type == 'enchantment':
         queryset = Enchantment.objects.filter(version_filter)
+        field = VersionedModelChoiceField(queryset=queryset)
+        data = [
+            {'id': obj.pk, 'text': field.label_from_instance(obj)}
+            for obj in queryset
+        ]
     elif component_type == 'attribute':
         queryset = AttributeType.objects.filter(version_filter)
+        field = VersionedModelChoiceField(queryset=queryset)
+        # UPDATE: Include attribute_id in the response for attributes
+        data = [
+            {'id': obj.pk, 'text': field.label_from_instance(obj), 'attribute_id': obj.attribute_id}
+            for obj in queryset
+        ]
     else:
         return JsonResponse({'error': 'Invalid component type'}, status=400)
     
-    # 格式化数据以便在前端使用
-    field = VersionedModelChoiceField(queryset=queryset) # 使用我们自定义的字段来生成标签
-    data = [
-        {'id': obj.pk, 'text': field.label_from_instance(obj)}
-        for obj in queryset
-    ]
-    
     return JsonResponse(data, safe=False)
+    

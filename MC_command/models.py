@@ -43,10 +43,11 @@ class BaseItem(VersionedItem):
     item_type = models.CharField(
         max_length=50, help_text="物品类型, 例如 'all','spawn_egg','potion','written_book'等",
         choices=[
-            ('all', '所有'),
+            ('all', '普通物品'),
             ('spawn_egg', '生成蛋'),
-            ('potion', '药水'),
+            ('potion', '药水(箭/食物)'),
             ('written_book', '成书'),
+            ('firework', '烟花火箭'),
         ],default='all'
     )
 
@@ -69,7 +70,7 @@ class Enchantment(VersionedItem):
             ('trident', '三叉戟'),
             ('bow', '弓'),
             ('crossbow', '弩'),
-            ('all', '所有'),
+            ('all', '杂项'),
             ('helmet', '头盔'),
             ('boots', '靴子'),
         ],

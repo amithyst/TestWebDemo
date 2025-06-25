@@ -126,125 +126,122 @@
         </div>
     </div>
 {% endblock %}
-
 {% block extra_js %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- DATA SETUP ---
+            const versionData = JSON.parse('{{ version_data_json|escapejs|default:"{}" }}');
             const targetVersionSelect = document.getElementById('id_target_version');
             
-            // Function to update select options
-            const updateSelectOptions = (selectElement, options) => {
+            // --- UI ELEMENTS & CACHE ---
+            const attributeGroup = document.getElementById('attribute-group');
+            const modifierNameHeader = attributeGroup.querySelector('thead th:nth-child(2)');
+            let attributeDataCache = [];
+
+            // --- HELPER FUNCTIONS ---
+            const toPascalCase = (str) => {
+                if (!str) return '';
+                const camelCase = str.replace(/_(\w)/g, (_, p1) => p1.toUpperCase());
+                return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+            };
+
+            const updateModifierNameVisibility = () => {
+                const selectedVersionId = targetVersionSelect.value;
+                if (!selectedVersionId) return;
+
+                const orderingId = versionData[selectedVersionId];
+                const isNewVersion = orderingId >= 12005;
+
+                modifierNameHeader.style.display = isNewVersion ? 'none' : '';
+                attributeGroup.querySelectorAll('tbody tr').forEach(row => {
+                    const cell = row.querySelector('td:nth-child(3)');
+                    if (cell) cell.style.display = isNewVersion ? 'none' : '';
+                });
+            };
+            
+            const updateSelectOptions = (selectElement, options, componentType) => {
                 const currentVal = selectElement.value;
-                selectElement.innerHTML = ''; // Clear existing options
-                
-                // Add a default empty option
-                const defaultOption = new Option('---------', '', true, true);
-                selectElement.add(defaultOption);
+                selectElement.innerHTML = '';
+                selectElement.add(new Option('---------', '', true, true));
 
                 options.forEach(opt => {
                     const option = new Option(opt.text, opt.id);
+                    if (componentType === 'attribute' && opt.attribute_id) {
+                        option.dataset.attributeId = opt.attribute_id;
+                    }
                     selectElement.add(option);
                 });
                 
-                // Try to keep the previously selected value
-                selectElement.value = currentVal;
-                if (!selectElement.value) {
-                    selectElement.value = ''; // If old value is invalid, reset to empty
-                }
+                selectElement.value = currentVal || '';
             };
 
-            // Function to fetch component data
             const fetchComponents = async (versionId, componentType) => {
+                if (componentType === 'attribute' && attributeDataCache.length > 0) {
+                    return attributeDataCache;
+                }
                 const url = `/MC_command/api/get-components/?version_id=${versionId}&type=${componentType}`;
                 try {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error('Network response was not ok');
-                    return await response.json();
+                    const data = await response.json();
+                    if (componentType === 'attribute') attributeDataCache = data;
+                    return data;
                 } catch (error) {
                     console.error(`Failed to fetch ${componentType}s:`, error);
                     return [];
                 }
             };
 
-            // Main update function for version change
             const handleVersionChange = async () => {
+                attributeDataCache = [];
+                updateModifierNameVisibility();
                 const selectedVersionId = targetVersionSelect.value;
+
                 if (!selectedVersionId) {
-                    // Clear all options if no version is selected
-                    document.querySelectorAll('select[name$="-enchantment"]').forEach(select => {
-                        updateSelectOptions(select, []);
-                    });
-                    document.querySelectorAll('select[name$="-attribute"]').forEach(select => {
-                        updateSelectOptions(select, []);
-                    });
+                    document.querySelectorAll('select[name$="-enchantment"]').forEach(s => updateSelectOptions(s, [], 'enchantment'));
+                    document.querySelectorAll('select[name$="-attribute"]').forEach(s => updateSelectOptions(s, [], 'attribute'));
                     return;
                 }
 
-                // Fetch enchantment and attribute data in parallel
                 const [enchantments, attributes] = await Promise.all([
                     fetchComponents(selectedVersionId, 'enchantment'),
                     fetchComponents(selectedVersionId, 'attribute')
                 ]);
                 
-                // Update all enchantment dropdowns
-                document.querySelectorAll('select[name$="-enchantment"]').forEach(select => {
-                    updateSelectOptions(select, enchantments);
-                });
-
-                // Update all attribute dropdowns
-                document.querySelectorAll('select[name$="-attribute"]').forEach(select => {
-                    updateSelectOptions(select, attributes);
-                });
+                document.querySelectorAll('select[name$="-enchantment"]').forEach(s => updateSelectOptions(s, enchantments, 'enchantment'));
+                document.querySelectorAll('select[name$="-attribute"]').forEach(s => updateSelectOptions(s, attributes, 'attribute'));
             };
 
-            targetVersionSelect.addEventListener('change', handleVersionChange);
-            handleVersionChange(); // Execute once on page load
-
-            // --- Dynamic Formset Addition Logic ---
+            // --- DYNAMIC FORMSET LOGIC ---
             const addFormsetRow = (prefix) => {
                 const container = document.getElementById(`${prefix}-form-container`);
                 const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
                 let totalForms = parseInt(totalFormsInput.value);
 
-                // Get the template row (assuming the last empty row is our template)
-                // If there are existing rows, Django will render extra empty forms.
-                // We'll clone one of those or create a dummy one if none exist.
-
-                // A simplified approach: create a dummy row and replace placeholder __prefix__
-                // In a real application, you might have a hidden "empty" row in your template
-                // to clone from for more complex form structures.
-
                 const newRow = document.createElement('tr');
                 newRow.classList.add(`${prefix}-formset-row`);
 
+                // Simplified HTML generation for new rows
                 let rowHtml = '';
                 if (prefix === 'enchantments') {
                     rowHtml = `
                         <td><select name="${prefix}-${totalForms}-enchantment" id="id_${prefix}-${totalForms}-enchantment"></select></td>
-                        <td><input type="number" name="${prefix}-${totalForms}-level" id="id_${prefix}-${totalForms}-level" value="1"></td>
+                        <td><input type="number" name="${prefix}-${totalForms}-level" value="1" id="id_${prefix}-${totalForms}-level"></td>
                         <td class="delete-cell"><input type="checkbox" name="${prefix}-${totalForms}-DELETE" id="id_${prefix}-${totalForms}-DELETE" class="row-delete-checkbox"></td>
                     `;
                 } else if (prefix === 'attributes') {
                     rowHtml = `
                         <td><select name="${prefix}-${totalForms}-attribute" id="id_${prefix}-${totalForms}-attribute"></select></td>
-                        <td><input type="text" name="${prefix}-${totalForms}-modifier_name" id="id_${prefix}-${totalForms}-modifier_name" value=""></td>
-                        <td><input type="number" step="any" name="${prefix}-${totalForms}-amount" id="id_${prefix}-${totalForms}-amount" value="0.0"></td>
+                        <td><input type="text" name="${prefix}-${totalForms}-modifier_name" id="id_${prefix}-${totalForms}-modifier_name"></td>
+                        <td><input type="number" step="any" name="${prefix}-${totalForms}-amount" value="0.0" id="id_${prefix}-${totalForms}-amount"></td>
                         <td>
                             <select name="${prefix}-${totalForms}-operation" id="id_${prefix}-${totalForms}-operation">
-                                <option value="0">Add</option>
-                                <option value="1">Multiply Base</option>
-                                <option value="2">Multiply Total</option>
+                                <option value="0">add_value</option><option value="1">add_multiplied_base</option><option value="2">add_multiplied_total</option>
                             </select>
                         </td>
                         <td>
                             <select name="${prefix}-${totalForms}-slot" id="id_${prefix}-${totalForms}-slot">
-                                <option value="any">Any</option>
-                                <option value="mainhand">Main Hand</option>
-                                <option value="offhand">Off Hand</option>
-                                <option value="head">Head</option>
-                                <option value="chest">Chest</option>
-                                <option value="legs">Legs</option>
-                                <option value="feet">Feet</option>
+                                <option value="any">Any</option><option value="mainhand">Main Hand</option><option value="offhand">Off Hand</option><option value="head">Head</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option>
                             </select>
                         </td>
                         <td class="delete-cell"><input type="checkbox" name="${prefix}-${totalForms}-DELETE" id="id_${prefix}-${totalForms}-DELETE" class="row-delete-checkbox"></td>
@@ -252,52 +249,58 @@
                 }
                 newRow.innerHTML = rowHtml;
                 container.appendChild(newRow);
-
-                // Re-fetch component options for the newly added selects
+                totalFormsInput.value = totalForms + 1;
+                
+                // Populate new select & update visibility
                 const selectedVersionId = targetVersionSelect.value;
                 if (selectedVersionId) {
                     if (prefix === 'enchantments') {
-                        fetchComponents(selectedVersionId, 'enchantment').then(options => {
-                            updateSelectOptions(newRow.querySelector(`select[name="${prefix}-${totalForms}-enchantment"]`), options);
-                        });
+                        fetchComponents(selectedVersionId, 'enchantment').then(opts => updateSelectOptions(newRow.querySelector('select'), opts, 'enchantment'));
                     } else if (prefix === 'attributes') {
-                        fetchComponents(selectedVersionId, 'attribute').then(options => {
-                            updateSelectOptions(newRow.querySelector(`select[name="${prefix}-${totalForms}-attribute"]`), options);
-                        });
+                        fetchComponents(selectedVersionId, 'attribute').then(opts => updateSelectOptions(newRow.querySelector('select'), opts, 'attribute'));
+                        updateModifierNameVisibility();
                     }
                 }
 
-
-                totalFormsInput.value = totalForms + 1;
-
-                // Add event listener for the new delete checkbox
                 newRow.querySelector('.row-delete-checkbox')?.addEventListener('change', function() {
-                    if (this.checked) {
-                        newRow.style.display = 'none';
-                    } else {
-                        newRow.style.display = ''; // Show it again if unchecked
-                    }
+                    newRow.style.display = this.checked ? 'none' : '';
                 });
             };
 
-            document.querySelectorAll('.add-row-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    const prefix = button.dataset.formsetPrefix;
-                    addFormsetRow(prefix);
+            // --- EVENT LISTENERS ---
+            targetVersionSelect.addEventListener('change', handleVersionChange);
+
+            attributeGroup.querySelector('tbody').addEventListener('change', (e) => {
+                if (e.target && e.target.matches('select[name$="-attribute"]')) {
+                    const attributeSelect = e.target;
+                    const selectedOption = attributeSelect.options[attributeSelect.selectedIndex];
+                    const attributeId = selectedOption.dataset.attributeId;
+
+                    if (!attributeId) return;
+
+                    const orderingId = versionData[targetVersionSelect.value];
+                    if (orderingId && orderingId < 12005) {
+                        const namePart = attributeId.split('.').pop().split(':').pop();
+                        const modifierName = toPascalCase(namePart);
+                        const row = attributeSelect.closest('tr');
+                        const nameInput = row.querySelector('input[name$="-modifier_name"]');
+                        if (nameInput) nameInput.value = modifierName;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.add-row-btn').forEach(btn => {
+                btn.addEventListener('click', () => addFormsetRow(btn.dataset.formsetPrefix));
+            });
+
+            document.querySelectorAll('.row-delete-checkbox').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    this.closest('tr').style.display = this.checked ? 'none' : '';
                 });
             });
 
-            // Initialize delete checkboxes for existing forms
-            document.querySelectorAll('.row-delete-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const row = this.closest('tr');
-                    if (this.checked) {
-                        row.style.display = 'none';
-                    } else {
-                        row.style.display = '';
-                    }
-                });
-            });
+            // --- INITIALIZATION ---
+            handleVersionChange();
         });
     </script>
 {% endblock %}
