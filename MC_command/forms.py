@@ -59,13 +59,14 @@ class GeneratedCommandForm(forms.ModelForm):
         }
 class AppliedEnchantmentForm(forms.ModelForm):
     """附魔内联表单"""
-    # --- 修改：使用新的自定义字段, 并更新排序规则 ---
+    # --- MODIFICATION: Use the new custom field and add widget attributes ---
     enchantment = VersionedModelChoiceField(
-        # 按照 附魔种类 (第一关键字) 和 最低版本ID (第二关键字) 排序
-        queryset=Enchantment.objects.select_related('min_version', 'max_version').all().order_by('enchant_type'
-                                                                                                #  , 'min_version__ordering_id'
-                                                                                                 ),
-        label="附魔"
+        queryset=Enchantment.objects.select_related('min_version', 'max_version').all().order_by('enchant_type'),
+        label="附魔",
+        widget=forms.Select(attrs={
+            'class': 'version-filtered-select',
+            'data-component-type': 'enchantment'
+        })
     )
     
     class Meta:
@@ -77,10 +78,14 @@ class AppliedEnchantmentForm(forms.ModelForm):
 
 class AppliedAttributeForm(forms.ModelForm):
     """属性内联表单"""
-    # --- 修改：使用新的自定义字段 ---
+    # --- MODIFICATION: Use the new custom field and add widget attributes ---
     attribute = VersionedModelChoiceField(
         queryset=AttributeType.objects.select_related('min_version', 'max_version').all().order_by('name'),
-        label="属性"
+        label="属性",
+        widget=forms.Select(attrs={
+            'class': 'version-filtered-select',
+            'data-component-type': 'attribute'
+        })
     )
 
     class Meta:
@@ -93,15 +98,18 @@ class AppliedAttributeForm(forms.ModelForm):
             'slot': '槽位'
         }
 
-# amithyst/testwebdemo/TestWebDemo-263b34ebaad299267d033209fd4b5b2658ef0354/MC_command/forms.py
-
-# ... (at the end of the file) ...
+# ... (rest of the file is the same) ...
 
 class AppliedPotionEffectForm(forms.ModelForm):
     """药水效果内联表单"""
+    # --- MODIFICATION: Use the new custom field and add widget attributes ---
     effect = VersionedModelChoiceField(
         queryset=PotionEffectType.objects.select_related('min_version', 'max_version').all().order_by('name'),
-        label="药水效果"
+        label="药水效果",
+        widget=forms.Select(attrs={
+            'class': 'version-filtered-select',
+            'data-component-type': 'effect' # Note: The API expects 'effect'
+        })
     )
     
     class Meta:

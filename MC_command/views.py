@@ -11,7 +11,7 @@ from django.db import transaction
 
 from django.http import JsonResponse
 from django.db.models import Q
-from .models import Enchantment, AttributeType
+from .models import Enchantment, AttributeType, PotionEffectType
 
 from .models import GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, MinecraftVersion, BaseItem # Add AppliedPotionEffect, BaseItem
 from .forms import GeneratedCommandForm, AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField # Add AppliedPotionEffectForm
@@ -312,20 +312,27 @@ def get_compatible_components(request):
     )
 
     if component_type == 'enchantment':
-        queryset = Enchantment.objects.filter(version_filter)
+        queryset = Enchantment.objects.filter(version_filter).order_by('enchant_type', 'name')
         field = VersionedModelChoiceField(queryset=queryset)
         data = [
             {'id': obj.pk, 'text': field.label_from_instance(obj)}
             for obj in queryset
         ]
     elif component_type == 'attribute':
-        queryset = AttributeType.objects.filter(version_filter)
+        queryset = AttributeType.objects.filter(version_filter).order_by('name')
         field = VersionedModelChoiceField(queryset=queryset)
         # UPDATE: Include attribute_id in the response for attributes
         data = [
             {'id': obj.pk, 'text': field.label_from_instance(obj), 'attribute_id': obj.attribute_id}
             for obj in queryset
         ]
+    # elif component_type == 'effect':
+    #     # 保持一致性，按名称排序
+    #     queryset = PotionEffectType.objects.filter(version_filter).order_by('name')
+    #     data = [
+    #         {'id': obj.pk, 'text': field.label_from_instance(obj)}
+    #         for obj in queryset
+    #     ]   
     else:
         return JsonResponse({'error': 'Invalid component type'}, status=400)
     
