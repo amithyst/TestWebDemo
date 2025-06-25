@@ -185,8 +185,11 @@ class AppliedPotionEffect(models.Model):
     """将一个药水效果应用到一个生成的命令上"""
     command = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE, related_name="potion_effects", verbose_name="所属命令")
     effect = models.ForeignKey(PotionEffectType, on_delete=models.CASCADE, verbose_name="药水效果")
-    amplifier = models.IntegerField(default=0, verbose_name="效果等级")
-    duration = models.IntegerField(default=600, verbose_name="持续时间 (Ticks)")
+    amplifier = models.PositiveIntegerField(default=0, help_text="效果等级, 从0开始 (0=I, 1=II)")
+    duration = models.PositiveIntegerField(default=600, help_text="持续时间 (单位: ticks, 20 ticks = 1s)")
+    is_ambient = models.BooleanField(default=False, help_text="设为True时粒子效果会有信标?")
+    show_particles = models.BooleanField(default=True, help_text="是否显示粒子效果")
+    show_icon = models.BooleanField(default=True, help_text="是否在HUD中显示效果图标")
 
     class Meta:
         verbose_name = "应用的药水效果"

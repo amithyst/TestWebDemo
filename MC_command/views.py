@@ -13,9 +13,8 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .models import Enchantment, AttributeType
 
-from .models import GeneratedCommand, AppliedEnchantment, AppliedAttribute, MinecraftVersion
-from .forms import GeneratedCommandForm, AppliedEnchantmentForm, AppliedAttributeForm, VersionedModelChoiceField
-
+from .models import GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, MinecraftVersion, BaseItem # Add AppliedPotionEffect, BaseItem
+from .forms import GeneratedCommandForm, AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField # Add AppliedPotionEffectForm
 
 # --- 核心视图 ---
 
@@ -46,11 +45,13 @@ def create(request):
     """处理创建新命令及其关联的附魔和属性。"""
     EnchantmentFormSet = inlineformset_factory(GeneratedCommand, AppliedEnchantment, form=AppliedEnchantmentForm, extra=1, can_delete=True, min_num=0)
     AttributeFormSet = inlineformset_factory(GeneratedCommand, AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True, min_num=0)
+    PotionEffectFormSet = inlineformset_factory(GeneratedCommand, AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True, min_num=0)
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST)
         enchant_formset = EnchantmentFormSet(request.POST, prefix='enchantments')
         attribute_formset = AttributeFormSet(request.POST, prefix='attributes')
+        potion_formset = PotionEffectFormSet(request.POST, prefix='potions') # Add this
 
         if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid():
             try:
@@ -68,6 +69,9 @@ def create(request):
 
                     attribute_formset.instance = command_instance
                     attribute_formset.save()
+
+                    potion_formset.instance = command_instance
+                    potion_formset.save() # Add this
                     
                     return redirect(reverse('MC_command:detail', args=[command_instance.id]))
             except forms.ValidationError:
@@ -78,16 +82,20 @@ def create(request):
         form = GeneratedCommandForm()
         enchant_formset = EnchantmentFormSet(prefix='enchantments')
         attribute_formset = AttributeFormSet(prefix='attributes')
+        potion_formset = PotionEffectFormSet(prefix='potions') # Add this
 
     # ADD: Provide version data to the template
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
+    base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()} # Add this
 
     context = {
         'form': form,
         'enchant_formset': enchant_formset,
         'attribute_formset': attribute_formset,
+        'potion_formset': potion_formset, # Add this
         'form_title': '创建新命令',
-        'version_data_json': json.dumps(version_data) # ADD this line
+        'version_data_json': json.dumps(version_data),
+        'base_item_data_json': json.dumps(base_item_data) # Add this
     }
     return render(request, 'MC_command/command_form.html', context)
 
@@ -99,11 +107,13 @@ def edit(request, command_id):
     command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
     EnchantmentFormSet = inlineformset_factory(GeneratedCommand, AppliedEnchantment, form=AppliedEnchantmentForm, extra=1, can_delete=True, min_num=0)
     AttributeFormSet = inlineformset_factory(GeneratedCommand, AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True, min_num=0)
+    PotionEffectFormSet = inlineformset_factory(GeneratedCommand, AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True, min_num=0) # Add this
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST, instance=command_obj)
         enchant_formset = EnchantmentFormSet(request.POST, instance=command_obj, prefix='enchantments')
         attribute_formset = AttributeFormSet(request.POST, instance=command_obj, prefix='attributes')
+        potion_formset = PotionEffectFormSet(request.POST, instance=command_obj, prefix='potions') # Add this
 
         if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid():
             try:
@@ -114,6 +124,7 @@ def edit(request, command_id):
                     form.save()
                     enchant_formset.save()
                     attribute_formset.save()
+                    potion_formset.save()
 
                     return redirect(reverse('MC_command:detail', args=[command_obj.id]))
             except forms.ValidationError:
@@ -122,17 +133,22 @@ def edit(request, command_id):
         form = GeneratedCommandForm(instance=command_obj)
         enchant_formset = EnchantmentFormSet(instance=command_obj, prefix='enchantments')
         attribute_formset = AttributeFormSet(instance=command_obj, prefix='attributes')
+        potion_formset = PotionEffectFormSet(instance=command_obj, prefix='potions')
     
     # ADD: Provide version data to the template
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
+    base_item_data = {i.pk: {'type': i.item_type} for i in BaseItem.objects.all()}
     
     context = {
         'form': form,
-        'command': command_obj,
         'enchant_formset': enchant_formset,
         'attribute_formset': attribute_formset,
-        'form_title': f'编辑: {command_obj.title}',
-        'version_data_json': json.dumps(version_data) # ADD this line
+        'potion_formset': potion_formset,
+        'command': command_obj,
+        'form_title': '编辑命令',
+        'version_data_json': json.dumps(version_data),
+        # --- 确保下面这行代码存在且没有被注释 ---
+        'base_item_data_json': json.dumps(base_item_data),
     }
     return render(request, 'MC_command/command_form.html', context)
 
@@ -268,6 +284,20 @@ def _build_nbt_tag_structure(command: GeneratedCommand) -> dict:
         # NBT 的 AttributeModifiers 是一个字典列表，JSON 转换时会自动处理
         nbt_data['AttributeModifiers'] = modifier_list
 
+    # --- ADDED: Handle Potion Effects for old versions ---
+    if command.potion_effects.exists():
+        effects_list = []
+        for effect in command.potion_effects.all():
+            effects_list.append({
+                'Id': effect.effect.effect_id,
+                'Amplifier': effect.amplifier,
+                'Duration': effect.duration,
+                'Ambient': 1 if effect.is_ambient else 0,
+                'ShowParticles': 1 if effect.show_particles else 0,
+                'ShowIcon': 1 if effect.show_icon else 0
+            })
+        nbt_data['CustomPotionEffects'] = effects_list
+
     return nbt_data
 
 def _build_component_structure(command: GeneratedCommand) -> dict:
@@ -302,6 +332,24 @@ def _build_component_structure(command: GeneratedCommand) -> dict:
         # component 格式需要手动构造成字符串
         components['minecraft:attribute_modifiers'] = f'{{modifiers:{json.dumps(modifier_list, ensure_ascii=False)}}}'
     
+    # --- ADDED: Handle Potion Effects for new versions ---
+    if command.potion_effects.exists():
+        effects_list = []
+        for effect in command.potion_effects.all():
+            effects_list.append({
+                "id": effect.effect.effect_id,
+                "amplifier": effect.amplifier,
+                "duration": effect.duration,
+                "ambient": effect.is_ambient,
+                "show_particles": effect.show_particles,
+                "show_icon": effect.show_icon
+            })
+
+        # Note the nested structure required by the component
+        potion_contents = {'custom_effects': effects_list}
+        components['minecraft:potion_contents'] = json.dumps(potion_contents, ensure_ascii=False, separators=(',', ':'))
+
+
     return components
 
 # --- 新增：用于 AJAX 的 API 视图 ---

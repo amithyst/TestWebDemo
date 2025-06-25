@@ -8,7 +8,8 @@ from .models import (
     GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, WrittenBookContent
 )
 # --- FIX: Import the custom forms ---
-from .forms import AppliedEnchantmentForm, AppliedAttributeForm, VersionedModelChoiceField
+from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField
+
 
 # ... 之前的静态数据模型 Admin 定义保持不变 ...
 @admin.register(MinecraftVersion)
@@ -100,10 +101,7 @@ class AppliedAttributeInline(VersionedInlineMixin, admin.TabularInline):
 
 class AppliedPotionEffectInline(VersionedInlineMixin, admin.TabularInline):
     model = AppliedPotionEffect
-    # For this to work, you would also need a form like `AppliedPotionEffectForm`
-    # in forms.py that uses VersionedModelChoiceField for the `effect` field.
-    # We will leave it as-is for now as it was not part of the original problem.
-    autocomplete_fields = ['effect']
+    form = AppliedPotionEffectForm # Use the new form
     extra = 1
 
 # -----------------------------------------------------------------------------
@@ -118,9 +116,13 @@ class GeneratedCommandAdmin(admin.ModelAdmin):
         ('核心信息', {'fields': ['user', 'title', 'target_version', 'base_item']}),
         ('基础属性', {'fields': ['custom_name', 'lore', 'count'], 'classes': ['collapse']}),
     ]
-    inlines = [
-        WrittenBookContentInline,
-        AppliedEnchantmentInline,
-        AppliedAttributeInline,
-        AppliedPotionEffectInline
-    ]
+    # The 'inlines' attribute will be dynamically set by get_inlines
+    
+    def get_inlines(self, request, obj=None):
+        """
+        Dynamically show the potion effects inline form ONLY if the base item type is 'potion'.
+        """
+        inlines = [WrittenBookContentInline, AppliedEnchantmentInline, AppliedAttributeInline]
+        if obj and obj.base_item.item_type == 'potion':
+            inlines.append(AppliedPotionEffectInline)
+        return inlines

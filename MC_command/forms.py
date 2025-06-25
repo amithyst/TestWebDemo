@@ -12,7 +12,7 @@ from django import forms
 from .models import (
     GeneratedCommand, MinecraftVersion, BaseItem, 
     AppliedEnchantment, AppliedAttribute, Enchantment, 
-    AttributeType
+    AttributeType, PotionEffectType,AppliedPotionEffect
 )
 
 # --- 新增：自定义模型选择字段 ---
@@ -91,4 +91,26 @@ class AppliedAttributeForm(forms.ModelForm):
             'amount': '数量',
             'operation': '操作',
             'slot': '槽位'
+        }
+
+# amithyst/testwebdemo/TestWebDemo-263b34ebaad299267d033209fd4b5b2658ef0354/MC_command/forms.py
+
+# ... (at the end of the file) ...
+
+class AppliedPotionEffectForm(forms.ModelForm):
+    """药水效果内联表单"""
+    effect = VersionedModelChoiceField(
+        queryset=PotionEffectType.objects.select_related('min_version', 'max_version').all().order_by('name'),
+        label="药水效果"
+    )
+    
+    class Meta:
+        model = AppliedPotionEffect
+        fields = ['effect', 'amplifier', 'duration', 'is_ambient', 'show_particles', 'show_icon']
+        labels = {
+            'amplifier': '等级',
+            'duration': '持续时间 (ticks)',
+            'is_ambient': '减弱粒子',
+            'show_particles': '显示粒子',
+            'show_icon': '显示图标',
         }

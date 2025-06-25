@@ -118,9 +118,68 @@
                     <button type="button" class="add-row-btn" data-formset-prefix="attributes">添加属性</button>
                 </div>
 
+                <div class="inline-group" id="potion-effect-group" style="display: none;"> <h2>药水效果</h2>
+                    {{ potion_formset.management_form }}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>药水效果</th>
+                                <th>等级</th>
+                                <th>持续时间</th>
+                                <th>Is Ambient</th>
+                                <th>显示粒子</th>
+                                <th>显示图标</th>
+                                <th class="delete-cell">删除?</th>
+                            </tr>
+                        </thead>
+                        <tbody id="potion-effect-form-container">
+                            {% for form in potion_formset %}
+                                <tr class="potion-effect-formset-row">
+                                    {{ form.id }}
+                                    <td>{{ form.effect }}</td>
+                                    <td>{{ form.amplifier }}</td>
+                                    <td>{{ form.duration }}</td>
+                                    <td>{{ form.is_ambient }}</td>
+                                    <td>{{ form.show_particles }}</td>
+                                    <td>{{ form.show_icon }}</td>
+                                    <td class="delete-cell">
+                                        {% if form.instance.pk %}{{ form.DELETE }}{% else %}<input type="checkbox" class="row-delete-checkbox">{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="button" class="add-row-btn" data-formset-prefix="potions">添加药水效果</button>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn">保存</button>
                     <a href="{{ command.get_absolute_url|default_if_none:request.META.HTTP_REFERER|default_if_none:'/MC_command/' }}" class="cancel-link">取消</a>
+                </div>
+
+
+                <div id="formset-templates" style="display: none;">
+                    <table id="enchantment-empty-form-table">
+                        <tbody id="enchantment-empty-form">
+                            <tr class="enchantment-formset-row">
+                                {{ enchant_formset_empty|safe }}
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table id="attribute-empty-form-table">
+                        <tbody id="attribute-empty-form">
+                            <tr class="attribute-formset-row">
+                                {{ attribute_formset_empty|safe }}
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table id="potion-effect-empty-form-table">
+                        <tbody id="potion-effect-empty-form">
+                            <tr class="potion-effect-formset-row">
+                                {{ potion_formset_empty|safe }}
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </form>
         </div>
@@ -131,11 +190,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             // --- DATA SETUP ---
             const versionData = JSON.parse('{{ version_data_json|escapejs|default:"{}" }}');
+            const baseItemData = JSON.parse('{{ base_item_data_json|escapejs|default:"{}" }}'); // Add this
             const targetVersionSelect = document.getElementById('id_target_version');
-            
+            const baseItemSelect = document.getElementById('id_base_item'); // Add this
+
             // --- UI ELEMENTS & CACHE ---
             const attributeGroup = document.getElementById('attribute-group');
             const modifierNameHeader = attributeGroup.querySelector('thead th:nth-child(2)');
+            const potionEffectGroup = document.getElementById('potion-effect-group'); // Add this
             let attributeDataCache = [];
 
             // --- HELPER FUNCTIONS ---
@@ -143,6 +205,17 @@
                 if (!str) return '';
                 const camelCase = str.replace(/_(\w)/g, (_, p1) => p1.toUpperCase());
                 return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+            };
+
+            // ... inside HELPER FUNCTIONS ...
+            const updatePotionFormVisibility = () => {
+                const selectedItemId = baseItemSelect.value;
+                if (selectedItemId && baseItemData[selectedItemId]) {
+                    const isPotion = baseItemData[selectedItemId].type === 'potion';
+                    potionEffectGroup.style.display = isPotion ? '' : 'none';
+                } else {
+                    potionEffectGroup.style.display = 'none';
+                }
             };
 
             const updateModifierNameVisibility = () => {
@@ -246,8 +319,26 @@
                         </td>
                         <td class="delete-cell"><input type="checkbox" name="${prefix}-${totalForms}-DELETE" id="id_${prefix}-${totalForms}-DELETE" class="row-delete-checkbox"></td>
                     `;
+                // --- 在这里添加下面的代码块 ---
+                } else if (prefix === 'potions') {
+                    // 从第一个药水效果的下拉列表中复制选项
+                    const firstEffectSelect = document.querySelector('select[name="potions-0-effect"]');
+                    const effectOptions = firstEffectSelect ? firstEffectSelect.innerHTML : '';
+                    
+                    // 构建新行的HTML
+                    newFormHtml = `
+                        <td><select name="${prefix}-${currentFormCount}-effect" id="id_${prefix}-${currentFormCount}-effect">${effectOptions}</select></td>
+                        <td><input type="number" name="${prefix}-${currentFormCount}-amplifier" value="0" id="id_${prefix}-${currentFormCount}-amplifier"></td>
+                        <td><input type="number" name="${prefix}-${currentFormCount}-duration" value="600" id="id_${prefix}-${currentFormCount}-duration"></td>
+                        <td><input type="checkbox" name="${prefix}-${currentFormCount}-is_ambient" id="id_${prefix}-${currentFormCount}-is_ambient"></td>
+                        <td><input type="checkbox" name="${prefix}-${currentFormCount}-show_particles" id="id_${prefix}-${currentFormCount}-show_particles" checked></td>
+                        <td><input type="checkbox" name="${prefix}-${currentFormCount}-show_icon" id="id_${prefix}-${currentFormCount}-show_icon" checked></td>
+                        <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
+                    `;
                 }
+                // --- 添加结束 ---
                 newRow.innerHTML = rowHtml;
+                newRow.innerHTML = newFormHtml;
                 container.appendChild(newRow);
                 totalFormsInput.value = totalForms + 1;
                 
@@ -269,6 +360,7 @@
 
             // --- EVENT LISTENERS ---
             targetVersionSelect.addEventListener('change', handleVersionChange);
+            baseItemSelect.addEventListener('change', updatePotionFormVisibility); // Add this listener
 
             attributeGroup.querySelector('tbody').addEventListener('change', (e) => {
                 if (e.target && e.target.matches('select[name$="-attribute"]')) {
@@ -289,18 +381,32 @@
                 }
             });
 
+
+            // 为所有“添加行”按钮绑定点击事件
             document.querySelectorAll('.add-row-btn').forEach(btn => {
-                btn.addEventListener('click', () => addFormsetRow(btn.dataset.formsetPrefix));
+                btn.addEventListener('click', () => {
+                    addFormsetRow(btn.dataset.formsetPrefix);
+                });
             });
 
-            document.querySelectorAll('.row-delete-checkbox').forEach(cb => {
-                cb.addEventListener('change', function() {
-                    this.closest('tr').style.display = this.checked ? 'none' : '';
-                });
+            // 为“删除行”复选框绑定事件 (这段逻辑是好的，保留即可)
+            // 注意：此事件监听器需要能监听到动态添加的行，可以采用事件委托的方式进行优化
+            document.querySelector('form').addEventListener('change', function(event) {
+                if (event.target.classList.contains('row-delete-checkbox')) {
+                    const row = event.target.closest('tr');
+                    const realDeleteCheckbox = row.querySelector('input[id$="-DELETE"]');
+                    if (realDeleteCheckbox) {
+                        // 如果是已保存的行，勾选真正的DELETE复选框
+                        realDeleteCheckbox.checked = event.target.checked;
+                    }
+                    // 隐藏行
+                    row.style.display = event.target.checked ? 'none' : '';
+                }
             });
 
             // --- INITIALIZATION ---
             handleVersionChange();
+            updatePotionFormVisibility(); // Add this for initial page load
         });
     </script>
 {% endblock %}
