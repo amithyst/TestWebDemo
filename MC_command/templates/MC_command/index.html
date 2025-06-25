@@ -1,68 +1,38 @@
-{% load static %}
+{% extends 'MC_command/base.html' %}
 
-<link rel="stylesheet" href="{% static 'MC_command/style.css' %}">
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>我的命令配置</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f9; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .header h1 { margin: 0; color: #2c3e50; }
-        .btn { text-decoration: none; background-color: #007bff; color: white; padding: 10px 18px; border-radius: 5px; font-weight: bold; transition: background-color 0.2s; }
-        .btn:hover { background-color: #0056b3; }
-        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .command-card { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.07); overflow: hidden; display: flex; flex-direction: column; }
-        .card-body { padding: 20px; flex-grow: 1; }
-        .card-body h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.25em; }
-        .card-body h3 a { text-decoration: none; color: #34495e; }
-        .card-body h3 a:hover { color: #007bff; }
-        .card-meta { font-size: 0.9em; color: #666; margin-bottom: 15px; }
-        .card-meta span { display: block; margin-bottom: 5px; }
-        .card-footer { background-color: #fcfcfc; border-top: 1px solid #f0f0f0; padding: 15px 20px; display: flex; gap: 10px; align-items: center; }
-        .action-btn { text-decoration: none; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 0.9em; }
-        .btn-view { background-color: #28a745; } .btn-view:hover { background-color: #218838; }
-        .btn-edit { background-color: #ffc107; color: #212529; } .btn-edit:hover { background-color: #e0a800; }
-        .btn-delete { background-color: #dc3545; border: none; font-family: inherit; font-size: 0.9em; cursor: pointer; } .btn-delete:hover { background-color: #c82333; }
-        .empty-state { text-align: center; padding: 50px; background-color: #fff; border-radius: 8px; grid-column: 1 / -1; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>我的命令配置</h1>
-            <a href="{% url 'MC_command:create' %}" class="btn">创建新命令</a>
-        </div>
+{% block title %}我的命令配置{% endblock %}
 
-        <div class="card-grid">
-            {% for command in command_list %}
-                <div class="command-card">
-                    <div class="card-body">
-                        <h3><a href="{% url 'MC_command:detail' command.id %}">{{ command.title }}</a></h3>
-                        <div class="card-meta">
-                            <span><strong>物品:</strong> {{ command.base_item.name }}</span>
-                            <span><strong>版本:</strong> {{ command.target_version.version_number }}</span>
-                            <span><strong>上次更新:</strong> {{ command.updated_at|date:"Y-m-d H:i" }}</span>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <a href="{% url 'MC_command:detail' command.id %}" class="action-btn btn-view">详情</a>
-                        <a href="{% url 'MC_command:edit' command.id %}" class="action-btn btn-edit">编辑</a>
-                        <form action="{% url 'MC_command:delete' command.id %}" method="post" onsubmit="return confirm('您确定要删除此配置吗？');" style="margin: 0;">
-                            {% csrf_token %}
-                            <button type="submit" class="action-btn btn-delete">删除</button>
-                        </form>
-                    </div>
-                </div>
-            {% empty %}
-                <div class="empty-state">
-                    <h2>列表为空</h2>
-                    <p>您还没有创建任何命令配置。点击右上角的“创建新命令”开始吧！</p>
-                </div>
-            {% endfor %}
-        </div>
+{% block content %}
+    <div class="header">
+        <h1>我的命令配置</h1>
+        <a href="{% url 'MC_command:create' %}" class="btn">创建新命令</a>
     </div>
-</body>
-</html>
+
+    <div class="card-grid">
+        {% for command in command_list %}
+            <div class="command-card">
+                <div class="card-body">
+                    <h3><a href="{% url 'MC_command:detail' command.id %}">{{ command.title }}</a></h3>
+                    <div class="card-meta">
+                        <span><strong>物品:</strong> {{ command.base_item.name }}</span>
+                        <span><strong>版本:</strong> {{ command.target_version.version_number }}</span>
+                        <span><strong>上次更新:</strong> {{ command.updated_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'MC_command:detail' command.id %}" class="action-btn btn-view">详情</a>
+                    <a href="{% url 'MC_command:edit' command.id %}" class="action-btn btn-edit">编辑</a>
+                    <form action="{% url 'MC_command:delete' command.id %}" method="post" onsubmit="return confirm('您确定要删除此配置吗？');" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn btn-delete">删除</button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <h2>列表为空</h2>
+                <p>您还没有创建任何命令配置。点击右上角的“创建新命令”开始吧！</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
