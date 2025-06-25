@@ -72,6 +72,19 @@
                 {% endfor %}
                 </ul>
             {% endif %}
+
+            {% if command.potion_effects.all %}
+                <hr>
+                <h3>药水效果</h3>
+                <ul>
+                {% for p_effect in command.potion_effects.all %}
+                    <li>
+                        {{ p_effect.effect.name }}: 等级 <strong>{{ p_effect.amplifier }}</strong>, 持续时间 <strong>{{ p_effect.duration }}</strong> ticks
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            
         </div>
     </div>
     
