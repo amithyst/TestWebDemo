@@ -14,6 +14,8 @@ class MinecraftVersion(models.Model):
 
     class Meta:
         ordering = ['ordering_id']
+        verbose_name = "版本"
+        verbose_name_plural = "[版本]"
 
     def __str__(self):
         return self.version_number
@@ -51,7 +53,10 @@ class BaseItem(VersionedItem):
         ],default='all'
     )
 
-
+    class Meta:
+        verbose_name = "基础物品"
+        verbose_name_plural = "基础物品"
+        ordering = ['name']
 
     def __str__(self):
         return f"{self.name} ({self.item_id})"
@@ -76,6 +81,10 @@ class Enchantment(VersionedItem):
         ],
         default='all'
     )
+    class Meta:
+        verbose_name = "附魔效果"
+        verbose_name_plural = "附魔效果"
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -101,6 +110,11 @@ class AttributeType(VersionedItem):
     attribute_id = models.CharField(max_length=100, help_text="属性ID, 例如 'generic.attack_damage'")
     name = models.CharField(max_length=100, help_text="人类可读的名称, 例如 'Generic Attack Damage'")
 
+    class Meta:
+        verbose_name = "属性效果"
+        verbose_name_plural = "属性效果"
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -122,6 +136,10 @@ class GeneratedCommand(models.Model):
 
     def __str__(self):
         return f"'{self.title}' for v{self.target_version} by {self.user.username}"
+    
+    class Meta:
+        verbose_name = "物品配置"
+        verbose_name_plural = "<完整物品配置>"
 
 
 # ==============================================================================
