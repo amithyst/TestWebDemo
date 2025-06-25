@@ -53,7 +53,7 @@
                     <thead>
                         <tr>
                             {% for field in data.formset.empty_form %}{% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}{% endfor %}
-                            <th>删除</th>
+                            <th>delete</th>
                         </tr>
                     </thead>
                     <tbody id="{{ prefix }}-form-container">

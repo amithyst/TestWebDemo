@@ -16,7 +16,7 @@ class MinecraftVersion(models.Model):
     class Meta:
         ordering = ['ordering_id']
         verbose_name = "版本"
-        verbose_name_plural = "[版本]"
+        verbose_name_plural = "<1>版本"
 
     def __str__(self):
         return self.version_number
@@ -58,7 +58,7 @@ class Material(models.Model):
 
     class Meta:
         verbose_name = "材质"
-        verbose_name_plural = "材质"
+        verbose_name_plural = "<💎>材质"
         ordering = ['display_name']
 
     def __str__(self):
@@ -71,20 +71,12 @@ class ItemType(models.Model):
         null=True,  # 允许数据库中的值为 NULL
         blank=True  # 允许在表单中该字段为空
     )
-    # --- 在这里进行修改 ---
     display_name = models.CharField(
         max_length=50,
         help_text="用于显示的名称, e.g., '剑'",
         null=True,  # 允许数据库中的值为 NULL
         blank=True  # 允许在表单中该字段为空
     )
-
-    class Meta:
-        verbose_name = "物品类型"
-        verbose_name_plural = "物品类型"
-        ordering = ['display_name']
-    
-    
     function_type = models.CharField(
         max_length=50, help_text="物品的功能分类",
         choices=[
@@ -96,59 +88,14 @@ class ItemType(models.Model):
         ],default='all', verbose_name="功能类型"
     )
 
+    class Meta:
+        verbose_name = "物品类型"
+        verbose_name_plural = "<🗡>物品类型"
+        ordering = ['display_name']
+
     def __str__(self):
         # 同样，如果显示名称为空，则返回系统名称
         return self.display_name or self.system_name
-
-
-    class Meta:
-        verbose_name = "基础物品"
-        verbose_name_plural = "基础物品"
-        unique_together = ('material', 'item_type')
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-    def clean(self):
-        # 验证：材质和物品类型不能同时为空
-        if not self.material and not self.item_type:
-            raise ValidationError("材质 (Material) 和物品类型 (ItemType) 不能同时为空。")
-
-    def _generate_name_and_id(self):
-        """根据材质和类型生成名称和ID的内部逻辑"""
-        material_dn = self.material.display_name if self.material else ""
-        material_sn = self.material.system_name if self.material else ""
-        
-        type_dn = self.item_type.display_name if self.item_type else ""
-        type_sn = self.item_type.system_name if self.item_type else ""
-
-        # 生成显示名称 (name)
-        if material_dn and type_dn:
-            self.name = f"{material_dn} {type_dn}"
-        else:
-            self.name = material_dn or type_dn
-
-        # 生成系统ID (item_id)
-        # 规则: material_sn + "_" + type_sn (如果都有)
-        # 例如: diamond_sword, iron_ingot, diamond, trident
-        if material_sn and type_sn:
-            # 特殊规则：如果物品类型本身就包含材质（如 netherite_sword），则以物品类型为准
-            if material_sn in type_sn:
-                 base_id = type_sn
-            else:
-                 base_id = f"{material_sn}_{type_sn}"
-        else:
-            base_id = material_sn or type_sn
-        
-        self.item_id = f"minecraft:{base_id}"
-
-
-    def save(self, *args, **kwargs):
-        # 在保存前，自动生成 name 和 item_id
-        self._generate_name_and_id()
-        # 调用父类的save方法，完成保存
-        super().save(*args, **kwargs)
 
 class Enchantment(VersionedItem):
     """存储所有可用的附魔类型及其版本范围"""
@@ -172,7 +119,7 @@ class Enchantment(VersionedItem):
     )
     class Meta:
         verbose_name = "附魔效果"
-        verbose_name_plural = "附魔效果"
+        verbose_name_plural = "[🔥]附魔效果"
         ordering = ['name']
 
     def __str__(self):
@@ -187,7 +134,7 @@ class PotionEffectType(VersionedItem):
     
     class Meta:
         verbose_name = "药水效果"
-        verbose_name_plural = "药水效果"
+        verbose_name_plural = "[💧]药水效果"
         ordering = ['name']
 
     def __str__(self):
@@ -201,7 +148,7 @@ class AttributeType(VersionedItem):
 
     class Meta:
         verbose_name = "属性效果"
-        verbose_name_plural = "属性效果"
+        verbose_name_plural = "[💪]属性效果"
         ordering = ['name']
 
     def __str__(self):
@@ -255,7 +202,7 @@ class GeneratedCommand(models.Model):
     
     class Meta:
         verbose_name = "物品配置"
-        verbose_name_plural = "<完整物品配置>"
+        verbose_name_plural = "<0>完整物品配置"
 
 
 # ==============================================================================
