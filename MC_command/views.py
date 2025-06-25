@@ -53,7 +53,7 @@ def create(request):
         attribute_formset = AttributeFormSet(request.POST, prefix='attributes')
         potion_formset = PotionEffectFormSet(request.POST, prefix='potions') # Add this
 
-        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid():
+        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid() and potion_formset.is_valid():
             try:
                 with transaction.atomic(): # 保证数据库操作的原子性
                     # 版本兼容性验证 (优化 1)
@@ -71,7 +71,7 @@ def create(request):
                     attribute_formset.save()
 
                     potion_formset.instance = command_instance
-                    potion_formset.save() # Add this
+                    potion_formset.save()
                     
                     return redirect(reverse('MC_command:detail', args=[command_instance.id]))
             except forms.ValidationError:
@@ -115,7 +115,7 @@ def edit(request, command_id):
         attribute_formset = AttributeFormSet(request.POST, instance=command_obj, prefix='attributes')
         potion_formset = PotionEffectFormSet(request.POST, instance=command_obj, prefix='potions') # Add this
 
-        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid():
+        if form.is_valid() and enchant_formset.is_valid() and attribute_formset.is_valid() and potion_formset.is_valid():
             try:
                 with transaction.atomic():
                     target_version = form.cleaned_data['target_version']

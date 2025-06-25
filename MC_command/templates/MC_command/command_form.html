@@ -294,13 +294,13 @@
                 const newRow = document.createElement('tr');
                 newRow.classList.add(`${prefix}-formset-row`);
 
-                // Simplified HTML generation for new rows
+                // FIX: Corrected HTML generation for all formset types
                 let rowHtml = '';
                 if (prefix === 'enchantments') {
                     rowHtml = `
                         <td><select name="${prefix}-${totalForms}-enchantment" id="id_${prefix}-${totalForms}-enchantment"></select></td>
                         <td><input type="number" name="${prefix}-${totalForms}-level" value="1" id="id_${prefix}-${totalForms}-level"></td>
-                        <td class="delete-cell"><input type="checkbox" name="${prefix}-${totalForms}-DELETE" id="id_${prefix}-${totalForms}-DELETE" class="row-delete-checkbox"></td>
+                        <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
                     `;
                 } else if (prefix === 'attributes') {
                     rowHtml = `
@@ -317,28 +317,24 @@
                                 <option value="any">Any</option><option value="mainhand">Main Hand</option><option value="offhand">Off Hand</option><option value="head">Head</option><option value="chest">Chest</option><option value="legs">Legs</option><option value="feet">Feet</option>
                             </select>
                         </td>
-                        <td class="delete-cell"><input type="checkbox" name="${prefix}-${totalForms}-DELETE" id="id_${prefix}-${totalForms}-DELETE" class="row-delete-checkbox"></td>
+                        <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
                     `;
-                // --- 在这里添加下面的代码块 ---
                 } else if (prefix === 'potions') {
-                    // 从第一个药水效果的下拉列表中复制选项
-                    const firstEffectSelect = document.querySelector('select[name="potions-0-effect"]');
+                    const firstEffectSelect = document.querySelector('select[name^="potions-"][name$="-effect"]');
                     const effectOptions = firstEffectSelect ? firstEffectSelect.innerHTML : '';
                     
-                    // 构建新行的HTML
-                    newFormHtml = `
-                        <td><select name="${prefix}-${currentFormCount}-effect" id="id_${prefix}-${currentFormCount}-effect">${effectOptions}</select></td>
-                        <td><input type="number" name="${prefix}-${currentFormCount}-amplifier" value="0" id="id_${prefix}-${currentFormCount}-amplifier"></td>
-                        <td><input type="number" name="${prefix}-${currentFormCount}-duration" value="600" id="id_${prefix}-${currentFormCount}-duration"></td>
-                        <td><input type="checkbox" name="${prefix}-${currentFormCount}-is_ambient" id="id_${prefix}-${currentFormCount}-is_ambient"></td>
-                        <td><input type="checkbox" name="${prefix}-${currentFormCount}-show_particles" id="id_${prefix}-${currentFormCount}-show_particles" checked></td>
-                        <td><input type="checkbox" name="${prefix}-${currentFormCount}-show_icon" id="id_${prefix}-${currentFormCount}-show_icon" checked></td>
+                    rowHtml = `
+                        <td><select name="${prefix}-${totalForms}-effect" id="id_${prefix}-${totalForms}-effect">${effectOptions}</select></td>
+                        <td><input type="number" name="${prefix}-${totalForms}-amplifier" value="0" id="id_${prefix}-${totalForms}-amplifier"></td>
+                        <td><input type="number" name="${prefix}-${totalForms}-duration" value="600" id="id_${prefix}-${totalForms}-duration"></td>
+                        <td><input type="checkbox" name="${prefix}-${totalForms}-is_ambient" id="id_${prefix}-${totalForms}-is_ambient"></td>
+                        <td><input type="checkbox" name="${prefix}-${totalForms}-show_particles" id="id_${prefix}-${totalForms}-show_particles" checked></td>
+                        <td><input type="checkbox" name="${prefix}-${totalForms}-show_icon" id="id_${prefix}-${totalForms}-show_icon" checked></td>
                         <td class="delete-cell"><input type="checkbox" class="row-delete-checkbox"></td>
                     `;
                 }
-                // --- 添加结束 ---
+                
                 newRow.innerHTML = rowHtml;
-                newRow.innerHTML = newFormHtml;
                 container.appendChild(newRow);
                 totalFormsInput.value = totalForms + 1;
                 
