@@ -26,8 +26,9 @@ django-admin startproject mysite djangotutorial
 ## 导入数据
 
 ```python
-python manage.py import_components Enchantment MC_command\json_data\enchantments.json
-python manage.py import_components AttributeType MC_command\json_data\attributes.json
+python manage.py import_components enchantments.json
+python manage.py import_components attributes.json
+python manage.py import_components effects.json
 ```
 
 # 项目结构

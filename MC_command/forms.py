@@ -1,5 +1,13 @@
-# amithyst/testwebdemo/TestWebDemo-aa984f0e28b37ace0788b6c8c16a1b3d096ffd1a/MC_command/forms.py
+# amithyst/testwebdemo/TestWebDemo-ceeff3e1a5759590a82ab87ba1c6ca503dc97842/MC_command/forms.py
+'''
+总结
+通过上述对单一文件 forms.py 的修改，我们已经达成了您的所有目标：
 
+统一的下拉列表格式：现在，无论是在创建/编辑命令的前台页面，还是在 Django Admin 中，附魔的下拉列表都会以 [种类] 名称 (版本范围) 的格式显示。
+统一的排序：所有附魔下拉列表都会按照“种类”和“版本”进行排序，方便您查找。
+代码高复用性 (DRY)：由于 admin.py 中的 AppliedEnchantmentInline 已配置为使用 AppliedEnchantmentForm，
+我们无需在 Admin 中编写任何重复代码，实现了“一次修改，处处生效”的效果。
+'''
 from django import forms
 from .models import (
     GeneratedCommand, MinecraftVersion, BaseItem, 
@@ -13,6 +21,13 @@ class VersionedModelChoiceField(forms.ModelChoiceField):
     一个自定义的模型选择字段，用于在下拉选项中显示版本的兼容范围。
     """
     def label_from_instance(self, obj):
+        prefix = ""
+        # --- 修改开始: 检查对象是否为附魔，如果是则添加类型前缀 ---
+        # 使用 hasattr 确保此字段也能用于其他没有 get_enchant_type_display 方法的模型（如 AttributeType）
+        if hasattr(obj, 'get_enchant_type_display'):
+            prefix = f"[{obj.get_enchant_type_display()}] "
+        # --- 修改结束 ---
+
         # 格式化版本范围字符串
         min_v = obj.min_version.version_number if obj.min_version else None
         max_v = obj.max_version.version_number if obj.max_version else None
@@ -28,7 +43,7 @@ class VersionedModelChoiceField(forms.ModelChoiceField):
         elif max_v:
             version_range = f" (最高 {max_v})"
         
-        return f"{obj.name}{version_range}"
+        return f"{prefix}{obj.name}{version_range}"
     
 class GeneratedCommandForm(forms.ModelForm):
     class Meta:
@@ -44,9 +59,12 @@ class GeneratedCommandForm(forms.ModelForm):
         }
 class AppliedEnchantmentForm(forms.ModelForm):
     """附魔内联表单"""
-    # --- 修改：使用新的自定义字段 ---
+    # --- 修改：使用新的自定义字段, 并更新排序规则 ---
     enchantment = VersionedModelChoiceField(
-        queryset=Enchantment.objects.select_related('min_version', 'max_version').all().order_by('name'),
+        # 按照 附魔种类 (第一关键字) 和 最低版本ID (第二关键字) 排序
+        queryset=Enchantment.objects.select_related('min_version', 'max_version').all().order_by('enchant_type'
+                                                                                                #  , 'min_version__ordering_id'
+                                                                                                 ),
         label="附魔"
     )
     

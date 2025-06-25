@@ -2,328 +2,328 @@
   {
     "name": "保护",
     "id": "protection",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "armor"
   },
   {
     "name": "火焰保护",
     "id": "fire_protection",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "armor"
   },
   {
     "name": "摔落保护",
     "id": "feather_falling",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "boots"
   },
   {
     "name": "爆炸保护",
     "id": "blast_protection",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "armor"
   },
   {
     "name": "弹射物保护",
     "id": "projectile_protection",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "armor"
   },
   {
     "name": "水下呼吸",
     "id": "respiration",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "helmet"
   },
   {
     "name": "水下速掘",
     "id": "aqua_affinity",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "helmet"
   },
   {
     "name": "荆棘",
     "id": "thorns",
-    "min_version_id": 10400,
-    "max_version_id": null,
+    "min_version": "1.4.2",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "all"
   },
   {
     "name": "深海探索者",
     "id": "depth_strider",
-    "min_version_id": 10800,
-    "max_version_id": null,
+    "min_version": "1.8",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "boots"
   },
   {
     "name": "冰霜行者",
     "id": "frost_walker",
-    "min_version_id": 10900,
-    "max_version_id": null,
+    "min_version": "1.9",
+    "max_version": null,
     "max_level": 14,
     "enchant_type": "boots"
   },
   {
     "name": "灵魂疾行",
     "id": "soul_speed",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.16",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "boots"
   },
   {
     "name": "迅捷潜行",
     "id": "swift_sneak",
-    "min_version_id": 11900,
-    "max_version_id": null,
+    "min_version": "1.19",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "boots"
   },
   {
     "name": "锋利",
     "id": "sharpness",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "亡灵杀手",
     "id": "smite",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "节肢杀手",
     "id": "bane_of_arthropods",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "击退",
     "id": "knockback",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "火焰附加",
     "id": "fire_aspect",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "抢夺",
     "id": "looting",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "横扫之刃",
     "id": "sweeping_edge",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.11.1",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "效率",
     "id": "efficiency",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "精准采集",
     "id": "silk_touch",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "weapon"
   },
   {
     "name": "耐久",
     "id": "unbreaking",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "all"
   },
   {
     "name": "时运",
     "id": "fortune",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": null,
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "力量",
     "id": "power",
-    "min_version_id": 10100,
-    "max_version_id": null,
+    "min_version": "1.1",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "bow"
   },
   {
     "name": "冲击",
     "id": "punch",
-    "min_version_id": 10100,
-    "max_version_id": null,
+    "min_version": "1.1",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "bow"
   },
   {
     "name": "火矢",
     "id": "flame",
-    "min_version_id": 10100,
-    "max_version_id": null,
+    "min_version": "1.1",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "bow"
   },
   {
     "name": "无限",
     "id": "infinity",
-    "min_version_id": 10100,
-    "max_version_id": null,
+    "min_version": "1.1",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "bow"
   },
   {
     "name": "海之眷顾",
     "id": "luck_of_the_sea",
-    "min_version_id": 10700,
-    "max_version_id": null,
+    "min_version": "1.7.2",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "fishing_rod"
   },
   {
     "name": "饵钓",
     "id": "lure",
-    "min_version_id": 10700,
-    "max_version_id": null,
+    "min_version": "1.7.2",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "fishing_rod"
   },
   {
     "name": "忠诚",
     "id": "loyalty",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.13",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "trident"
   },
   {
     "name": "激流",
     "id": "riptide",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.13",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "trident"
   },
   {
     "name": "引雷",
     "id": "channeling",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.13",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "trident"
   },
   {
     "name": "多重射击",
     "id": "multishot",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.14",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "crossbow"
   },
   {
     "name": "快速装填",
     "id": "quick_charge",
-    "min_version_id": 11300,
-    "max_version_id": null,
+    "min_version": "1.14",
+    "max_version": null,
     "max_level": 5,
     "enchant_type": "crossbow"
   },
   {
     "name": "穿透",
     "id": "piercing",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.14",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "crossbow"
   },
   {
     "name": "经验修补",
     "id": "mending",
-    "min_version_id": 10900,
-    "max_version_id": null,
+    "min_version": "1.9",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "all"
   },
   {
     "name": "绑定诅咒",
     "id": "binding_curse",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.11",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "all"
   },
   {
     "name": "消失诅咒",
     "id": "vanishing_curse",
-    "min_version_id": null,
-    "max_version_id": null,
+    "min_version": "1.11",
+    "max_version": null,
     "max_level": 1,
     "enchant_type": "all"
   },
   {
     "name": "致密",
     "id": "density",
-    "min_version_id": 12100,
-    "max_version_id": null,
+    "min_version": "1.21",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "破甲",
     "id": "breach",
-    "min_version_id": 12100,
-    "max_version_id": null,
+    "min_version": "1.21",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   },
   {
     "name": "风爆",
     "id": "wind_burst",
-    "min_version_id": 12100,
-    "max_version_id": null,
+    "min_version": "1.21",
+    "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
   }

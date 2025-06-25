@@ -81,10 +81,17 @@ class Enchantment(VersionedItem):
         return self.name
 
 class PotionEffectType(VersionedItem):
-    """存储所有药水效果类型及其版本范围"""
-    effect_id = models.CharField(max_length=100, help_text="药水效果ID, 例如 'minecraft:speed'")
-    name = models.CharField(max_length=100, help_text="人类可读的名称, 例如 'Speed'")
+    """存储所有可用的药水效果"""
+    effect_id = models.CharField(max_length=100, unique=True, verbose_name="效果ID")
+    name = models.CharField(max_length=100, verbose_name="效果名称")
+    min_version = models.ForeignKey(MinecraftVersion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name="最低兼容版本")
+    max_version = models.ForeignKey(MinecraftVersion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name="最高兼容版本")
     
+    class Meta:
+        verbose_name = "药水效果"
+        verbose_name_plural = "药水效果"
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -155,14 +162,21 @@ class AppliedAttribute(models.Model):
         # 增加一个更有用的字符串表示
         return f"{self.attribute.name} on {self.command.title}"
 
+
 class AppliedPotionEffect(models.Model):
-    """存储应用于物品的自定义药水效果"""
-    command = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE, related_name="potion_effects")
-    effect = models.ForeignKey(PotionEffectType, on_delete=models.CASCADE)
-    amplifier = models.PositiveIntegerField(default=0, help_text="效果等级, 从0开始 (0=I, 1=II)")
-    duration = models.PositiveIntegerField(default=600, help_text="持续时间 (单位: ticks, 20 ticks = 1s)")
-    show_particles = models.BooleanField(default=True)
-    is_ambient = models.BooleanField(default=False)
+    """将一个药水效果应用到一个生成的命令上"""
+    command = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE, related_name="potion_effects", verbose_name="所属命令")
+    effect = models.ForeignKey(PotionEffectType, on_delete=models.CASCADE, verbose_name="药水效果")
+    amplifier = models.IntegerField(default=0, verbose_name="效果等级")
+    duration = models.IntegerField(default=600, verbose_name="持续时间 (Ticks)")
+
+    class Meta:
+        verbose_name = "应用的药水效果"
+        verbose_name_plural = "应用的药水效果"
+
+    def __str__(self):
+        return f"{self.command.title} - {self.effect.name} (等级 {self.amplifier})"
+
 
 class WrittenBookContent(models.Model):
     """存储成书 (`minecraft:written_book`) 的内容"""
