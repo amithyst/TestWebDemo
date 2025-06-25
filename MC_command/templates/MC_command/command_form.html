@@ -51,11 +51,11 @@
                 </fieldset>
 
                 {% for prefix, data in component_data.items %}
-                <div class.="inline-group component-group" id="{{ prefix }}-group" 
-                     data-prefix="{{ prefix }}" 
-                     data-supported-types="{{ data.supported_types|escapejs }}" 
+                <div class="inline-group component-group" id="{{ prefix }}-group"
+                     data-prefix="{{ prefix }}"
+                     data-supported-types="{{ data.supported_types }}"
                      style="display: none;">
-                    
+
                     <h2>{{ data.verbose_name }}</h2>
                     {{ data.formset.management_form }}
                     <table>
@@ -86,7 +86,7 @@
                         </tbody>
                     </table>
                     <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
-                    
+
                     <template id="{{ prefix }}-empty-form-template">
                          <tr class="{{ prefix }}-formset-row">
                             {{ data.formset.empty_form.id }}
@@ -113,61 +113,90 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- DATA SETUP ---
-    const versionData = JSON.parse('{{ version_data_json|escapejs|default:"{}" }}');
-    const baseItemData = JSON.parse('{{ base_item_data_json|escapejs|default:"{}" }}');
-    const targetVersionSelect = document.getElementById('id_target_version');
+    console.log("--- 调试开始：DOM内容已加载 ---");
+
+    // --- 数据准备 ---
     const baseItemSelect = document.getElementById('id_base_item');
     const componentGroups = document.querySelectorAll('.component-group');
+    
+    // 打印初始元素查找结果
+    console.log("基础物品下拉菜单元素:", baseItemSelect);
+    console.log("查找到的组件区域元素:", componentGroups);
+    if (componentGroups.length === 0) {
+        console.error("【严重】: 页面中未找到任何 class='.component-group' 的元素。请再次确认HTML模板中没有 'class.' (多余的点) 这样的拼写错误。");
+    }
 
-    // --- HELPER FUNCTIONS ---
+    let baseItemData = {};
+    try {
+        const jsonDataString = '{{ base_item_data_json|escapejs|default:"{}" }}';
+        console.log("从Django模板获取的原始 base_item_data_json 字符串:", jsonDataString);
+        baseItemData = JSON.parse(jsonDataString);
+        console.log("解析后的“基础物品数据”对象:", baseItemData);
+    } catch (e) {
+        console.error("【严重】: 解析 base_item_data_json 失败，后续逻辑无法执行。错误信息:", e);
+        return; // 如果数据解析失败，则终止脚本
+    }
+
+    // --- 核心功能函数 ---
     const updateComponentVisibility = () => {
-        // 您可以加这行日志来调试
-        console.log('Checking component visibility for item:', baseItemSelect.value);
+        console.log("--- 开始执行 updateComponentVisibility() 函数 ---");
 
         const selectedItemId = baseItemSelect.value;
-        if (!selectedItemId || !baseItemData[selectedItemId]) {
+        console.log(`当前下拉菜单选中的物品ID是: '${selectedItemId}' (类型: ${typeof selectedItemId})`);
+
+        if (!selectedItemId) {
+            console.warn("警告: 没有选中任何物品ID。将隐藏所有组件区域。");
             componentGroups.forEach(group => group.style.display = 'none');
             return;
         }
 
-        const currentItemType = baseItemData[selectedItemId].type;
+        const itemData = baseItemData[selectedItemId];
+        console.log(`用ID '${selectedItemId}' 在“基础物品数据”中查找对应数据，结果为:`, itemData);
+
+        if (!itemData) {
+            console.error(`【严重】: 在“基础物品数据”中找不到ID为 '${selectedItemId}' 的项目。将隐藏所有组件区域。`);
+            componentGroups.forEach(group => group.style.display = 'none');
+            return;
+        }
+
+        const currentItemType = itemData.type;
+        console.log("成功获取物品类型:", currentItemType);
         
+        console.log(">>> 开始遍历检查每个组件区域的可见性...");
         componentGroups.forEach(group => {
             try {
-                const supportedTypes = JSON.parse(group.dataset.supportedTypes);
-                // Show if 'all' is supported OR if the specific item type is supported
+                const supportedTypesJSON = group.dataset.supportedTypes;
+                const supportedTypes = JSON.parse(supportedTypesJSON);
+                
                 if (supportedTypes.includes('all') || supportedTypes.includes(currentItemType)) {
+                    console.log(`- 组件 '${group.id}' [应显示],因为它支持 '${currentItemType}' 类型。`);
                     group.style.display = '';
                 } else {
+                    console.log(`- 组件 '${group.id}' [应隐藏],因为它不支持 '${currentItemType}' 类型。`);
                     group.style.display = 'none';
                 }
             } catch (e) {
-                console.error('Failed to parse supported-types for group:', group.id, e);
-                group.style.display = 'none'; // Hide if data is broken
+                console.error(`处理组件 '${group.id}' 时发生错误:`, e);
+                group.style.display = 'none';
             }
         });
+        console.log("--- updateComponentVisibility() 函数执行完毕 ---");
     };
     
-    // --- DYNAMIC FORMSET LOGIC (Add/Remove Rows) ---
+    // --- 表单集逻辑 (此处保持不变) ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
             const container = document.getElementById(`${prefix}-form-container`);
             const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
             let totalForms = parseInt(totalFormsInput.value);
-
             const template = document.getElementById(`${prefix}-empty-form-template`);
             const newRow = template.content.cloneNode(true);
-            
             const newRowHtml = newRow.firstElementChild.outerHTML.replace(/__prefix__/g, totalForms);
             container.insertAdjacentHTML('beforeend', newRowHtml);
-            
             totalFormsInput.value = totalForms + 1;
         });
     });
-
-    // Remove row logic (delegated)
     document.body.addEventListener('click', function(e) {
         if (e.target.classList.contains('row-delete-checkbox')) {
              const row = e.target.closest('tr');
@@ -177,13 +206,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // --- EVENT LISTENERS ---
+    // --- 事件监听 ---
     baseItemSelect.addEventListener('change', updateComponentVisibility);
-    // TODO: Add other listeners like handleVersionChange if you still need it.
     
-    // --- INITIALIZATION ---
-    // 这是最关键的一步！确保这一行存在。
-    // 它保证了在页面加载时，无论创建还是编辑，都会根据当前选择的物品更新一次组件的可见性。
+    // --- 页面加载时初始化 ---
+    console.log(">>> 页面加载完成，准备初次调用 updateComponentVisibility() <<<");
     updateComponentVisibility();
 });
 </script>
