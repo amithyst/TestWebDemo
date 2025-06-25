@@ -4,277 +4,150 @@
 
 {% block extra_head %}
 <style>
-    /* Specific styles for this form page that don't belong in global style.css */
+    /* 样式部分保持不变 */
     .inline-group { border: 1px solid #e0e0e0; border-radius: 5px; margin-top: 20px; }
     .inline-group h2 { font-size: 1.2em; padding: 10px 15px; background-color: #f0f3f5; margin: 0; border-bottom: 1px solid #e0e0e0; border-radius: 5px 5px 0 0; }
-    .inline-group table { width: 100%; border-collapse: collapse; }
-    .inline-group th, .inline-group td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; vertical-align: top; }
-    .inline-group th { font-weight: bold; background-color: #f9f9f9; }
-    .inline-group tr:last-child td { border-bottom: none; }
-    .inline-group .form-row { display: flex; flex-direction: column; gap: 5px; }
-    .inline-group input, .inline-group select { width: 100%; box-sizing: border-box; padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
-    .form-row .errorlist { color: red; font-size: 0.9em; margin: 0; padding: 0; list-style-type: none; }
-    .delete-cell { text-align: center; }
-    .add-row-btn {
-        background-color: #28a745;
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-top: 10px;
-        display: inline-block;
-        font-size: 0.9em;
-    }
-    .add-row-btn:hover { background-color: #218838; }
+    .form-field { margin-bottom: 1.2rem; }
+    .form-field label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+    .form-field input, .form-field select, .form-field textarea { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+    .errorlist { color: #dc3545; list-style: none; padding: 0; margin-top: 5px; }
+    .add-row-btn { background-color: #28a745; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="card">
-        <div class="card-header"><h1>{{ form_title }}</h1></div>
-        <div class="card-body">
-            <form method="post" novalidate>
-                {% csrf_token %}
+<div class="card">
+    <div class="card-header"><h1>{{ form_title }}</h1></div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
 
-                <fieldset>
-                    <legend>基本配置</legend>
-                    {% for field in form %}
-                        <div class="form-field">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-                            {% for error in field.errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
-                        </div>
-                    {% endfor %}
-                    {% for error in form.non_field_errors %}<p class="errorlist">{{ error }}</p>{% endfor %}
-                </fieldset>
+            <fieldset>
+                <legend>基本配置</legend>
+                {% if form.non_field_errors %}
+                    <div class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-                {% for prefix, data in component_data.items %}
-                <div class="inline-group component-group" id="{{ prefix }}-group"
-                     data-prefix="{{ prefix }}"
-                     data-supported-types="{{ data.supported_types }}"
-                     style="display: none;">
-
-                    <h2>{{ data.verbose_name }}</h2>
-                    {{ data.formset.management_form }}
-                    <table>
-                        <thead>
-                            <tr>
-                                {% for field in data.formset.empty_form %}
-                                    {% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}
-                                {% endfor %}
-                                <th class="delete-cell"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="{{ prefix }}-form-container">
-                            {% for form in data.formset %}
-                                <tr id="{{ form.prefix }}-row">
-                                    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-                                    {# --- 修改点 2: 遍历已有表单时增加判断 --- #}
-                                    {% for field in form.visible_fields %}
-                                        {% if field.name != 'DELETE' %}
-                                        <td>
-                                            {{ field }}
-                                            {{ field.errors }}
-                                        </td>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% if data.formset.can_delete %}
-                                    <td>
-                                        {{ form.DELETE }}
-                                    </td>
-                                    {% endif %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
-
-                    <template id="{{ prefix }}-empty-form-template">
-                         <tr class="{{ prefix }}-formset-row">
-                            {{ data.formset.empty_form.id }}
-                            {% for field in data.formset.empty_form.visible_fields %}
-                            {# --- 修改点 1: 在表头部分增加判断 --- #}
-                                {% if field.name != 'DELETE' %}
-                                    <th>{{ field.label_tag }}</th>
-                                {% endif %}
-                            {% endfor %}
-                            <td class="delete-cell">
-                                <input type="checkbox" class="row-delete-checkbox">
-                            </td>
-                        </tr>
-                        <!-- <tr>
-                            {# --- 修改点 3: 遍历新行模板时增加判断 --- #}
-                            {% for field in data.formset.empty_form.visible_fields %}
-                                {% if field.name != 'DELETE' %}
-                                    <td>{{ field }}{{ field.errors }}</td>
-                                {% endif %}
-                            {% endfor %}
-                            {% if data.formset.can_delete %}
-                            <td>{{ data.formset.empty_form.DELETE }}</td>
-                            {% endif %}
-                        </tr> -->
-                    </template>
-                </div>
+                {% for field in form %}
+                    <div class="form-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<small style="color: #666;">{{ field.help_text }}</small>{% endif %}
+                        {{ field.errors }}
+                    </div>
                 {% endfor %}
+            </fieldset>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn">保存</button>
-                    <a href="javascript:void(0);" class="cancel-link" onclick="history.go(-2);">取消</a>
-                </div>
-            </form>
-        </div>
+            {% for prefix, data in component_data.items %}
+            <div class="inline-group component-group" id="{{ prefix }}-group"
+                 data-prefix="{{ prefix }}"
+                 data-supported-types="{{ data.supported_types }}"
+                 style="display: none;">
+                <h2>{{ data.verbose_name }}</h2>
+                {{ data.formset.management_form }}
+                <table>
+                    <thead>
+                        <tr>
+                            {% for field in data.formset.empty_form %}{% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}{% endfor %}
+                            <th>删除</th>
+                        </tr>
+                    </thead>
+                    <tbody id="{{ prefix }}-form-container">
+                        {% for form in data.formset %}
+                        <tr id="{{ form.prefix }}-row">
+                            {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                            {% for field in form.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}{{ field.errors }}</td>{% endif %}{% endfor %}
+                            {% if data.formset.can_delete %}<td>{{ form.DELETE }}</td>{% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
+                <template id="{{ prefix }}-empty-form-template">
+                    <tr>
+                        {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+                        {% for field in data.formset.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}{% endfor %}
+                        {% if data.formset.can_delete %}<td>{{ data.formset.empty_form.DELETE }}</td>{% endif %}
+                    </tr>
+                </template>
+            </div>
+            {% endfor %}
+
+            <div class="form-actions" style="margin-top: 25px;">
+                <button type="submit" class="btn">保存</button>
+                <a href="{% if command %}{% url 'MC_command:detail' command.id %}{% else %}{% url 'MC_command:index' %}{% endif %}" class="cancel-link" style="margin-left: 15px;">取消</a>
+            </div>
+        </form>
     </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("--- 调试开始：DOM内容已加载 ---");
-
     // --- 数据准备 ---
-    const baseItemSelect = document.getElementById('id_base_item');
+    const itemTypeSelect = document.getElementById('id_item_type');
     const componentGroups = document.querySelectorAll('.component-group');
-    const versionSelect = document.getElementById('id_target_version'); // Get version dropdown
-
-    console.log("基础物品下拉菜单元素:", baseItemSelect);
-    console.log("查找到的组件区域元素:", componentGroups);
-    if (componentGroups.length === 0) {
-        console.error("【严重】: 页面中未找到任何 class='.component-group' 的元素。");
-    }
-
-    let baseItemData = {};
+    let itemTypeData = {};
     try {
-        const jsonDataString = '{{ base_item_data_json|escapejs|default:"{}" }}';
-        console.log("从Django模板获取的原始 base_item_data_json 字符串:", jsonDataString);
-        baseItemData = JSON.parse(jsonDataString);
-        console.log("解析后的“基础物品数据”对象:", baseItemData);
+        itemTypeData = JSON.parse('{{ item_type_data_json|escapejs|default:"{}" }}');
     } catch (e) {
-        console.error("【严重】: 解析 base_item_data_json 失败:", e);
+        console.error("解析 item_type_data_json 失败:", e);
     }
 
-    // --- 核心功能函数 (Item Type Visibility) ---
+    // --- 核心功能: 根据物品类型更新组件的可见性 ---
     const updateComponentVisibility = () => {
-        // ... This existing function remains unchanged ...
-        console.log("--- 开始执行 updateComponentVisibility() 函数 ---");
-        const selectedItemId = baseItemSelect.value;
-        if (!selectedItemId) {
-            componentGroups.forEach(group => group.style.display = 'none');
-            return;
+        const selectedItemTypeId = itemTypeSelect.value;
+        let currentItemFuncType = 'all'; // 默认功能类型
+
+        if (selectedItemTypeId && itemTypeData[selectedItemTypeId]) {
+            currentItemFuncType = itemTypeData[selectedItemTypeId].type;
         }
-        const itemData = baseItemData[selectedItemId];
-        if (!itemData) {
-            componentGroups.forEach(group => group.style.display = 'none');
-            return;
-        }
-        const currentItemType = itemData.type;
+
         componentGroups.forEach(group => {
             try {
                 const supportedTypes = JSON.parse(group.dataset.supportedTypes);
-                if (supportedTypes.includes('all') || supportedTypes.includes(currentItemType)) {
-                    group.style.display = '';
+                // 检查组件是否支持 'all' 或当前物品的功能类型
+                if (supportedTypes.includes('all') || supportedTypes.includes(currentItemFuncType)) {
+                    group.style.display = ''; // 显示
                 } else {
-                    group.style.display = 'none';
+                    group.style.display = 'none'; // 隐藏
                 }
             } catch (e) {
+                console.error(`解析组件 ${group.id} 的 supported-types 失败:`, e);
                 group.style.display = 'none';
             }
         });
-        console.log("--- updateComponentVisibility() 函数执行完毕 ---");
     };
 
-    // --- NEW: Version-based component option filtering ---
-    const updateAllVersionedDropdowns = async () => {
-        const versionId = versionSelect.value;
-        console.log(`--- 开始执行 updateAllVersionedDropdowns() for version PK: ${versionId} ---`);
-
-        if (!versionId) {
-            console.warn("未选择任何版本, 跳过组件选项更新。");
-            return;
-        }
-
-        // Find all select elements that need filtering, including those in newly added rows.
-        const selectsToUpdate = document.querySelectorAll('.version-filtered-select');
-        console.log(`发现 ${selectsToUpdate.length} 个需要版本过滤的下拉菜单。`);
-
-        // We use a `for...of` loop to handle async/await correctly.
-        for (const select of selectsToUpdate) {
-            const componentType = select.dataset.componentType;
-            const currentSelectedValue = select.value;
-
-            if (!componentType) {
-                console.error("下拉菜单缺少 'data-component-type' 属性:", select);
-                continue;
-            }
-            
-            console.log(`正在为组件 '${componentType}' (当前值: ${currentSelectedValue}) 获取新选项...`);
-
-            try {
-                const response = await fetch(`/MC_command/api/get-components/?version_id=${versionId}&type=${componentType}`);
-                if (!response.ok) throw new Error(`API 请求失败, 状态: ${response.status}`);
-                
-                const options = await response.json();
-
-                select.innerHTML = ''; // Clear existing options
-
-                const blankOption = document.createElement('option');
-                blankOption.value = '';
-                blankOption.textContent = '---------';
-                select.appendChild(blankOption);
-
-                options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt.id;
-                    option.textContent = opt.text;
-                    select.appendChild(option);
-                });
-                
-                select.value = currentSelectedValue; // Restore previous selection if still valid
-                if (select.value !== currentSelectedValue) {
-                    console.log(`组件 '${componentType}' 的旧选项 '${currentSelectedValue}' 在新版本中不再有效。`);
-                }
-
-            } catch (error) {
-                console.error(`为组件 '${componentType}' 更新选项时出错:`, error);
-            }
-        }
-        console.log(`--- updateAllVersionedDropdowns() 执行完毕 ---`);
-    };
-
-    // --- 表单集逻辑 (Add Row Button) ---
+    // --- 表单集逻辑: 添加新行 ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
-            // ... This existing function remains unchanged ...
             const prefix = this.dataset.formsetPrefix;
             const container = document.getElementById(`${prefix}-form-container`);
             const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
             let totalForms = parseInt(totalFormsInput.value);
             const template = document.getElementById(`${prefix}-empty-form-template`);
-            const newRow = template.content.cloneNode(true);
-            const newRowHtml = newRow.firstElementChild.outerHTML.replace(/__prefix__/g, totalForms);
-            container.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            // 创建新行并替换前缀
+            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = newRowHtml;
+            container.appendChild(newRow);
+            
             totalFormsInput.value = totalForms + 1;
-            // --- NEW: After adding a new row, we must re-run the filter for its dropdown. ---
-            updateAllVersionedDropdowns();
         });
     });
 
-    document.body.addEventListener('click', function(e) {
-        if (e.target.classList.contains('row-delete-checkbox')) {
-            const row = e.target.closest('tr');
-            if (row) row.style.display = e.target.checked ? 'none' : '';
-        }
-    });
-
     // --- 事件监听 ---
-    baseItemSelect.addEventListener('change', updateComponentVisibility);
-    versionSelect.addEventListener('change', updateAllVersionedDropdowns); // Add listener for version select
+    itemTypeSelect.addEventListener('change', updateComponentVisibility);
 
     // --- 页面加载时初始化 ---
-    console.log(">>> 页面加载完成，准备初次调用... <<<");
     updateComponentVisibility();
-    updateAllVersionedDropdowns(); // Initial call for version filtering
 });
 </script>
 {% endblock %}

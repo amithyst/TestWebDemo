@@ -10,7 +10,7 @@
 '''
 from django import forms
 from .models import (
-    GeneratedCommand, MinecraftVersion, BaseItem, 
+    GeneratedCommand, MinecraftVersion, Material, ItemType, 
     AppliedEnchantment, AppliedAttribute, Enchantment, 
     AttributeType, PotionEffectType,AppliedPotionEffect
 )
@@ -46,17 +46,46 @@ class VersionedModelChoiceField(forms.ModelChoiceField):
         return f"{prefix}{obj.name}{version_range}"
     
 class GeneratedCommandForm(forms.ModelForm):
+    # 修改: 不再使用 base_item，而是直接使用 material 和 item_type
+    material = forms.ModelChoiceField(
+        queryset=Material.objects.all(),
+        required=False, # 允许为空
+        label="材质",
+        help_text="选择物品的材质。可以只选材质，不选类型（如：钻石）。"
+    )
+    item_type = forms.ModelChoiceField(
+        queryset=ItemType.objects.all(),
+        required=False, # 允许为空
+        label="物品类型",
+        help_text="选择物品的基础类型。可以只选类型，不选材质（如：三叉戟）。"
+    )
+
     class Meta:
         model = GeneratedCommand
-        fields = ['title', 'target_version', 'base_item', 'custom_name', 'lore', 'count']
+        # 修改: 更新字段列表
+        fields = ['title', 'target_version', 'material', 'item_type', 'custom_name', 'lore', 'count']
         labels = {
             'title': '配置名称',
             'target_version': '目标Minecraft版本',
-            'base_item': '基础物品',
             'custom_name': '自定义物品名称',
             'lore': '描述文本 (Lore)',
             'count': '数量',
         }
+
+    def clean(self):
+        # 新增: 验证逻辑，确保材质和类型至少选一个
+        cleaned_data = super().clean()
+        material = cleaned_data.get("material")
+        item_type = cleaned_data.get("item_type")
+
+        if not material and not item_type:
+            # 添加一个非字段错误
+            raise forms.ValidationError(
+                "错误：您必须至少选择一种材质或一种物品类型。",
+                code='incomplete_item'
+            )
+        return cleaned_data
+
 class AppliedEnchantmentForm(forms.ModelForm):
     """附魔内联表单"""
     # --- MODIFICATION: Use the new custom field and add widget attributes ---

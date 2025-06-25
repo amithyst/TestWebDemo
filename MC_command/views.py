@@ -11,10 +11,10 @@ from django.db import transaction
 
 from django.http import JsonResponse
 from django.db.models import Q
-from .models import Enchantment, AttributeType, PotionEffectType
-
-from .models import GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, MinecraftVersion, BaseItem # Add AppliedPotionEffect, BaseItem
-from .forms import GeneratedCommandForm, AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField # Add AppliedPotionEffectForm
+# 修改: 引入 Material, ItemType
+from .models import Enchantment, AttributeType, PotionEffectType, MinecraftVersion, Material, ItemType
+from .models import GeneratedCommand
+from .forms import GeneratedCommandForm
 from .components import COMPONENT_REGISTRY
 
 # --- 核心视图 ---
@@ -41,92 +41,64 @@ def detail(request, command_id):
 # --- 增删改查 (CRUD) 视图 ---
 # --- 完全替换旧的 CREATE 和 EDIT 视图 ---
 # --- Replace the create and edit views with these refactored versions ---
-
 @login_required
 def create(request):
-    """REFACTORED: Handles creation of a command and its dynamically-registered components."""
-    # Dynamically create a mapping of prefixes to FormSet classes
     FormSetClasses = {
-        prefix: inlineformset_factory(
-            GeneratedCommand, config['model'], form=config['form'],
-            extra=1, can_delete=True, min_num=0
-        )
+        prefix: inlineformset_factory(GeneratedCommand, config['model'], form=config['form'], extra=1, can_delete=True, min_num=0)
         for prefix, config in COMPONENT_REGISTRY.items()
     }
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST)
-        # Instantiate all formsets from the request data
-        formsets = {
-            prefix: FormSetClasses[prefix](request.POST, prefix=prefix)
-            for prefix in COMPONENT_REGISTRY.keys()
-        }
+        formsets = {prefix: FormSetClasses[prefix](request.POST, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
-        # Validate the main form and all formsets
         if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
             try:
                 with transaction.atomic():
                     command_instance = form.save(commit=False)
                     command_instance.user = request.user
                     command_instance.save()
-
-                    # Save data for each formset
                     for prefix, formset in formsets.items():
                         formset.instance = command_instance
                         formset.save()
-
                     return redirect(reverse('MC_command:detail', args=[command_instance.id]))
             except forms.ValidationError:
-                pass # Validation errors will be handled by the form rendering below
-    else: # GET
+                pass
+    else:
         form = GeneratedCommandForm()
-        # Instantiate empty formsets
-        formsets = {
-            prefix: FormSetClasses[prefix](prefix=prefix)
-            for prefix in COMPONENT_REGISTRY.keys()
-        }
+        formsets = {prefix: FormSetClasses[prefix](prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
-    # Prepare data for the template
+    # 修改: 准备新的 context 数据
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
-    base_item_data = {i.pk: {'type': i.function_type} for i in BaseItem.objects.all()}
-    
-    # NEW: Pass component info to the template for dynamic rendering
+    # 新增: 传递 ItemType 的功能类型数据给模板
+    item_type_data = {it.pk: {'type': it.function_type} for it in ItemType.objects.all()}
+
     component_data = {
-        prefix: {
-            'formset': formsets[prefix],
-            'verbose_name': config['verbose_name'],
-            'supported_types': json.dumps(config['supported_function_types'])
-        }
+        prefix: {'formset': formsets[prefix], 'verbose_name': config['verbose_name'], 'supported_types': json.dumps(config['supported_function_types'])}
         for prefix, config in COMPONENT_REGISTRY.items()
     }
 
     context = {
         'form': form,
-        'component_data': component_data, # Replaces individual formsets
+        'component_data': component_data,
         'form_title': '创建新命令',
         'version_data_json': json.dumps(version_data),
-        'base_item_data_json': json.dumps(base_item_data),
+        # 修改: 移除 base_item_data_json, 添加 item_type_data_json
+        'item_type_data_json': json.dumps(item_type_data),
     }
     return render(request, 'MC_command/command_form.html', context)
 
 @login_required
 def edit(request, command_id):
-    """REFACTORED: Handles editing of a command and its dynamically-registered components."""
     command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
     FormSetClasses = {
-        prefix: inlineformset_factory(
-            GeneratedCommand, config['model'], form=config['form'],
-            extra=1, can_delete=True, min_num=0
-        )
+        prefix: inlineformset_factory(GeneratedCommand, config['model'], form=config['form'], extra=1, can_delete=True, min_num=0)
         for prefix, config in COMPONENT_REGISTRY.items()
     }
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST, instance=command_obj)
-        formsets = {
-            prefix: FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix)
-            for prefix in COMPONENT_REGISTRY.keys()
-        }
+        formsets = {prefix: FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
         if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
             try:
@@ -137,21 +109,15 @@ def edit(request, command_id):
                     return redirect(reverse('MC_command:detail', args=[command_obj.id]))
             except forms.ValidationError:
                 pass
-    else: # GET
+    else:
         form = GeneratedCommandForm(instance=command_obj)
-        formsets = {
-            prefix: FormSetClasses[prefix](instance=command_obj, prefix=prefix)
-            for prefix in COMPONENT_REGISTRY.keys()
-        }
+        formsets = {prefix: FormSetClasses[prefix](instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
         
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
-    base_item_data = {i.pk: {'type': i.function_type} for i in BaseItem.objects.all()}
+    item_type_data = {it.pk: {'type': it.function_type} for it in ItemType.objects.all()}
+    
     component_data = {
-        prefix: {
-            'formset': formsets[prefix],
-            'verbose_name': config['verbose_name'],
-            'supported_types': json.dumps(config['supported_function_types'])
-        }
+        prefix: {'formset': formsets[prefix], 'verbose_name': config['verbose_name'], 'supported_types': json.dumps(config['supported_function_types'])}
         for prefix, config in COMPONENT_REGISTRY.items()
     }
     
@@ -161,11 +127,9 @@ def edit(request, command_id):
         'command': command_obj,
         'form_title': '编辑命令',
         'version_data_json': json.dumps(version_data),
-        'base_item_data_json': json.dumps(base_item_data),
+        'item_type_data_json': json.dumps(item_type_data),
     }
     return render(request, 'MC_command/command_form.html', context)
-
-# C:\Github\djangotutorial\MC_command\views.py
 
 # ... (文件其他部分不变) ...
 
@@ -231,7 +195,8 @@ def delete(request, command_id):
 def _generate_command_context(command: GeneratedCommand) -> dict:
     # This function remains mostly the same, but calls the refactored builders.
     target_version_id = command.target_version.ordering_id
-    base_item_id = command.base_item.item_id
+    # 修改: 使用 command 上的 item_id 属性
+    base_item_id = command.item_id
     if target_version_id >= 12005: # Minecraft 1.20.5+
         data_structure = _build_component_structure(command)
         data_string = ",".join([f"{key}={value}" for key, value in data_structure.items()])

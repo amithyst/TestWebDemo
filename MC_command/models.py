@@ -2,6 +2,7 @@
 import uuid # <--- 在文件顶部添加此行
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError # 引入验证错误
 
 # ==============================================================================
 # 1. 基础与版本控制模型 (无变化)
@@ -82,32 +83,8 @@ class ItemType(models.Model):
         verbose_name = "物品类型"
         verbose_name_plural = "物品类型"
         ordering = ['display_name']
-
-    def __str__(self):
-        # 同样，如果显示名称为空，则返回系统名称
-        return self.display_name or self.system_name
-
-class BaseItem(VersionedItem):
-    """基础物品，其核心属性由材质和类型自动生成"""
-    material = models.ForeignKey(
-        Material, on_delete=models.PROTECT, null=True, blank=True,
-        help_text="物品的材质", db_index=True
-    )
-    item_type = models.ForeignKey(
-        ItemType, on_delete=models.PROTECT, null=True, blank=True,
-        help_text="物品的基础类型", db_index=True
-    )
-
-    # 这两个字段将由 save() 方法自动填充，并且不可编辑
-    item_id = models.CharField(
-        max_length=100, unique=True, editable=False,
-        help_text="自动生成的 Minecraft ID"
-    )
-    name = models.CharField(
-        max_length=100, editable=False,
-        help_text="自动生成的显示名称"
-    )
-
+    
+    
     function_type = models.CharField(
         max_length=50, help_text="物品的功能分类",
         choices=[
@@ -118,6 +95,11 @@ class BaseItem(VersionedItem):
             ('firework', '烟花火箭'),
         ],default='all', verbose_name="功能类型"
     )
+
+    def __str__(self):
+        # 同样，如果显示名称为空，则返回系统名称
+        return self.display_name or self.system_name
+
 
     class Meta:
         verbose_name = "基础物品"
@@ -224,23 +206,50 @@ class AttributeType(VersionedItem):
 
     def __str__(self):
         return self.name
-
 # ==============================================================================
-# 3. 核心用户创建内容模型 (无变化)
+# 3. 核心用户创建内容模型 (已修改)
 # ==============================================================================
-
 class GeneratedCommand(models.Model):
-    """用户创建的一个完整的物品命令配置。"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="commands")
     title = models.CharField(max_length=100, help_text="为这个命令配置起一个名字，方便查找")
     target_version = models.ForeignKey(MinecraftVersion, on_delete=models.PROTECT, help_text="命令生成的目标 Minecraft 版本")
-    base_item = models.ForeignKey(BaseItem, on_delete=models.PROTECT, help_text="该命令的基础物品")
+    material = models.ForeignKey(Material, on_delete=models.PROTECT, null=True, blank=True, help_text="物品的材质")
+    item_type = models.ForeignKey(ItemType, on_delete=models.PROTECT, null=True, blank=True, help_text="物品的基础类型")
     custom_name = models.CharField(max_length=255, blank=True, null=True, help_text="物品在游戏中的自定义名称 (支持JSON文本)")
     lore = models.TextField(blank=True, null=True, help_text="物品的描述文字 (支持JSON文本), 每行用 \\n 分隔")
     count = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    @property
+    def item_name(self):
+        material_dn = self.material.display_name if self.material else ""
+        type_dn = self.item_type.display_name if self.item_type else ""
+        if material_dn and type_dn:
+            return f"{material_dn} {type_dn}"
+        return material_dn or type_dn
+    
+    @property
+    def item_id(self):
+        material_sn = self.material.system_name if self.material else ""
+        type_sn = self.item_type.system_name if self.item_type else ""
+        base_id = ""
+        if material_sn and type_sn:
+            base_id = f"{material_sn}_{type_sn}"
+        else:
+            base_id = material_sn or type_sn
+        return f"minecraft:{base_id}" if base_id else ""
 
+    @property
+    def function_type(self):
+        if self.item_type:
+            return self.item_type.function_type
+        return 'all'
+    
+    def clean(self):
+        if not self.material and not self.item_type:
+            raise ValidationError("材质 (Material) 和物品类型 (ItemType) 不能同时为空。")
+    
     def __str__(self):
         return f"'{self.title}' for v{self.target_version} by {self.user.username}"
     

@@ -4,7 +4,7 @@ import re
 from django.contrib import admin
 from django.db.models import Q
 from .models import (
-    MinecraftVersion, BaseItem, Material, ItemType, Enchantment, PotionEffectType, AttributeType,
+    MinecraftVersion, Material, ItemType, Enchantment, PotionEffectType, AttributeType,
     GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, WrittenBookContent
 )
 
@@ -30,17 +30,6 @@ class ItemTypeAdmin(admin.ModelAdmin):
     # 修正: 使用模型中真实存在的字段 'display_name' 和 'system_name'
     list_display = ('display_name', 'system_name')
     search_fields = ('display_name', 'system_name')
-
-@admin.register(BaseItem)
-class BaseItemAdmin(admin.ModelAdmin):
-    list_display = ('name', 'item_id', 'material', 'item_type', 'function_type')
-    list_filter = ('material', 'item_type', 'function_type')
-    search_fields = ('name', 'item_id')
-    # 关键：将自动生成的字段设为只读
-    readonly_fields = ('name', 'item_id')
-    
-    # 为了更好的后台创建体验
-    fields = ('material', 'item_type', 'function_type', 'min_version', 'max_version', 'name', 'item_id')
 
 @admin.register(Enchantment)
 class EnchantmentAdmin(admin.ModelAdmin):
@@ -126,20 +115,27 @@ class AppliedPotionEffectInline(VersionedInlineMixin, admin.TabularInline):
 # -----------------------------------------------------------------------------
 @admin.register(GeneratedCommand)
 class GeneratedCommandAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'base_item', 'target_version', 'updated_at')
-    list_filter = ('target_version', 'user', 'base_item__name')
-    search_fields = ('title', 'user__username')
-    fieldsets = [
-        ('核心信息', {'fields': ['user', 'title', 'target_version', 'base_item']}),
-        ('基础属性', {'fields': ['custom_name', 'lore', 'count'], 'classes': ['collapse']}),
-    ]
-    # The 'inlines' attribute will be dynamically set by get_inlines
+    # 修正：将 'base_item' 替换为 'item_name'
+    list_display = ('title', 'user', 'item_name', 'target_version', 'updated_at')
     
-    def get_inlines(self, request, obj=None):
-        """
-        Dynamically show the potion effects inline form ONLY if the base item type is 'potion'.
-        """
-        inlines = [WrittenBookContentInline, AppliedEnchantmentInline, AppliedAttributeInline]
-        if obj and obj.base_item.function_type == 'potion':
-            inlines.append(AppliedPotionEffectInline)
-        return inlines
+    # 修正：移除对 'base_item__name' 的过滤，改为按材质和类型过滤
+    list_filter = ('target_version', 'user', 'material', 'item_type')
+    
+    search_fields = ('title', 'custom_name', 'material__display_name', 'item_type__display_name')
+    inlines = [
+        AppliedEnchantmentInline,
+        AppliedAttributeInline,
+        AppliedPotionEffectInline,
+        WrittenBookContentInline
+    ]
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'title', 'target_version')
+        }),
+        ('物品选择', {
+            'fields': ('material', 'item_type', 'count')
+        }),
+        ('自定义文本', {
+            'fields': ('custom_name', 'lore')
+        }),
+    )
