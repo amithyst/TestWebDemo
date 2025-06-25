@@ -326,13 +326,15 @@ def get_compatible_components(request):
             {'id': obj.pk, 'text': field.label_from_instance(obj), 'attribute_id': obj.attribute_id}
             for obj in queryset
         ]
-    # elif component_type == 'effect':
-    #     # 保持一致性，按名称排序
-    #     queryset = PotionEffectType.objects.filter(version_filter).order_by('name')
-    #     data = [
-    #         {'id': obj.pk, 'text': field.label_from_instance(obj)}
-    #         for obj in queryset
-    #     ]   
+    elif component_type == 'effect':
+        # 保持一致性，按名称排序
+        queryset = PotionEffectType.objects.filter(version_filter).order_by('name')
+         # 新增下面这行来创建字段实例，以便生成标签
+        field = VersionedModelChoiceField(queryset=queryset)
+        data = [
+            {'id': obj.pk, 'text': field.label_from_instance(obj)}
+            for obj in queryset
+        ]   
     else:
         return JsonResponse({'error': 'Invalid component type'}, status=400)
     
