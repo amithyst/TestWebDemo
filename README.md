@@ -22,16 +22,21 @@ git push -u origin master
 django-admin startproject mysite djangotutorial
 ```
 
-改变模型需要这三步：
 
-* 编辑 `models.py` 文件，改变模型。
-* 运行 [`python manage.py makemigrations`](https://docs.djangoproject.com/zh-hans/5.2/ref/django-admin/#django-admin-makemigrations) 为模型的改变生成迁移文件。
-* 运行 [`python manage.py migrate`](https://docs.djangoproject.com/zh-hans/5.2/ref/django-admin/#django-admin-migrate) 来应用数据库迁移。
-* ```python
-  python manage.py makemigrations
-  python manage.py migrate
-  #
-  ```
+```python
+git restore .
+git clean -fd
+git pull origin master
+#
+```
+
+
+```python
+python manage.py makemigrations
+python manage.py migrate
+#
+```
+
 
 ## 导入数据
 
