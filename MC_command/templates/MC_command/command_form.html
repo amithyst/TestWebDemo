@@ -36,25 +36,24 @@
                         data-supported-types="{{ data.supported_types }}"
                         style="display: none;">
                         <h2>{{ data.verbose_name }}</h2>
-                        <div class="inline-group-content">
-                            {{ data.formset.management_form }}
-                            <div class="errorlist">{{ data.formset.non_field_errors }}</div>
-                            {# --- 直接渲染表单集，不再需要复杂的模板包含 --- #}
-                            {% for form in data.formset %}
-                                <div class="firework-form-row dynamic-form" id="{{ form.prefix }}-row">
-                                    {{ form.as_p }}
+                            <div class="inline-group-content">
+                                {{ data.formset.management_form }}
+                                <div class="errorlist">{{ data.formset.non_field_errors }}</div>
+
+                                <div id="firework_explosions-form-container">
+                                    {% for form in data.formset %}
+                                        {% include 'MC_command/formsets/_firework_explosion_row.html' with form=form %}
+                                    {% endfor %}
                                 </div>
-                            {% endfor %}
-                            
-                            <button type="button" class="add-row-btn" data-formset-prefix="firework_explosions">添加 {{ data.verbose_name }}</button>
-                            
-                            {# --- 空表单模板也大大简化 --- #}
-                            <template id="firework_explosions-empty-form-template">
-                                <div class="firework-form-row dynamic-form">
-                                    {{ data.formset.empty_form.as_p }}
-                                </div>
-                            </template>
-                        </div>
+
+                                <button type="button" class="add-row-btn" data-formset-prefix="firework_explosions">添加 {{ data.verbose_name }}</button>
+
+                                <template id="firework_explosions-empty-form-template">
+                                    {% with form=data.formset.empty_form %}
+                                        {% include 'MC_command/formsets/_firework_explosion_row.html' with form=form %}
+                                    {% endwith %}
+                                </template>
+                            </div>
                     </div>
                 {% else %}
                     <div class="inline-group component-group" id="{{ prefix }}-group"
@@ -133,6 +132,86 @@
 <script>
 // The JavaScript block remains the same as the previous correct version.
 // No changes are needed here.
+function setupFireworkRow(row) {
+    if (!row) return;
+
+    // 为两种颜色（主色和淡出）分别设置逻辑
+    ['colors', 'fade_colors'].forEach(type => {
+        const addColorBtn = row.querySelector(`.add-color-btn[data-type="${type}"]`);
+        const colorPicker = addColorBtn ? addColorBtn.previousElementSibling : null;
+        const palette = row.querySelector(`.color-palette[data-type="${type}"]`);
+        const hiddenInput = row.querySelector(`input[name$="-${type}"]`);
+        const randomCb = row.querySelector(`.random-color-cb[data-type="${type}"]`);
+
+        // 如果找不到必要的元素，则直接退出
+        if (!addColorBtn || !colorPicker || !palette || !hiddenInput || !randomCb) {
+             console.error(`初始化失败，未找到所有元素: Row=${row.id}, Type=${type}`);
+             return;
+        }
+
+        // 更新隐藏输入框的值
+        const updateHiddenInput = () => {
+            if (randomCb.checked) {
+                hiddenInput.value = 'random';
+                palette.innerHTML = '<span class="random-text">随机</span>';
+                return;
+            }
+            const chips = palette.querySelectorAll('.color-chip');
+            if (chips.length === 0) {
+                 palette.innerHTML = '';
+            }
+            const colorInts = Array.from(chips).map(chip => parseInt(chip.dataset.hex.substring(1), 16));
+            hiddenInput.value = JSON.stringify(colorInts);
+        };
+
+        // 添加颜色按钮的点击事件
+        addColorBtn.addEventListener('click', () => {
+            const hex = colorPicker.value;
+            const chip = document.createElement('div');
+            chip.className = 'color-chip';
+            chip.style.backgroundColor = hex;
+            chip.dataset.hex = hex;
+            chip.title = `点击移除 ${hex}`;
+            chip.innerHTML = '&times;';
+            palette.appendChild(chip);
+            updateHiddenInput();
+        });
+
+        // 调色板的点击事件（用于移除颜色）
+        palette.addEventListener('click', e => {
+            if (e.target.classList.contains('color-chip')) {
+                e.target.remove();
+                updateHiddenInput();
+            }
+        });
+
+        // 随机复选框的change事件
+        randomCb.addEventListener('change', updateHiddenInput);
+
+        // 初始化
+        const initialValue = hiddenInput.value;
+        if (initialValue === 'random') {
+            randomCb.checked = true;
+            palette.innerHTML = '<span class="random-text">随机</span>';
+        } else {
+            try {
+                const colors = JSON.parse(initialValue);
+                palette.innerHTML = ''; // 清空
+                colors.forEach(val => {
+                    const hex = `#${val.toString(16).padStart(6, '0')}`;
+                    const chip = document.createElement('div');
+                    chip.className = 'color-chip';
+                    chip.style.backgroundColor = hex;
+                    chip.dataset.hex = hex;
+                    chip.title = `点击移除 ${hex}`;
+                    chip.innerHTML = '&times;';
+                    palette.appendChild(chip);
+                });
+            } catch (e) { /* 初始值不是有效的JSON，忽略 */ }
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // --- 数据准备 ---
     const versionSelect = document.getElementById('id_target_version');
@@ -235,32 +314,30 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
+            const template = document.getElementById(`${prefix}-empty-form-template`);
             const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
-            const formsetGroup = document.getElementById(`${prefix}-group`);
-            const emptyForm = document.getElementById(`${prefix}-empty-form`).cloneNode(true);
-            
-            let formIdx = parseInt(totalFormsInput.value);
-            
-            emptyForm.innerHTML = emptyForm.innerHTML.replace(/__prefix__/g, formIdx);
-            emptyForm.style.display = 'block';
-            emptyForm.id = `${prefix}-${formIdx}`;
-            
-            // 为新行添加初始化标记，以便JS处理
-            emptyForm.classList.add('initialized-row');
-
-            // 插入新表单
-            const lastForm = formsetGroup.querySelector('.dynamic-form:last-of-type');
-            lastForm.parentNode.insertBefore(emptyForm, lastForm.nextSibling);
-
-            totalFormsInput.value = formIdx + 1;
-            
-            // 如果是烟火组件，立即设置颜色选择逻辑
-            if (prefix === 'firework_explosions') {
-                const newRow = document.getElementById(`${prefix}-${formIdx}`);
-                if (newRow) {
-                    setupFireworkRow(newRow);
-                }
+            if (!template || !totalFormsInput) {
+                console.error("Formset elements not found for prefix:", prefix);
+                return;
             }
+            let totalForms = parseInt(totalFormsInput.value);
+            
+            // 用新表单的索引替换模板中的 '__prefix__'
+            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+            const container = document.getElementById(`${prefix}-form-container`); // 目标容器
+            
+            // 插入新行
+            container.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            // --- 关键：为新添加的行初始化其功能 ---
+            const newRowElement = document.getElementById(`${prefix}-${totalForms}-row`);
+            if (prefix === 'firework_explosions') {
+                 setupFireworkRow(newRowElement);
+            }
+            // 对于其他组件，可能需要调用其他初始化函数
+            updateComponentOptions(); // 比如更新下拉列表选项
+            
+            totalFormsInput.value = totalForms + 1;
         });
     });
     
@@ -287,58 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 函数：为一个烟火效果行设置颜色选择逻辑
-    function setupFireworkRow(row) {
-        // 为“添加颜色”按钮绑定事件
-        row.querySelectorAll('.add-color-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const type = this.dataset.type; // "colors" 或 "fade_colors"
-                const colorPicker = this.previousElementSibling;
-                const hexColor = colorPicker.value;
-                const palette = this.closest('.fw-color-group').querySelector('.color-palette');
-                
-                // 创建新的颜色块
-                const colorChip = document.createElement('div');
-                colorChip.className = 'color-chip';
-                colorChip.style.backgroundColor = hexColor;
-                colorChip.dataset.colorValue = parseInt(hexColor.substring(1), 16); // 存储十进制颜色值
-                colorChip.innerHTML = '<span>&times;</span>'; // 添加删除按钮
-
-                // 点击颜色块本身即可删除
-                colorChip.addEventListener('click', function() {
-                    this.remove();
-                    updateHiddenColorInput(row, type);
-                });
-
-                palette.appendChild(colorChip);
-                updateHiddenColorInput(row, type);
-            });
-        });
-
-        // 为“随机”复选框绑定事件
-        row.querySelectorAll('.random-color-cb').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const type = this.dataset.type;
-                const palette = this.closest('.fw-color-group').querySelector('.color-palette');
-                const controls = this.closest('.fw-color-group').querySelector('.color-controls');
-                if (this.checked) {
-                    palette.innerHTML = '<span class="random-text">随机</span>';
-                    controls.style.display = 'none'; // 隐藏颜色选择器和添加按钮
-                } else {
-                    palette.innerHTML = '';
-                    controls.style.display = 'flex';
-                }
-                updateHiddenColorInput(row, type);
-            });
-        });
-
-        // 初始化所有随机复选框的状态
-        row.querySelectorAll('.random-color-cb').forEach(cb => {
-            if (cb.checked) {
-                cb.dispatchEvent(new Event('change'));
-            }
-        });
-    }
+    
 
     // =================================================================
     // ===========           全新烟火组件颜色选择逻辑           ===========

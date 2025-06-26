@@ -46,9 +46,9 @@ def create(request):
     FormSetClasses = {}
     for prefix, config in COMPONENT_REGISTRY.items():
         form_class = config['form']
-        # 如果是烟火组件，就强制使用 AdminForm
-        if prefix == 'firework_explosions':
-            form_class = AppliedFireworkExplosionAdminForm
+        # # 如果是烟火组件，就强制使用 AdminForm
+        # if prefix == 'firework_explosions':
+        #     form_class = AppliedFireworkExplosionAdminForm
         
         FormSetClasses[prefix] = inlineformset_factory(
             GeneratedCommand, 
@@ -124,8 +124,8 @@ def edit(request, command_id):
     for prefix, config in COMPONENT_REGISTRY.items():
         form_class = config['form']
         # 如果是烟火组件，就强制使用 AdminForm
-        if prefix == 'firework_explosions':
-            form_class = AppliedFireworkExplosionAdminForm
+        # if prefix == 'firework_explosions':
+        #     form_class = AppliedFireworkExplosionAdminForm
         
         FormSetClasses[prefix] = inlineformset_factory(
             GeneratedCommand, 
