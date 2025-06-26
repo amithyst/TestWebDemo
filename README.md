@@ -37,4 +37,44 @@ python manage.py import_components attributes.json
 python manage.py import_components effects.json
 python manage.py import_components materials.json
 python manage.py import_components item_types.json
+
+
+
 ```
+
+# 导出依赖
+
+#### 第 1 步：安装 `pip-tools`
+
+首先，您需要在您的虚拟环境中安装这个工具。
+
+**Bash**
+
+```
+pip install pip-tools
+```
+
+#### 第 2 步：创建 `requirements.in` 文件
+
+在您的项目根目录下，手动创建一个名为 `requirements.in` 的文件。根据您之前的上下文，您的项目似乎需要以下这些库。将它们写入文件：
+
+**`requirements.in`**
+
+```
+django
+selenium
+```
+
+**关键点**：您不需要在这里写版本号，`pip-compile` 会自动找出最新的兼容版本。您也不需要写 `jinja2` 或 `click`，因为它们是 `flask` 的子依赖，`pip-compile` 会自动处理。
+
+#### 第 3 步：运行 `pip-compile` 生成 `requirements.txt`
+
+现在，在您的终端中（确保在项目根目录下），运行以下命令：
+
+**Bash**
+
+```
+pip-compile requirements.in
+```
+
+运行后，您会看到 `pip-compile` 开始解析依赖。
