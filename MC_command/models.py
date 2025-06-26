@@ -1,5 +1,6 @@
 # mc_commands/models.py
 import uuid # <--- 在文件顶部添加此行
+import json
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError # 引入验证错误

@@ -11,7 +11,7 @@ from .models import (
 )
 
 # --- FIX: Import the custom forms ---
-from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionForm,
+from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionAdminForm,
                     VersionedModelChoiceField)
 
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
@@ -114,14 +114,7 @@ class AppliedPotionEffectInline(VersionedInlineMixin, admin.TabularInline):
     form = AppliedPotionEffectForm # Use the new form
     extra = 1
 
-class AppliedFireworkExplosionAdminForm(forms.ModelForm):
-    class Meta:
-        model = AppliedFireworkExplosion
-        fields = '__all__'
-        widgets = {
-            'colors': ColorPickerWidget(),
-            'fade_colors': ColorPickerWidget(),
-        }
+
 
 class AppliedFireworkExplosionInline(admin.TabularInline):
     model = AppliedFireworkExplosion

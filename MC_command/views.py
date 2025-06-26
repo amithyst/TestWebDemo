@@ -14,7 +14,7 @@ from django.db.models import Q
 # 修改: 引入 Material, ItemType
 from .models import Enchantment, AttributeType, PotionEffectType, MinecraftVersion, Material, ItemType
 from .models import GeneratedCommand
-from .forms import GeneratedCommandForm,VersionedModelChoiceField
+from .forms import GeneratedCommandForm,VersionedModelChoiceField, AppliedFireworkExplosionAdminForm
 from .components import COMPONENT_REGISTRY
 
 # --- 核心视图 ---
@@ -43,10 +43,21 @@ def detail(request, command_id):
 # --- Replace the create and edit views with these refactored versions ---
 @login_required
 def create(request):
-    FormSetClasses = {
-        prefix: inlineformset_factory(GeneratedCommand, config['model'], form=config['form'], extra=1, can_delete=True, min_num=0)
-        for prefix, config in COMPONENT_REGISTRY.items()
-    }
+    FormSetClasses = {}
+    for prefix, config in COMPONENT_REGISTRY.items():
+        form_class = config['form']
+        # 如果是烟火组件，就强制使用 AdminForm
+        if prefix == 'firework_explosions':
+            form_class = AppliedFireworkExplosionAdminForm
+        
+        FormSetClasses[prefix] = inlineformset_factory(
+            GeneratedCommand, 
+            config['model'], 
+            form=form_class, 
+            extra=1, 
+            can_delete=True, 
+            min_num=0
+        )
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST)
@@ -109,10 +120,21 @@ def create(request):
 @login_required
 def edit(request, command_id):
     command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
-    FormSetClasses = {
-        prefix: inlineformset_factory(GeneratedCommand, config['model'], form=config['form'], extra=1, can_delete=True, min_num=0)
-        for prefix, config in COMPONENT_REGISTRY.items()
-    }
+    FormSetClasses = {}
+    for prefix, config in COMPONENT_REGISTRY.items():
+        form_class = config['form']
+        # 如果是烟火组件，就强制使用 AdminForm
+        if prefix == 'firework_explosions':
+            form_class = AppliedFireworkExplosionAdminForm
+        
+        FormSetClasses[prefix] = inlineformset_factory(
+            GeneratedCommand, 
+            config['model'], 
+            form=form_class, 
+            extra=1, 
+            can_delete=True, 
+            min_num=0
+        )
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST, instance=command_obj)

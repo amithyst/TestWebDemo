@@ -31,26 +31,28 @@
 
             {% for prefix, data in component_data.items %}
                 {% if prefix == 'firework_explosions' %}
-                    {# --- 这是需要修改的部分 --- #}
                     <div class="inline-group component-group" id="firework_explosions-group"
                         data-prefix="firework_explosions"
                         data-supported-types="{{ data.supported_types }}"
                         style="display: none;">
                         <h2>{{ data.verbose_name }}</h2>
                         <div class="inline-group-content">
-                            <div class="errorlist">{{ data.formset.non_field_errors }}</div>
                             {{ data.formset.management_form }}
-                            <div id="firework_explosions-form-container">
-                                {% for form in data.formset %}
-                                    {# 正确地包含行模板 #}
-                                    {% include 'MC_command/formsets/_firework_explosion_row.html' with form=form %}
-                                {% endfor %}
-                            </div>
+                            <div class="errorlist">{{ data.formset.non_field_errors }}</div>
+                            {# --- 直接渲染表单集，不再需要复杂的模板包含 --- #}
+                            {% for form in data.formset %}
+                                <div class="firework-form-row dynamic-form" id="{{ form.prefix }}-row">
+                                    {{ form.as_p }}
+                                </div>
+                            {% endfor %}
+                            
                             <button type="button" class="add-row-btn" data-formset-prefix="firework_explosions">添加 {{ data.verbose_name }}</button>
                             
-                            {# 为JavaScript动态添加新行准备的模板 #}
+                            {# --- 空表单模板也大大简化 --- #}
                             <template id="firework_explosions-empty-form-template">
-                                {% include 'MC_command/formsets/_firework_explosion_row.html' with form=data.formset.empty_form %}
+                                <div class="firework-form-row dynamic-form">
+                                    {{ data.formset.empty_form.as_p }}
+                                </div>
                             </template>
                         </div>
                     </div>
@@ -228,94 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    function setupFireworkRow(row) {
-        const hexToDec = (hex) => parseInt(hex.replace('#', ''), 16);
-
-        function updateHiddenColorInput(row) {
-            // 主颜色处理
-            const colorsPalette = row.querySelector('.color-palette[data-type="colors"]');
-            const colorsInput = row.querySelector('input[name$="-colors"]');
-            const colorsRandomCb = row.querySelector('.random-color-cb[data-type="colors"]');
-
-            if (colorsRandomCb.checked) {
-                colorsInput.value = 'random';
-            } else {
-                const colorDivs = colorsPalette.querySelectorAll('.color-display');
-                const colors = Array.from(colorDivs).map(div => {
-                    const rgb = div.style.backgroundColor.match(/\d+/g);
-                    return (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2]);
-                });
-                // 关键修复：当没有颜色时，发送一个空数组的字符串
-                colorsInput.value = JSON.stringify(colors);
-            }
-
-            // 淡出颜色处理
-            const fadeColorsPalette = row.querySelector('.color-palette[data-type="fade_colors"]');
-            const fadeColorsInput = row.querySelector('input[name$="-fade_colors"]');
-            const fadeColorsRandomCb = row.querySelector('.random-color-cb[data-type="fade_colors"]');
-
-            if (fadeColorsRandomCb.checked) {
-                fadeColorsInput.value = 'random';
-            } else {
-                const fadeColorDivs = fadeColorsPalette.querySelectorAll('.color-display');
-                const fadeColors = Array.from(fadeColorDivs).map(div => {
-                    const rgb = div.style.backgroundColor.match(/\d+/g);
-                    return (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2]);
-                });
-                // 关键修复：当没有颜色时，发送一个空数组的字符串
-                fadeColorsInput.value = JSON.stringify(fadeColors);
-            }
-        }
-
-        row.querySelectorAll('.add-color-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const group = this.closest('.fw-color-group');
-                const picker = group.querySelector('.color-picker');
-                const palette = group.querySelector('.color-palette');
-                const colorHex = picker.value;
-                const colorDec = hexToDec(colorHex);
-
-                const randomCheckbox = group.querySelector('.random-color-cb');
-                if (randomCheckbox.checked) {
-                    alert('请先取消勾选“随机”再添加具体颜色。');
-                    return;
-                }
-
-                const chip = document.createElement('div');
-                chip.className = 'color-chip';
-                chip.style.backgroundColor = colorHex;
-                chip.dataset.colorDec = colorDec;
-                chip.textContent = '×';
-                chip.addEventListener('click', () => {
-                    chip.remove();
-                    updateHiddenColorInput(palette);
-                });
-
-                palette.appendChild(chip);
-                updateHiddenColorInput(palette);
-            });
-        });
-
-        row.querySelectorAll('.random-color-cb').forEach(checkbox => {
-            checkbox.addEventListener('click', function() {
-                const group = this.closest('.fw-color-group');
-                const controls = group.querySelector('.color-controls');
-                const palette = group.querySelector('.color-palette');
-                const picker = controls.querySelector('.color-picker');
-                const addBtn = controls.querySelector('.add-color-btn');
-
-                const isDisabled = this.checked;
-                picker.disabled = isDisabled;
-                addBtn.disabled = isDisabled;
-                if (isDisabled) {
-                    palette.innerHTML = '<span class="random-text">随机颜色</span>';
-                } else {
-                    palette.innerHTML = '';
-                }
-                updateHiddenColorInput(palette);
-            });
-        });
-    }
+    
 
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -327,15 +242,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             let totalForms = parseInt(totalFormsInput.value);
-            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
-            
+            // --- 简化 firework 的处理 ---
             if (prefix === 'firework_explosions') {
-                const container = document.getElementById('firework_explosions-form-container');
-                container.insertAdjacentHTML('beforeend', newRowHtml);
-                const newRowElement = container.lastElementChild;
-                if (newRowElement) {
-                    setupFireworkRow(newRowElement);
-                }
+                 const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+                 const container = document.getElementById('firework_explosions-form-container'); // 确保你的模板中有这个ID
+                 container.insertAdjacentHTML('beforeend', newRowHtml);
             } else {
                 const container = document.getElementById(`${prefix}-form-container`);
                 container.insertAdjacentHTML('beforeend', newRowHtml);

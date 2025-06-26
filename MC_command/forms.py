@@ -15,6 +15,7 @@ from .models import (
     Enchantment,AppliedEnchantment, AttributeType, AppliedAttribute, 
     PotionEffectType,AppliedPotionEffect, AppliedFireworkExplosion
 )
+from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
 # --- 新增：自定义模型选择字段 ---
 class VersionedModelChoiceField(forms.ModelChoiceField):
@@ -199,3 +200,12 @@ class AppliedFireworkExplosionForm(forms.ModelForm):
             return json.dumps(parsed)
         except json.JSONDecodeError:
             raise forms.ValidationError("无效的淡出颜色JSON格式。")
+
+class AppliedFireworkExplosionAdminForm(forms.ModelForm):
+    class Meta:
+        model = AppliedFireworkExplosion
+        fields = '__all__'
+        widgets = {
+            'colors': ColorPickerWidget(),
+            'fade_colors': ColorPickerWidget(),
+        }
