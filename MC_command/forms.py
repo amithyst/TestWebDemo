@@ -177,7 +177,9 @@ class AppliedFireworkExplosionForm(forms.ModelForm):
             parsed = json.loads(data)
             if not isinstance(parsed, list):
                 raise forms.ValidationError("颜色必须是JSON列表格式。")
-            return json.dumps(parsed)
+            # --- 【修复】将列表中的每个字符串颜色值转换为整数 ---
+            integer_colors = [int(color) for color in parsed]
+            return json.dumps(integer_colors)
         except json.JSONDecodeError:
             raise forms.ValidationError("无效的颜色JSON格式。")
 
@@ -197,7 +199,9 @@ class AppliedFireworkExplosionForm(forms.ModelForm):
             parsed = json.loads(data)
             if not isinstance(parsed, list):
                 raise forms.ValidationError("淡出颜色必须是JSON列表格式。")
-            return json.dumps(parsed)
+            # --- 【修复】将列表中的每个字符串颜色值转换为整数 ---
+            integer_fade_colors = [int(color) for color in parsed]
+            return json.dumps(integer_fade_colors)
         except json.JSONDecodeError:
             raise forms.ValidationError("无效的淡出颜色JSON格式。")
 

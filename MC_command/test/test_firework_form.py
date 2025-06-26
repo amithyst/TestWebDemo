@@ -17,7 +17,7 @@ LOGIN_URL = "http://127.0.0.1:8000/admin/login/"
 
 # 【修改点 2】: 您的登录用户名和密码
 ADMIN_USERNAME = "dkj"
-ADMIN_PASSWORD = "dkj123456"
+ADMIN_PASSWORD = "123456"
 
 # 【修改点 3】: 要测试的页面 URL
 COMMAND_EDIT_URL = "http://127.0.0.1:8000/MC_command/9/edit/"
