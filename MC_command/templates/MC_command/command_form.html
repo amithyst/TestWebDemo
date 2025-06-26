@@ -30,14 +30,15 @@
             </fieldset>
 
             {% for prefix, data in component_data.items %}
-
                 {% if prefix == 'firework_explosions' %}
                     <div class="inline-group component-group" id="firework_explosions-group"
                         data-prefix="firework_explosions"
                         data-supported-types="{{ data.supported_types }}"
                         style="display: none;">
                         <h2>{{ data.verbose_name }}</h2>
-                        <div class.inline-group-content>
+                        {# /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/ #}
+                        <div class="inline-group-content">
+                        {# /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/ #}
                             {{ data.formset.management_form }}
                             <div id="firework_explosions-form-container">
                                 {% for form in data.formset %}
@@ -73,7 +74,6 @@
                                     </tr>
                                 </thead>
                                 <tbody id="{{ prefix }}-form-container">
-                                    {% comment %} 替换 tbody 中 form 的循环 {% endcomment %}
                                     {% for form in data.formset %}
                                     <tr id="{{ form.prefix }}-row" class="dynamic-form">
                                         {% for field in form.hidden_fields %}{{ field }}{% endfor %}
@@ -90,21 +90,6 @@
                                         {% endif %}
                                     </tr>
                                     {% endfor %}
-
-                                    {% comment %} 同样需要修改 template 中的循环 {% endcomment %}
-                                    <template id="{{ prefix }}-empty-form-template">
-                                        <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
-                                            {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
-                                            {% for field in data.formset.empty_form.visible_fields %}
-                                                {% if field.name != 'DELETE' %}
-                                                    <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
-                                                {% endif %}
-                                            {% endfor %}
-                                            {% if data.formset.can_delete %}
-                                                <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
-                                            {% endif %}
-                                        </tr>
-                                    </template>
                                 </tbody>
                             </table>
                             
@@ -114,7 +99,9 @@
                                 <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
                                     {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
                                     {% for field in data.formset.empty_form.visible_fields %}
-                                        <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
+                                        {% if field.name != 'DELETE' %}
+                                            <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
+                                        {% endif %}
                                     {% endfor %}
                                     {% if data.formset.can_delete %}
                                         <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
@@ -157,15 +144,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const VERSION_1_20_5_ORDERING_ID = 12005;
 
-    // --- 功能 1: 驼峰化字符串 (核心修复) ---
     function toCamelCase(str) {
         if (!str) return '';
-        // e.g., "minecraft:generic.max_health" -> "MaxHealth"
         const cleanStr = str.includes('.') ? str.split('.').pop() : str;
         return cleanStr.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
     }
 
-    // --- 功能 2: 更新组件可见性 (基于物品类型) ---
     const updateComponentVisibility = () => {
         const selectedItemTypeId = itemTypeSelect.value;
         let currentItemFuncType = 'all';
@@ -189,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // --- 功能 3: 更新属性表单 (显隐 modifier_name) ---
     const updateAttributeFormUI = () => {
         const selectedVersionId = versionSelect.value;
         const orderingId = versionData[selectedVersionId] || 0;
@@ -203,7 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // --- 功能 4: 动态加载兼容的组件选项 ---
     const updateComponentOptions = async () => {
         const versionId = versionSelect.value;
         if (!versionId) return;
@@ -239,15 +221,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
-    // --- 新增：烟花之星表单处理逻辑 ---
+
     function setupFireworkRow(row) {
-        // Helper to convert hex to decimal
         const hexToDec = (hex) => parseInt(hex.replace('#', ''), 16);
 
-        // Helper to update hidden input
         function updateHiddenColorInput(palette) {
             const row = palette.closest('.firework-form-row');
-            const type = palette.dataset.type; // 'colors' or 'fade_colors'
+            const type = palette.dataset.type;
             const hiddenInput = row.querySelector(`[name$="-${type}"]`);
             if (!hiddenInput) return;
 
@@ -262,7 +242,6 @@ document.addEventListener('DOMContentLoaded', function() {
             hiddenInput.value = JSON.stringify(colorValues);
         }
 
-        // Add Color Button
         row.querySelectorAll('.add-color-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const group = this.closest('.fw-color-group');
@@ -271,8 +250,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const colorHex = picker.value;
                 const colorDec = hexToDec(colorHex);
 
-                //
-                // Prevent adding if random is checked
                 const randomCheckbox = group.querySelector('.random-color-cb');
                 if (randomCheckbox.checked) {
                     alert('请先取消勾选“随机”再添加具体颜色。');
@@ -294,7 +271,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Random Color Checkbox
         row.querySelectorAll('.random-color-cb').forEach(checkbox => {
             checkbox.addEventListener('click', function() {
                 const group = this.closest('.fw-color-group');
@@ -316,63 +292,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 功能 5: 添加新行 ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
+            const template = document.getElementById(`${prefix}-empty-form-template`);
+            const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+            if (!template || !totalFormsInput) {
+                console.error("Formset elements not found for prefix:", prefix);
+                return;
+            }
+            let totalForms = parseInt(totalFormsInput.value);
+            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+            
             if (prefix === 'firework_explosions') {
-                // --- 烟花的特殊逻辑 ---
                 const container = document.getElementById('firework_explosions-form-container');
-                const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
-                const template = document.getElementById(`${prefix}-empty-form-template`);
-                if (!container || !totalFormsInput || !template) return;
-
-                let totalForms = parseInt(totalFormsInput.value);
-                const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = newRowHtml;
                 const newRowElement = tempDiv.firstElementChild;
-
                 container.appendChild(newRowElement);
-                totalFormsInput.value = totalForms + 1;
-
-                // 为新行设置功能
                 setupFireworkRow(newRowElement);
-
             } else {
                 const container = document.getElementById(`${prefix}-form-container`);
-                const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
-                const template = document.getElementById(`${prefix}-empty-form-template`);
-
-                if (!template || !totalFormsInput || !container) {
-                    console.error("Formset elements not found for prefix:", prefix);
-                    return;
-                }
-
-                let totalForms = parseInt(totalFormsInput.value);
-                const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
-                
                 container.insertAdjacentHTML('beforeend', newRowHtml);
-                const newRowElement = document.getElementById(`${prefix}-${totalForms}-row`);
-
-                totalFormsInput.value = totalForms + 1;
-                
-                newRowElement.querySelectorAll('select').forEach(s => {
-                    s.classList.add('version-filtered-select');
-                    const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
-                    s.dataset.componentType = componentType;
-                });
-
-                updateAttributeFormUI();
-                // *** CHANGE 1: Immediately populate the new row's dropdown and others ***
-                updateComponentOptions();
+                updateComponentOptions(); 
             }
+            
+            totalFormsInput.value = totalForms + 1;
         });
     });
     
-
-
-    // --- 功能 6: 处理属性选择变化的事件委托 (核心修复) ---
     document.body.addEventListener('change', function(event) {
         const attributeSelect = event.target.closest('select[data-component-type="attribute"]');
         if (!attributeSelect) return;
@@ -406,20 +354,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 页面加载时立即执行 ---
     updateComponentVisibility();
     updateAttributeFormUI();
-    // *** CHANGE 2: Call on page load to populate existing forms ***
     updateComponentOptions();
 
-    // 标记所有已存在的select，确保它们能被JS正确处理
     document.querySelectorAll('.firework-form-row').forEach(setupFireworkRow);
-    document.querySelectorAll('.inline-group select').forEach(s => {
-        const group = s.closest('.inline-group');
-        if (group) {
-            const prefix = group.dataset.prefix;
-            s.classList.add('version-filtered-select');
-            const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
-            s.dataset.componentType = componentType;
-        }
-    });
+
+    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+    // /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
+    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+    // --- REMOVED: Faulty script that incorrectly tagged all selects ---
+    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+    // /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
+    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 });
 </script>
 {% endblock %}

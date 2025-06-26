@@ -131,13 +131,12 @@ class AppliedAttributeForm(forms.ModelForm):
 
 class AppliedPotionEffectForm(forms.ModelForm):
     """药水效果内联表单"""
-    # --- MODIFICATION: Use the new custom field and add widget attributes ---
     effect = VersionedModelChoiceField(
         queryset=PotionEffectType.objects.select_related('min_version', 'max_version').all().order_by('name'),
         label="药水效果",
         widget=forms.Select(attrs={
             'class': 'version-filtered-select',
-            'data-component-type': 'effect' # Note: The API expects 'effect'
+            'data-component-type': 'potion_effect'
         })
     )
     

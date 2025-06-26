@@ -278,27 +278,25 @@ def _build_component_structure(command: GeneratedCommand) -> dict:
 
 # --- 新增：用于 AJAX 的 API 视图 ---
 def get_compatible_components(request):
-    version_pk = request.GET.get('version_id') # Changed variable name for clarity
+    version_pk = request.GET.get('version_id')
     component_type = request.GET.get('type')
 
     if not version_pk or not component_type:
         return JsonResponse({'error': 'Missing parameters'}, status=400)
 
     try:
-        # --- FIX: First, get the version object using its Primary Key (pk) ---
         target_version = get_object_or_404(MinecraftVersion, pk=int(version_pk))
-        # --- FIX: Then, use its ordering_id for the query ---
         target_ordering_id = target_version.ordering_id
     except (ValueError, TypeError):
         return JsonResponse({'error': 'Invalid version_id'}, status=400)
 
-    # 构建动态的版本过滤查询
     version_filter = (
         Q(min_version__ordering_id__lte=target_ordering_id) | Q(min_version__isnull=True)
     ) & (
         Q(max_version__ordering_id__gte=target_ordering_id) | Q(max_version__isnull=True)
     )
 
+    data = []
     if component_type == 'enchantment':
         queryset = Enchantment.objects.filter(version_filter).order_by('enchant_type', 'name')
         field = VersionedModelChoiceField(queryset=queryset)
@@ -309,24 +307,23 @@ def get_compatible_components(request):
     elif component_type == 'attribute':
         queryset = AttributeType.objects.filter(version_filter).order_by('name')
         field = VersionedModelChoiceField(queryset=queryset)
-        # UPDATE: Include attribute_id in the response for attributes
         data = [
-            {
-                'id': obj.pk,
-                'text': field.label_from_instance(obj),
-                'attribute_id': obj.attribute_id  # <--- 新增此行
-            }
+            {'id': obj.pk, 'text': field.label_from_instance(obj), 'attribute_id': obj.attribute_id}
             for obj in queryset
         ]
-    elif component_type == 'effect':
-        # 保持一致性，按名称排序
+    # --- CHANGE: Handle 'potion_effect' type ---
+    elif component_type == 'potion_effect':
         queryset = PotionEffectType.objects.filter(version_filter).order_by('name')
-         # 新增下面这行来创建字段实例，以便生成标签
         field = VersionedModelChoiceField(queryset=queryset)
         data = [
             {'id': obj.pk, 'text': field.label_from_instance(obj)}
             for obj in queryset
-        ]   
+        ]
+    # --- CHANGE: Handle 'firework_explosion' by returning empty list ---
+    elif component_type == 'firework_explosion':
+        # Firework explosions do not have version-specific data to load,
+        # so we return an empty list to prevent a 400 error.
+        data = []
     else:
         return JsonResponse({'error': 'Invalid component type'}, status=400)
     
