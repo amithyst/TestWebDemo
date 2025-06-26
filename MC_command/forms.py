@@ -11,8 +11,8 @@
 from django import forms
 from .models import (
     GeneratedCommand, MinecraftVersion, Material, ItemType, 
-    AppliedEnchantment, AppliedAttribute, Enchantment, 
-    AttributeType, PotionEffectType,AppliedPotionEffect
+    Enchantment,AppliedEnchantment, AttributeType, AppliedAttribute, 
+    PotionEffectType,AppliedPotionEffect, AppliedFireworkExplosion
 )
 
 # --- 新增：自定义模型选择字段 ---
@@ -147,7 +147,21 @@ class AppliedPotionEffectForm(forms.ModelForm):
         labels = {
             'amplifier': '等级',
             'duration': '持续时间 (ticks)',
-            'is_ambient': '减弱粒子',
+            'is_ambient': '信标粒子',
             'show_particles': '显示粒子',
             'show_icon': '显示图标',
+        }
+
+# --- 新增烟火之星表单 ---
+class AppliedFireworkExplosionForm(forms.ModelForm):
+    """烟火之星内联表单"""
+    class Meta:
+        model = AppliedFireworkExplosion
+        fields = [
+            'shape', 'has_trail', 'has_twinkle',
+            'colors', 'fade_colors', 'repeat_count'
+        ]
+        widgets = {
+            'colors': forms.HiddenInput(),      # 颜色值将由JS控制
+            'fade_colors': forms.HiddenInput(), # 颜色值将由JS控制
         }

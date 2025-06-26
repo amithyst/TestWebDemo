@@ -225,11 +225,21 @@ def _build_nbt_tag_structure(command: GeneratedCommand) -> dict:
         nbt_data['display'] = display
 
     # Dynamic part using the registry
+    fireworks_nbt = {} # <-- 新增
     for prefix, config in COMPONENT_REGISTRY.items():
         related_manager = getattr(command, prefix)
         if related_manager.exists():
-            nbt_part = config['generate_nbt'](related_manager)
-            nbt_data.update(nbt_part)
+            # --- 修改开始 ---
+            if prefix == 'firework_explosions':
+                # 烟花数据需要特殊嵌套
+                fireworks_nbt.update(config['generate_nbt'](related_manager))
+            else:
+                nbt_part = config['generate_nbt'](related_manager)
+                nbt_data.update(nbt_part)
+            # --- 修改结束 ---
+    # 如果有烟花数据，将其添加到主NBT中
+    if fireworks_nbt:
+        nbt_data['Fireworks'] = fireworks_nbt.get('Fireworks', {})
 
     return nbt_data
 
@@ -245,11 +255,24 @@ def _build_component_structure(command: GeneratedCommand) -> dict:
             components['minecraft:lore'] = f'[{",".join(lore_lines)}]'
 
     # Dynamic part using the registry
+    fireworks_component = {} # <-- 新增
     for prefix, config in COMPONENT_REGISTRY.items():
         related_manager = getattr(command, prefix)
         if related_manager.exists():
-            component_part = config['generate_component'](related_manager)
-            components.update(component_part)
+             # --- 修改开始 ---
+            if prefix == 'firework_explosions':
+                 fireworks_component.update(config['generate_component'](related_manager))
+            else:
+                component_part = config['generate_component'](related_manager)
+                components.update(component_part)
+            # --- 修改结束 ---
+
+    # 1.20.5+ 中，烟花信息在 minecraft:fireworks 组件中
+    if fireworks_component:
+        explosions_list = fireworks_component.get('minecraft:firework_explosion', '[]')
+        # 假设 flight_duration 默认为1，可以之后再添加该字段
+        components['minecraft:fireworks'] = f"{{explosions:{explosions_list},flight_duration:1}}"
+
 
     return components
 

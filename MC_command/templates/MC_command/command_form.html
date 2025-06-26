@@ -30,78 +30,100 @@
             </fieldset>
 
             {% for prefix, data in component_data.items %}
-            <div class="inline-group component-group" id="{{ prefix }}-group"
-                 data-prefix="{{ prefix }}"
-                 data-supported-types="{{ data.supported_types }}"
-                 style="display: none;">
-                
-                <h2>{{ data.verbose_name }}</h2>
 
-                <div class="inline-group-content">
-                    {{ data.formset.management_form }}
-                    
-                    <table class="{% if prefix == 'attributes' %}attributes-table{% endif %}" id="{{ prefix }}-table">
-                        <thead>
-                            <tr>
-                                {% for field in data.formset.empty_form.visible_fields %}
-                                    {% if field.name != 'DELETE' %}
-                                        <th {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field.label }}</th>
-                                    {% endif %}
+                {% if prefix == 'firework_explosions' %}
+                    <div class="inline-group component-group" id="firework_explosions-group"
+                        data-prefix="firework_explosions"
+                        data-supported-types="{{ data.supported_types }}"
+                        style="display: none;">
+                        <h2>{{ data.verbose_name }}</h2>
+                        <div class.inline-group-content>
+                            {{ data.formset.management_form }}
+                            <div id="firework_explosions-form-container">
+                                {% for form in data.formset %}
+                                    {% include 'MC_command/formsets/_firework_explosion_row.html' with form=form %}
                                 {% endfor %}
-                                {% if data.formset.can_delete %}<th class="delete-cell">删除</th>{% endif %}
-                            </tr>
-                        </thead>
-                        <tbody id="{{ prefix }}-form-container">
-                            {% comment %} 替换 tbody 中 form 的循环 {% endcomment %}
-                            {% for form in data.formset %}
-                            <tr id="{{ form.prefix }}-row" class="dynamic-form">
-                                {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-                                {% for field in form.visible_fields %}
-                                    {% if field.name != 'DELETE' %}
-                                        <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>
-                                            {{ field }}
-                                            <div class="errorlist">{{ field.errors }}</div>
-                                        </td>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if data.formset.can_delete %}
-                                    <td class="delete-cell">{{ form.DELETE }}</td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
+                            </div>
+                            <button type="button" class="add-row-btn" data-formset-prefix="firework_explosions">添加 {{ data.verbose_name }}</button>
+                            <template id="firework_explosions-empty-form-template">
+                                {% include 'MC_command/formsets/_firework_explosion_row.html' with form=data.formset.empty_form %}
+                            </template>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="inline-group component-group" id="{{ prefix }}-group"
+                        data-prefix="{{ prefix }}"
+                        data-supported-types="{{ data.supported_types }}"
+                        style="display: none;">
+                        
+                        <h2>{{ data.verbose_name }}</h2>
 
-                            {% comment %} 同样需要修改 template 中的循环 {% endcomment %}
+                        <div class="inline-group-content">
+                            {{ data.formset.management_form }}
+                            
+                            <table class="{% if prefix == 'attributes' %}attributes-table{% endif %}" id="{{ prefix }}-table">
+                                <thead>
+                                    <tr>
+                                        {% for field in data.formset.empty_form.visible_fields %}
+                                            {% if field.name != 'DELETE' %}
+                                                <th {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field.label }}</th>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if data.formset.can_delete %}<th class="delete-cell">删除</th>{% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody id="{{ prefix }}-form-container">
+                                    {% comment %} 替换 tbody 中 form 的循环 {% endcomment %}
+                                    {% for form in data.formset %}
+                                    <tr id="{{ form.prefix }}-row" class="dynamic-form">
+                                        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                                        {% for field in form.visible_fields %}
+                                            {% if field.name != 'DELETE' %}
+                                                <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>
+                                                    {{ field }}
+                                                    <div class="errorlist">{{ field.errors }}</div>
+                                                </td>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if data.formset.can_delete %}
+                                            <td class="delete-cell">{{ form.DELETE }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+
+                                    {% comment %} 同样需要修改 template 中的循环 {% endcomment %}
+                                    <template id="{{ prefix }}-empty-form-template">
+                                        <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
+                                            {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+                                            {% for field in data.formset.empty_form.visible_fields %}
+                                                {% if field.name != 'DELETE' %}
+                                                    <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if data.formset.can_delete %}
+                                                <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
+                                            {% endif %}
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            
+                            <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
+                            
                             <template id="{{ prefix }}-empty-form-template">
                                 <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
                                     {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
                                     {% for field in data.formset.empty_form.visible_fields %}
-                                        {% if field.name != 'DELETE' %}
-                                            <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
-                                        {% endif %}
+                                        <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
                                     {% endfor %}
                                     {% if data.formset.can_delete %}
                                         <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
                                     {% endif %}
                                 </tr>
                             </template>
-                        </tbody>
-                    </table>
-                    
-                    <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
-                    
-                    <template id="{{ prefix }}-empty-form-template">
-                        <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
-                            {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
-                            {% for field in data.formset.empty_form.visible_fields %}
-                                <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
-                            {% endfor %}
-                            {% if data.formset.can_delete %}
-                                <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
-                            {% endif %}
-                        </tr>
-                    </template>
-                </div>
-            </div>
+                        </div>
+                    </div>
+                {% endif %}
             {% endfor %}
 
             <div class="form-actions">
@@ -217,39 +239,138 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     };
+    // --- 新增：烟花之星表单处理逻辑 ---
+    function setupFireworkRow(row) {
+        // Helper to convert hex to decimal
+        const hexToDec = (hex) => parseInt(hex.replace('#', ''), 16);
+
+        // Helper to update hidden input
+        function updateHiddenColorInput(palette) {
+            const row = palette.closest('.firework-form-row');
+            const type = palette.dataset.type; // 'colors' or 'fade_colors'
+            const hiddenInput = row.querySelector(`[name$="-${type}"]`);
+            if (!hiddenInput) return;
+
+            const randomCheckbox = palette.closest('.fw-color-group').querySelector('.random-color-cb');
+            if (randomCheckbox.checked) {
+                hiddenInput.value = 'random';
+                return;
+            }
+
+            const colorChips = palette.querySelectorAll('.color-chip');
+            const colorValues = Array.from(colorChips).map(chip => chip.dataset.colorDec);
+            hiddenInput.value = JSON.stringify(colorValues);
+        }
+
+        // Add Color Button
+        row.querySelectorAll('.add-color-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const group = this.closest('.fw-color-group');
+                const picker = group.querySelector('.color-picker');
+                const palette = group.querySelector('.color-palette');
+                const colorHex = picker.value;
+                const colorDec = hexToDec(colorHex);
+
+                //
+                // Prevent adding if random is checked
+                const randomCheckbox = group.querySelector('.random-color-cb');
+                if (randomCheckbox.checked) {
+                    alert('请先取消勾选“随机”再添加具体颜色。');
+                    return;
+                }
+
+                const chip = document.createElement('div');
+                chip.className = 'color-chip';
+                chip.style.backgroundColor = colorHex;
+                chip.dataset.colorDec = colorDec;
+                chip.textContent = '×';
+                chip.addEventListener('click', () => {
+                    chip.remove();
+                    updateHiddenColorInput(palette);
+                });
+
+                palette.appendChild(chip);
+                updateHiddenColorInput(palette);
+            });
+        });
+
+        // Random Color Checkbox
+        row.querySelectorAll('.random-color-cb').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                const group = this.closest('.fw-color-group');
+                const controls = group.querySelector('.color-controls');
+                const palette = group.querySelector('.color-palette');
+                const picker = controls.querySelector('.color-picker');
+                const addBtn = controls.querySelector('.add-color-btn');
+
+                const isDisabled = this.checked;
+                picker.disabled = isDisabled;
+                addBtn.disabled = isDisabled;
+                if (isDisabled) {
+                    palette.innerHTML = '<span class="random-text">随机颜色</span>';
+                } else {
+                    palette.innerHTML = '';
+                }
+                updateHiddenColorInput(palette);
+            });
+        });
+    }
 
     // --- 功能 5: 添加新行 ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
-            const container = document.getElementById(`${prefix}-form-container`);
-            const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
-            const template = document.getElementById(`${prefix}-empty-form-template`);
+            if (prefix === 'firework_explosions') {
+                // --- 烟花的特殊逻辑 ---
+                const container = document.getElementById('firework_explosions-form-container');
+                const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+                const template = document.getElementById(`${prefix}-empty-form-template`);
+                if (!container || !totalFormsInput || !template) return;
 
-            if (!template || !totalFormsInput || !container) {
-                console.error("Formset elements not found for prefix:", prefix);
-                return;
+                let totalForms = parseInt(totalFormsInput.value);
+                const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = newRowHtml;
+                const newRowElement = tempDiv.firstElementChild;
+
+                container.appendChild(newRowElement);
+                totalFormsInput.value = totalForms + 1;
+
+                // 为新行设置功能
+                setupFireworkRow(newRowElement);
+
+            } else {
+                const container = document.getElementById(`${prefix}-form-container`);
+                const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+                const template = document.getElementById(`${prefix}-empty-form-template`);
+
+                if (!template || !totalFormsInput || !container) {
+                    console.error("Formset elements not found for prefix:", prefix);
+                    return;
+                }
+
+                let totalForms = parseInt(totalFormsInput.value);
+                const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+                
+                container.insertAdjacentHTML('beforeend', newRowHtml);
+                const newRowElement = document.getElementById(`${prefix}-${totalForms}-row`);
+
+                totalFormsInput.value = totalForms + 1;
+                
+                newRowElement.querySelectorAll('select').forEach(s => {
+                    s.classList.add('version-filtered-select');
+                    const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
+                    s.dataset.componentType = componentType;
+                });
+
+                updateAttributeFormUI();
+                // *** CHANGE 1: Immediately populate the new row's dropdown and others ***
+                updateComponentOptions();
             }
-
-            let totalForms = parseInt(totalFormsInput.value);
-            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
-            
-            container.insertAdjacentHTML('beforeend', newRowHtml);
-            const newRowElement = document.getElementById(`${prefix}-${totalForms}-row`);
-
-            totalFormsInput.value = totalForms + 1;
-            
-            newRowElement.querySelectorAll('select').forEach(s => {
-                s.classList.add('version-filtered-select');
-                const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
-                s.dataset.componentType = componentType;
-            });
-
-            updateAttributeFormUI();
-            // *** CHANGE 1: Immediately populate the new row's dropdown and others ***
-            updateComponentOptions();
         });
     });
+    
+
 
     // --- 功能 6: 处理属性选择变化的事件委托 (核心修复) ---
     document.body.addEventListener('change', function(event) {
@@ -289,6 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateComponentOptions();
 
     // 标记所有已存在的select，确保它们能被JS正确处理
+    document.querySelectorAll('.firework-form-row').forEach(setupFireworkRow);
     document.querySelectorAll('.inline-group select').forEach(s => {
         const group = s.closest('.inline-group');
         if (group) {

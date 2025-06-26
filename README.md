@@ -26,6 +26,7 @@ django-admin startproject mysite djangotutorial
 * ```python
   python manage.py makemigrations
   python manage.py migrate
+  #
   ```
 
 ## 导入数据

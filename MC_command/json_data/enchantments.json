@@ -165,7 +165,7 @@
     "min_version": null,
     "max_version": null,
     "max_level": 1,
-    "enchant_type": "weapon"
+    "enchant_type": "tool"
   },
   {
     "name": "🛸耐久",
@@ -181,7 +181,7 @@
     "min_version": null,
     "max_version": null,
     "max_level": 127,
-    "enchant_type": "weapon"
+    "enchant_type": "tool"
   },
   {
     "name": "💪力量",

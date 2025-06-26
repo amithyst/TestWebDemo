@@ -1,0 +1,36 @@
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+<div id="{{ form.prefix }}-row" class="dynamic-form firework-form-row">
+    <div class="fw-fields-grid">
+        <div class="form-field">{{ form.shape.label_tag }} {{ form.shape }}</div>
+        <div class="form-field">{{ form.repeat_count.label_tag }} {{ form.repeat_count }}</div>
+        <div class="form-field-checkbox">{{ form.has_trail }} {{ form.has_trail.label_tag }}</div>
+        <div class="form-field-checkbox">{{ form.has_twinkle }} {{ form.has_twinkle.label_tag }}</div>
+    </div>
+
+    <div class="fw-color-section">
+        <div class="fw-color-group">
+            <label>主颜色</label>
+            <div class="color-controls">
+                <input type="color" class="color-picker" value="#ff0000">
+                <button type="button" class="btn btn-secondary btn-sm add-color-btn">添加颜色</button>
+                <label class="random-toggle"><input type="checkbox" class="random-color-cb"> 随机</label>
+            </div>
+            <div class="color-palette" data-type="colors"></div>
+        </div>
+        <div class="fw-color-group">
+            <label>淡出颜色</label>
+            <div class="color-controls">
+                <input type="color" class="color-picker" value="#ffff00">
+                <button type="button" class="btn btn-secondary btn-sm add-color-btn">添加颜色</button>
+                <label class="random-toggle"><input type="checkbox" class="random-color-cb"> 随机</label>
+            </div>
+            <div class="color-palette" data-type="fade_colors"></div>
+        </div>
+    </div>
+
+    {% if form.instance.pk %}
+    <div class="delete-checkbox-container">
+        {{ form.DELETE.label_tag }} {{ form.DELETE }}
+    </div>
+    {% endif %}
+</div>

@@ -1,6 +1,7 @@
 import json
-from .models import AppliedEnchantment, AppliedAttribute, AppliedPotionEffect
-from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm
+import random # <--- 新增导入
+from .models import AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, AppliedFireworkExplosion # <--- 导入新模型
+from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionForm # <--- 导入新表单
 
 # ==============================================================================
 # Helper Functions
@@ -73,6 +74,80 @@ def generate_component_potion_effects(related_manager):
     return {'minecraft:potion_contents': json.dumps(potion_contents, ensure_ascii=False, separators=(',', ':'))}
 
 
+# --- 新增: 烟花组件生成逻辑 ---
+def _generate_single_explosion_nbt(explosion_obj):
+    """为单个 AppliedFireworkExplosion 实例生成 NBT 字典 (考虑随机性)"""
+    shape_map = {str(k): v for k, v in explosion_obj.SHAPE_CHOICES}
+
+    # 处理随机形状
+    shape_val = explosion_obj.shape
+    if shape_val == 'random':
+        # 从 choices 中排除 'random' 本身
+        possible_shapes = [s[0] for s in explosion_obj.SHAPE_CHOICES if s[0] != 'random']
+        shape_id = random.choice(possible_shapes)
+    else:
+        shape_id = int(shape_val)
+
+    # 处理随机颜色
+    def get_colors(color_str):
+        if color_str == 'random':
+            return [random.randint(0, 16777215)]
+        try:
+            # 假设 color_str 是一个 JSON 数组字符串，例如 '[16711680, 255]'
+            return json.loads(color_str)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    colors_list = get_colors(explosion_obj.colors)
+    fade_colors_list = get_colors(explosion_obj.fade_colors)
+
+    explosion_nbt = {
+        'Type': shape_id,
+        'Trail': 1 if explosion_obj.has_trail else 0,
+        'Flicker': 1 if explosion_obj.has_twinkle else 0,
+        'Colors': colors_list,
+        'FadeColors': fade_colors_list,
+    }
+    # 移除空的颜色列表以优化NBT
+    if not colors_list: del explosion_nbt['Colors']
+    if not fade_colors_list: del explosion_nbt['FadeColors']
+
+    return explosion_nbt
+
+def generate_nbt_fireworks(related_manager):
+    explosions = []
+    for explosion in related_manager.all():
+        for _ in range(explosion.repeat_count):
+            explosions.append(_generate_single_explosion_nbt(explosion))
+
+    if not explosions:
+        return {}
+
+    return {'Fireworks': {'Explosions': explosions}}
+
+def generate_component_fireworks(related_manager):
+    explosions = []
+    for explosion in related_manager.all():
+        for _ in range(explosion.repeat_count):
+            # JSON Component 使用字符串键
+            nbt = _generate_single_explosion_nbt(explosion)
+            component_nbt = {
+                'shape': f"'{nbt['Type']}'", # 注意：形状在component里是枚举字符串
+                'has_trail': 'true' if nbt.get('Trail') else 'false',
+                'has_twinkle': 'true' if nbt.get('Flicker') else 'false',
+                'colors': f"[{','.join(map(str, nbt.get('Colors', [])))}]",
+                'fade_colors': f"[{','.join(map(str, nbt.get('FadeColors', [])))}]"
+            }
+            # 这里我们直接构建字符串，因为格式比较特殊
+            explosion_str = f"{{shape:{component_nbt['shape']},has_trail:{component_nbt['has_trail']},has_twinkle:{component_nbt['has_twinkle']},colors:{component_nbt['colors']},fade_colors:{component_nbt['fade_colors']}}}"
+            explosions.append(explosion_str)
+
+    if not explosions:
+        return {}
+
+    # Minecraft 1.20.5+ 的 firework_explosions 是一个列表
+    return {'minecraft:firework_explosion': f"[{','.join(explosions)}]"}
+
 # ==============================================================================
 # THE COMPONENT REGISTRY
 # ==============================================================================
@@ -86,7 +161,7 @@ COMPONENT_REGISTRY = {
         'form': AppliedEnchantmentForm,
         'template_path': 'MC_command/formsets/_enchantment_formset.html',
         # 'all' means it applies to every item type.
-        'supported_function_types': ['all', 'weapon', 'armor', 'fishing_rod', 'trident', 'bow', 'crossbow', 'helmet', 'boots'],
+        'supported_function_types': ['all'],
         'generate_nbt': generate_nbt_enchantments,
         'generate_component': generate_component_enchantments,
     },
@@ -108,5 +183,15 @@ COMPONENT_REGISTRY = {
         'generate_nbt': generate_nbt_potion_effects,
         'generate_component': generate_component_potion_effects,
     },
+    # --- 在此添加新组件 ---
+    'firework_explosions': {
+        'verbose_name': '烟火之星',
+        'model': AppliedFireworkExplosion,
+        'form': AppliedFireworkExplosionForm,
+        'template_path': 'MC_command/formsets/_firework_explosion_formset.html', # 我们将创建这个模板
+        'supported_function_types': ['firework'], # 关键：仅对烟花火箭显示
+        'generate_nbt': generate_nbt_fireworks,
+        'generate_component': generate_component_fireworks,
+    }
     # Add future components here, e.g., 'fireworks', 'book_content'
 }

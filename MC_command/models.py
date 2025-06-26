@@ -106,6 +106,7 @@ class Enchantment(VersionedItem):
         max_length=50,help_text="附魔类型, 例如 'weapon', 'armor', 'fishing_rod', 'trident' 等",
         choices=[
             ('weapon', '武器'),
+            ('tool', '工具'),
             ('armor', '盔甲'),
             ('fishing_rod', '钓鱼竿'),
             ('trident', '三叉戟'),
@@ -268,3 +269,40 @@ class WrittenBookContent(models.Model):
     title = models.CharField(max_length=100)
     author = models.CharField(max_length=50)
     pages = models.TextField(help_text="书本内容，存储为 JSON 字符串数组")
+
+
+# --- 新增烟火之星模型 ---
+class AppliedFireworkExplosion(models.Model):
+    """存储烟花爆炸（烟火之星）的详细信息。"""
+    SHAPE_CHOICES = [
+        (0, '小球型 (Small Ball)'),
+        (1, '大球型 (Large Ball)'),
+        (2, '星型 (Star-shaped)'),
+        (3, '苦力怕型 (Creeper-shaped)'),
+        (4, '爆裂型 (Burst)'),
+        ('random', '随机形状'),
+    ]
+
+    command = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE, related_name="firework_explosions")
+
+    # 外观属性
+    shape = models.CharField(max_length=10, choices=SHAPE_CHOICES, default=0, verbose_name="形状")
+    has_trail = models.BooleanField(default=False, verbose_name="有尾迹")
+    has_twinkle = models.BooleanField(default=False, verbose_name="闪烁")
+
+    # 颜色属性
+    # 存储颜色为整数列表的JSON字符串, e.g., "[16711680, 255]" (红色, 黄色)
+    # 也可存储特殊值 "random"
+    colors = models.CharField(max_length=255, default='[]', help_text="JSON格式的颜色整数列表, 或 'random' 表示随机", verbose_name="主颜色")
+    fade_colors = models.CharField(max_length=255, default='[]', help_text="JSON格式的淡出颜色整数列表, 或 'random' 表示随机", verbose_name="淡出颜色")
+
+    # 重复属性
+    repeat_count = models.PositiveIntegerField(default=1, help_text="此烟火之星在烟花火箭中重复的次数", verbose_name="重复次数")
+
+
+    class Meta:
+        verbose_name = "烟火爆炸效果"
+        verbose_name_plural = "烟火爆炸效果"
+
+    def __str__(self):
+        return f"{self.command.title} 的烟火之星 - {self.get_shape_display()}"
