@@ -1,0 +1,39 @@
+<table id="{{ prefix }}-table">
+    <thead>
+        <tr>
+            {% for field in formset.empty_form.visible_fields %}
+                {% if field.name != 'DELETE' %}
+                    <th>{{ field.label }}</th>
+                {% endif %}
+            {% endfor %}
+            {% if formset.can_delete %}<th class="delete-cell">删除</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody id="{{ prefix }}-form-container">
+        {% for form in formset %}
+        <tr class="dynamic-form" id="{{ form.prefix }}-row">
+            {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+            {% for field in form.visible_fields %}
+                {% if field.name != 'DELETE' %}
+                    <td>{{ field }}<div class="errorlist">{{ field.errors }}</div></td>
+                {% endif %}
+            {% endfor %}
+            {% if formset.can_delete %}
+                <td class="delete-cell">{{ form.DELETE }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ verbose_name }}</button>
+<template id="{{ prefix }}-empty-form-template">
+    <tr class="dynamic-form" id="{{ formset.empty_form.prefix }}-row">
+        {% for field in formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+        {% for field in formset.empty_form.visible_fields %}
+            {% if field.name != 'DELETE' %}
+                <td>{{ field }}</td>
+            {% endif %}
+        {% endfor %}
+        {% if formset.can_delete %}<td class="delete-cell">{{ formset.empty_form.DELETE }}</td>{% endif %}
+    </tr>
+</template>

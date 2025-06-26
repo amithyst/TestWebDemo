@@ -1,7 +1,14 @@
 import json
 import random # <--- 新增导入
-from .models import AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, AppliedFireworkExplosion # <--- 导入新模型
-from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionForm # <--- 导入新表单
+from .models import (AppliedEnchantment, AppliedAttribute, 
+                     AppliedPotionEffect, AppliedFireworkExplosion,
+                     AppliedBooleanComponent
+                       # <--- 导入新模型
+)
+from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, 
+                    AppliedPotionEffectForm, AppliedFireworkExplosionForm,
+                    AppliedBooleanComponentForm
+)
 
 # ==============================================================================
 # Helper Functions
@@ -162,6 +169,42 @@ def generate_component_fireworks(related_manager):
     # The final component is `minecraft:fireworks` which contains the list
     explosions_str = f"[{','.join(explosions_list)}]"
     return {'minecraft:fireworks': f"{{explosions:{explosions_str},flight_duration:1}}"}
+def _parse_boolean_snippet(snippet: str):
+    """Parses a 'key:value' snippet into a key and value string."""
+    if ':' not in snippet:
+        return None, None
+    key, val = snippet.split(':', 1)
+    return key.strip(), val.strip()
+
+
+def generate_nbt_boolean_components(related_manager):
+    nbt_data = {}
+    for obj in related_manager.all():
+        snippet = obj.component.true_str if obj.value else obj.component.false_str
+        key, val = _parse_boolean_snippet(snippet)
+        if key is None:
+            continue
+        if val.lower() in ('true', 'false'):
+            nbt_data[key] = 1 if val.lower() == 'true' else 0
+        else:
+            try:
+                nbt_data[key] = int(val)
+            except ValueError:
+                nbt_data[key] = val
+    return nbt_data
+
+
+def generate_component_boolean_components(related_manager):
+    comp_dict = {}
+    for obj in related_manager.all():
+        snippet = obj.component.true_str if obj.value else obj.component.false_str
+        key, val = _parse_boolean_snippet(snippet)
+        if key:
+            comp_dict[key] = val
+    if not comp_dict:
+        return {}
+    return {'minecraft:booleans': json.dumps(comp_dict)}
+
 
 # ==============================================================================
 # THE COMPONENT REGISTRY
@@ -207,6 +250,16 @@ COMPONENT_REGISTRY = {
         'supported_function_types': ['firework'], # 关键：仅对烟花火箭显示
         'generate_nbt': generate_nbt_fireworks,
         'generate_component': generate_component_fireworks,
-    }
+    },
+    'boolean_components': {
+        'verbose_name': '布尔组件',
+        'model': AppliedBooleanComponent,
+        'form': AppliedBooleanComponentForm,
+        'template_path': 'MC_command/formsets/_boolean_component_formset.html',
+        'supported_function_types': ['all'],
+        'generate_nbt': generate_nbt_boolean_components,
+        'generate_component': generate_component_boolean_components,
+    },
+    
     # Add future components here, e.g., 'fireworks', 'book_content'
 }

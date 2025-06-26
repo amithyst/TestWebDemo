@@ -6,12 +6,14 @@ from django.contrib import admin
 from django.db.models import Q
 from .models import (
     MinecraftVersion, Material, ItemType, Enchantment, PotionEffectType, AttributeType,
-    GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect,AppliedFireworkExplosion, 
+    GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect,
+    AppliedFireworkExplosion, BooleanComponentType, AppliedBooleanComponent,
     WrittenBookContent
 )
 
 # --- FIX: Import the custom forms ---
-from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionAdminForm,
+from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, 
+                    AppliedFireworkExplosionAdminForm,AppliedBooleanComponentForm,
                     VersionedModelChoiceField)
 
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
@@ -53,6 +55,11 @@ class AttributeTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'attribute_id', 'min_version', 'max_version')
     search_fields = ('name', 'attribute_id')
 
+@admin.register(BooleanComponentType)
+class BooleanComponentTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'true_str', 'false_str', 'min_version', 'max_version')
+    search_fields = ('name', 'true_str', 'false_str')
+
 # -----------------------------------------------------------------------------
 # 增强版的内联定义
 # -----------------------------------------------------------------------------
@@ -80,7 +87,9 @@ class VersionedInlineMixin:
         parent_command = self.get_parent_object(request)
         if parent_command:
             target_version = parent_command.target_version
-            if db_field.name in ["enchantment", "attribute", "effect"]:
+            if db_field.name in ["enchantment", "attribute", "effect",
+                                #  "firework_explosion", #没版本限制
+                                 "boolean_component"]:
                 model = db_field.related_model
                 version_q = (
                     Q(min_version__ordering_id__lte=target_version.ordering_id) | Q(min_version__isnull=True)
@@ -121,6 +130,10 @@ class AppliedFireworkExplosionInline(admin.TabularInline):
     form = AppliedFireworkExplosionAdminForm # <--- 使用自定义表单
     extra = 1
 
+class AppliedBooleanComponentInline(VersionedInlineMixin, admin.TabularInline):
+    model = AppliedBooleanComponent
+    form = AppliedBooleanComponentForm
+    extra = 1
 
 # -----------------------------------------------------------------------------
 # GeneratedCommand 的 Admin 定义 (无需改变)
@@ -138,7 +151,8 @@ class GeneratedCommandAdmin(admin.ModelAdmin):
         AppliedEnchantmentInline,
         AppliedAttributeInline,
         AppliedPotionEffectInline,
-        AppliedFireworkExplosionInline, # <--- 添加这一行
+        AppliedFireworkExplosionInline,
+        AppliedBooleanComponentInline,
         WrittenBookContentInline,
     ]
     fieldsets = (

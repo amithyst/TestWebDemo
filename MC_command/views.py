@@ -12,7 +12,9 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.db.models import Q
 # 修改: 引入 Material, ItemType
-from .models import Enchantment, AttributeType, PotionEffectType, MinecraftVersion, Material, ItemType
+from .models import (Enchantment, AttributeType, PotionEffectType, 
+                     MinecraftVersion, Material, ItemType,BooleanComponentType
+)
 from .models import GeneratedCommand
 from .forms import GeneratedCommandForm,VersionedModelChoiceField, AppliedFireworkExplosionAdminForm
 from .components import COMPONENT_REGISTRY
@@ -370,6 +372,13 @@ def get_compatible_components(request):
         ]
     elif component_type == 'firework_explosions':
         data = []
+    elif component_type == 'boolean_components':
+        queryset = BooleanComponentType.objects.filter(version_filter).order_by('name')
+        field = VersionedModelChoiceField(queryset=queryset)
+        data = [
+            {'id': obj.pk, 'text': field.label_from_instance(obj)}
+            for obj in queryset
+        ]
     else:
         return JsonResponse({'error': 'Invalid component type'}, status=400)
 
