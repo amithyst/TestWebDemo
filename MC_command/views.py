@@ -18,14 +18,25 @@ from .forms import GeneratedCommandForm,VersionedModelChoiceField, AppliedFirewo
 from .components import COMPONENT_REGISTRY
 
 # --- 核心视图 ---
+def home(request):
+    return render(request, 'MC_command/home.html')
 
 @login_required
-def index(request):
+def item_index(request):
     command_list = GeneratedCommand.objects.filter(user=request.user).order_by("-updated_at")
     context = {
         'command_list': command_list,
     }
-    return render(request, 'MC_command/index.html', context)
+    return render(request, 'MC_command/item/index.html', context)
+
+@login_required
+def entity_index(request):
+    return render(request, 'MC_command/entity/index.html')
+
+@login_required
+def book_index(request):
+    return render(request, 'MC_command/book/index.html')
+
 
 @login_required
 def detail(request, command_id):
@@ -36,7 +47,7 @@ def detail(request, command_id):
         'give_command_string': command_context['give_command'],
         'data_structure_json': command_context['data_json'],
     }
-    return render(request, 'MC_command/detail.html', context)
+    return render(request, 'MC_command/item/detail.html', context)
 
 # --- 增删改查 (CRUD) 视图 ---
 # --- 完全替换旧的 CREATE 和 EDIT 视图 ---
@@ -115,7 +126,7 @@ def create(request):
         'version_data_json': json.dumps(version_data),
         'item_type_data_json': json.dumps(item_type_data),
     }
-    return render(request, 'MC_command/command_form.html', context)
+    return render(request, 'MC_command/item/command_form.html', context)
 
 @login_required
 def edit(request, command_id):
@@ -190,7 +201,7 @@ def edit(request, command_id):
         'version_data_json': json.dumps(version_data),
         'item_type_data_json': json.dumps(item_type_data),
     }
-    return render(request, 'MC_command/command_form.html', context)
+    return render(request, 'MC_command/item/command_form.html', context)
 
 
 # ... (文件其他部分不变) ...

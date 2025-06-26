@@ -219,6 +219,23 @@ body {
 }
 
 /* --- Styles for Form Inlines (Moved from command_form.html and Improved) --- */
+/* Navigation bar styles */
+.nav {
+    margin-bottom: 20px;
+}
+
+.nav a {
+    margin-right: 15px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+
 .inline-group {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
