@@ -44,26 +44,46 @@
                         <thead>
                             <tr>
                                 {% for field in data.formset.empty_form.visible_fields %}
-                                    <th {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field.label }}</th>
+                                    {% if field.name != 'DELETE' %}
+                                        <th {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field.label }}</th>
+                                    {% endif %}
                                 {% endfor %}
                                 {% if data.formset.can_delete %}<th class="delete-cell">删除</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody id="{{ prefix }}-form-container">
+                            {% comment %} 替换 tbody 中 form 的循环 {% endcomment %}
                             {% for form in data.formset %}
                             <tr id="{{ form.prefix }}-row" class="dynamic-form">
                                 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
                                 {% for field in form.visible_fields %}
-                                    <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>
-                                        {{ field }}
-                                        <div class="errorlist">{{ field.errors }}</div>
-                                    </td>
+                                    {% if field.name != 'DELETE' %}
+                                        <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>
+                                            {{ field }}
+                                            <div class="errorlist">{{ field.errors }}</div>
+                                        </td>
+                                    {% endif %}
                                 {% endfor %}
                                 {% if data.formset.can_delete %}
                                     <td class="delete-cell">{{ form.DELETE }}</td>
                                 {% endif %}
                             </tr>
                             {% endfor %}
+
+                            {% comment %} 同样需要修改 template 中的循环 {% endcomment %}
+                            <template id="{{ prefix }}-empty-form-template">
+                                <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
+                                    {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+                                    {% for field in data.formset.empty_form.visible_fields %}
+                                        {% if field.name != 'DELETE' %}
+                                            <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if data.formset.can_delete %}
+                                        <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
+                                    {% endif %}
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                     
@@ -93,6 +113,7 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -100,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionSelect = document.getElementById('id_target_version');
     const itemTypeSelect = document.getElementById('id_item_type');
     const componentGroups = document.querySelectorAll('.component-group');
-    const apiURL = '{{ api_component_url }}';
+    const apiURL = '{% url "MC_command:api_get_components" %}'; // 修正：使用Django的url模板标签
 
     let versionData = {};
     try {
@@ -114,17 +135,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const VERSION_1_20_5_ORDERING_ID = 12005;
 
-    // --- 功能 1: 驼峰化字符串 ---
+    // --- 功能 1: 驼峰化字符串 (核心修复) ---
     function toCamelCase(str) {
-        // e.g., minecraft:generic.max_health -> MaxHealth
-        let cleanStr = str.includes('.') ? str.split('.').pop() : str;
+        if (!str) return '';
+        // e.g., "minecraft:generic.max_health" -> "MaxHealth"
+        const cleanStr = str.includes('.') ? str.split('.').pop() : str;
         return cleanStr.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
     }
 
     // --- 功能 2: 更新组件可见性 (基于物品类型) ---
     const updateComponentVisibility = () => {
         const selectedItemTypeId = itemTypeSelect.value;
-        let currentItemFuncType = 'all'; 
+        let currentItemFuncType = 'all';
 
         if (selectedItemTypeId && itemTypeData[selectedItemTypeId]) {
             currentItemFuncType = itemTypeData[selectedItemTypeId].type;
@@ -144,14 +166,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
-    
+
     // --- 功能 3: 更新属性表单 (显隐 modifier_name) ---
     const updateAttributeFormUI = () => {
         const selectedVersionId = versionSelect.value;
         const orderingId = versionData[selectedVersionId] || 0;
         const attributesTable = document.getElementById('attributes-table');
         if (!attributesTable) return;
-        
+
         if (orderingId >= VERSION_1_20_5_ORDERING_ID) {
             attributesTable.classList.add('hide-modifier-name');
         } else {
@@ -164,28 +186,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const versionId = versionSelect.value;
         if (!versionId) return;
 
-        // 获取所有需要更新的下拉框
         const selectsToUpdate = document.querySelectorAll('.version-filtered-select');
-        
+
         for (const select of selectsToUpdate) {
             const componentType = select.dataset.componentType;
-            const originalValue = select.value;
+            if (!componentType) continue; // 跳过没有 component-type 的 select
 
             try {
                 const response = await fetch(`${apiURL}?version_id=${versionId}&type=${componentType}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const options = await response.json();
-                
-                // 缓存当前选中的值
+
                 const selectedValue = select.value;
-                
-                // 清空并重新填充
-                select.innerHTML = '<option value="">---------</option>'; 
+                select.innerHTML = '<option value="">---------</option>';
                 options.forEach(opt => {
                     const optionEl = document.createElement('option');
                     optionEl.value = opt.id;
                     optionEl.textContent = opt.text;
-                    // 在此存储 attribute_id
+                    // **关键**: 将 attribute_id 存储在 data-* 属性中
                     if (opt.attribute_id) {
                         optionEl.dataset.attributeId = opt.attribute_id;
                     }
@@ -196,74 +214,78 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (Array.from(select.options).some(o => o.value === selectedValue)) {
                     select.value = selectedValue;
                 }
-
             } catch (error) {
                 console.error(`Failed to fetch options for ${componentType}:`, error);
             }
         }
     };
-    
-    // --- 功能 5: 修复 "添加词条" Bug 并绑定事件 ---
+
+    // --- 功能 5: 添加新行 ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
             const container = document.getElementById(`${prefix}-form-container`);
             const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
             const template = document.getElementById(`${prefix}-empty-form-template`);
-            
-            if(!template || !totalFormsInput || !container) {
+
+            if (!template || !totalFormsInput || !container) {
                 console.error("Formset elements not found for prefix:", prefix);
                 return;
             }
-            
-            let totalForms = parseInt(totalFormsInput.value);
-            
-            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
-            const newRow = document.createElement('tr');
-            newRow.innerHTML = newRowHtml;
-            newRow.id = `attributes-${totalForms}-row`;
-            newRow.classList.add('dynamic-form');
-            
-            container.appendChild(newRow);
-            totalFormsInput.value = totalForms + 1;
 
-            // 为新行中的select也加上class，确保版本切换时也能更新
-            newRow.querySelectorAll('select').forEach(s => {
-                 s.classList.add('version-filtered-select');
-                 s.dataset.componentType = prefix.slice(0,-1); // 'attributes' -> 'attribute'
+            let totalForms = parseInt(totalFormsInput.value);
+            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+            
+            // 使用 table 的 insertRow 方法更健壮
+            const newRow = container.insertRow();
+            newRow.innerHTML = newRowHtml;
+            // 确保新行也有正确的 ID 和 class
+            const newRowElement = container.lastElementChild;
+            newRowElement.id = `${prefix}-${totalForms}-row`;
+            newRowElement.classList.add('dynamic-form');
+
+            totalFormsInput.value = totalForms + 1;
+            
+            // 为新行中的 select 加上 class 和 data-*, 以便版本切换时能更新
+            newRowElement.querySelectorAll('select').forEach(s => {
+                s.classList.add('version-filtered-select');
+                // 从 prefix 推断 componentType, e.g., "attributes" -> "attribute"
+                const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
+                s.dataset.componentType = componentType;
             });
 
-            // 关键：为新行添加事件监听器
-            if (prefix === 'attributes') {
-                const newAttributeSelect = newRow.querySelector(`select[name^="${prefix}"]`);
-                 if(newAttributeSelect) {
-                    newAttributeSelect.addEventListener('change', handleAttributeChange);
-                 }
-            }
+            // 重新应用UI逻辑以确保新行正确显示
+            updateAttributeFormUI();
         });
     });
 
-    // --- 功能 6: 处理属性选择变化的事件委托 ---
-    const handleAttributeChange = (event) => {
-        if (!event.target.matches('select[name^="attributes-"]')) return;
-        
-        const select = event.target;
-        const selectedOption = select.options[select.selectedIndex];
+    // --- 功能 6: 处理属性选择变化的事件委托 (核心修复) ---
+    // 对整个容器进行事件监听,而不是每个select单独绑定
+    document.body.addEventListener('change', function(event) {
+        // 确保事件源是属性下拉框
+        const attributeSelect = event.target.closest('select[data-component-type="attribute"]');
+        if (!attributeSelect) return;
+
+        const selectedOption = attributeSelect.options[attributeSelect.selectedIndex];
         const attributeId = selectedOption.dataset.attributeId;
-        const row = select.closest('tr');
+        const row = attributeSelect.closest('tr');
+        if (!row) return;
+
         const nameInput = row.querySelector('input[name$="-modifier_name"]');
-
         const attributesTable = document.getElementById('attributes-table');
-        if (!attributesTable || attributesTable.classList.contains('hide-modifier-name')) {
-            return; // 如果列是隐藏的，则不进行任何操作
+
+        // 如果 nameInput 不存在，或者修饰符名称列是隐藏的，则不进行任何操作
+        if (!nameInput || !attributesTable || attributesTable.classList.contains('hide-modifier-name')) {
+            return;
         }
 
-        if (attributeId && nameInput) {
+        // 填充值
+        if (attributeId) {
             nameInput.value = toCamelCase(attributeId);
+        } else {
+            nameInput.value = ''; // 如果选择了空选项，则清空
         }
-    };
-    
-    document.getElementById('attributes-form-container').addEventListener('change', handleAttributeChange);
+    });
 
     // --- 初始化和事件监听 ---
     versionSelect.addEventListener('change', () => {
@@ -275,12 +297,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 页面加载时立即执行 ---
     updateComponentVisibility();
     updateAttributeFormUI();
-    // 标记所有已存在的select，以便版本切换时更新
+
+    // 标记所有已存在的select，确保它们能被JS正确处理
     document.querySelectorAll('.inline-group select').forEach(s => {
-        const prefix = s.closest('.inline-group').dataset.prefix;
-        if(prefix){
-             s.classList.add('version-filtered-select');
-             s.dataset.componentType = prefix.slice(0, -1);
+        const group = s.closest('.inline-group');
+        if (group) {
+            const prefix = group.dataset.prefix;
+            s.classList.add('version-filtered-select');
+            const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
+            s.dataset.componentType = componentType;
         }
     });
 });

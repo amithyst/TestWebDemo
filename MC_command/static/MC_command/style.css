@@ -381,14 +381,29 @@ hr {
     margin: 20px 0;
 }
 
+/* 找到并替换原有的 .errorlist 样式 */
 .errorlist {
-    color: #dc3545;
+    color: #dc3545; /* 错误文字颜色 - 保持红色以示警告 */
     font-size: 0.9em;
-    margin: 10px 0;
-    padding: 10px;
-    list-style-type: none;
-    font-weight: bold;
-    background-color: #f8d7da;
+    margin: 5px 0 0 0; /* 调整边距 */
+    padding: 0; /* 移除内边距 */
+    list-style-type: none; /* 移除列表的点 */
+    font-weight: normal; /* 正常字重即可 */
+    background-color: transparent; /* 核心改动：移除背景色 */
+    border: none; /* 核心改动：移除边框 */
+}
+
+/* 针对表单字段下的错误列表 */
+.form-field .errorlist {
+    padding-left: 5px; /* 可以稍微缩进，更清晰 */
+}
+
+/* 针对表单顶部的非字段错误 */
+form > .errorlist {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background-color: #f8d7da; /* 对于顶部的全局错误，可以保留淡粉色背景以示强调 */
     border: 1px solid #f5c6cb;
     border-radius: 5px;
+    font-weight: bold;
 }
