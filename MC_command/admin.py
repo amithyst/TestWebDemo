@@ -133,7 +133,8 @@ class GeneratedCommandAdmin(admin.ModelAdmin):
         AppliedEnchantmentInline,
         AppliedAttributeInline,
         AppliedPotionEffectInline,
-        WrittenBookContentInline
+        WrittenBookContentInline,
+        AppliedFireworkExplosion
     ]
     fieldsets = (
         (None, {
