@@ -52,34 +52,37 @@ def create(request):
         form = GeneratedCommandForm(request.POST)
         formsets = {prefix: FormSetClasses[prefix](request.POST, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
-        # 检查所有表单和表单集的基础有效性
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
         forms_are_valid = form.is_valid() and all(fs.is_valid() for fs in formsets.values())
 
         if forms_are_valid:
-            # 运行自定义的跨表单验证
             try:
+                # 在保存前运行自定义验证
                 _validate_version_compatibility(
                     form,
                     formsets.get('enchantments'),
                     formsets.get('attributes'),
                     form.cleaned_data['target_version']
                 )
-            except forms.ValidationError as e:
-                form.add_error(None, e) # 将跨表单验证错误添加到主表单
-                forms_are_valid = False # 标记为无效
 
-        if forms_are_valid:
-            with transaction.atomic():
-                command_instance = form.save(commit=False)
-                command_instance.user = request.user
-                command_instance.save()
-                for prefix, formset in formsets.items():
-                    formset.instance = command_instance
-                    formset.save()
-                return redirect(reverse('MC_command:detail', args=[command_instance.id]))
-        # 如果验证失败，将带着错误信息重新渲染模板（无需else，这是默认行为）
+                with transaction.atomic():
+                    command_instance = form.save(commit=False)
+                    command_instance.user = request.user
+                    command_instance.save()
+                    for prefix, formset in formsets.items():
+                        formset.instance = command_instance
+                        formset.save()
+                    return redirect(reverse('MC_command:detail', args=[command_instance.id]))
+            except forms.ValidationError:
+                # 验证失败，错误已添加到表单中，将重新渲染页面以显示错误
+                pass
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 
-    else: # GET 请求
+    else:
         form = GeneratedCommandForm()
         formsets = {prefix: FormSetClasses[prefix](prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
@@ -112,29 +115,34 @@ def edit(request, command_id):
         form = GeneratedCommandForm(request.POST, instance=command_obj)
         formsets = {prefix: FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
         forms_are_valid = form.is_valid() and all(fs.is_valid() for fs in formsets.values())
 
         if forms_are_valid:
             try:
+                # 在保存前运行自定义验证
                 _validate_version_compatibility(
                     form,
                     formsets.get('enchantments'),
                     formsets.get('attributes'),
                     form.cleaned_data['target_version']
                 )
-            except forms.ValidationError as e:
-                form.add_error(None, e)
-                forms_are_valid = False
 
-        if forms_are_valid:
-            with transaction.atomic():
-                form.save()
-                for formset in formsets.values():
-                    formset.save()
-                return redirect(reverse('MC_command:detail', args=[command_obj.id]))
-        # 如果验证失败，将带着错误信息重新渲染模板
+                with transaction.atomic():
+                    form.save()
+                    for formset in formsets.values():
+                        formset.save()
+                    return redirect(reverse('MC_command:detail', args=[command_obj.id]))
+            except forms.ValidationError:
+                # 验证失败，错误已添加到表单中，将重新渲染页面以显示错误
+                pass
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 
-    else: # GET 请求
+    else:
         form = GeneratedCommandForm(instance=command_obj)
         formsets = {prefix: FormSetClasses[prefix](instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
         
@@ -156,27 +164,26 @@ def edit(request, command_id):
     }
     return render(request, 'MC_command/command_form.html', context)
 
+# ... (文件其他部分不变) ...
+
 def _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version):
     """
     一个辅助函数，用于检查所选版本是否与所有组件兼容。
     如果不兼容，则会向主表单添加一个错误并引发 ValidationError。
     """
-    all_components = [form.cleaned_data.get('base_item')]
-    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-    # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
-    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-    if enchant_formset: # 确保 formset 存在
+    # I have removed the obsolete reference to 'base_item'. The validation now
+    # correctly checks only the versioned components from the formsets.
+    all_components = []
+    
+    if enchant_formset:
         for enchant_form in enchant_formset.cleaned_data:
             if enchant_form and not enchant_form.get('DELETE'):
                 all_components.append(enchant_form.get('enchantment'))
     
-    if attribute_formset: # 确保 formset 存在
+    if attribute_formset:
         for attr_form in attribute_formset.cleaned_data:
             if attr_form and not attr_form.get('DELETE'):
                 all_components.append(attr_form.get('attribute'))
-    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-    # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
-    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 
     min_v_id = 0
     max_v_id = float('inf')

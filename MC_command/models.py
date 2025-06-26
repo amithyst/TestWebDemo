@@ -306,3 +306,21 @@ class AppliedFireworkExplosion(models.Model):
 
     def __str__(self):
         return f"{self.command.title} 的烟火之星 - {self.get_shape_display()}"
+
+    def get_colors_list(self):
+        """Helper method to parse the JSON string of colors."""
+        if not self.colors or self.colors == 'random':
+            return []
+        try:
+            return json.loads(self.colors)
+        except json.JSONDecodeError:
+            return []
+
+    def get_fade_colors_list(self):
+        """Helper method to parse the JSON string of fade_colors."""
+        if not self.fade_colors or self.fade_colors == 'random':
+            return []
+        try:
+            return json.loads(self.fade_colors)
+        except json.JSONDecodeError:
+            return []

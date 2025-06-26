@@ -126,27 +126,39 @@ def generate_nbt_fireworks(related_manager):
     return {'Fireworks': {'Explosions': explosions}}
 
 def generate_component_fireworks(related_manager):
+    # I've added a mapping from shape ID to the correct component string ID.
+    SHAPE_ID_TO_STRING = {
+        0: 'small_ball',
+        1: 'large_ball',
+        2: 'star',
+        3: 'creeper',
+        4: 'burst',
+    }
     explosions = []
     for explosion in related_manager.all():
         for _ in range(explosion.repeat_count):
-            # JSON Component 使用字符串键
             nbt = _generate_single_explosion_nbt(explosion)
-            component_nbt = {
-                'shape': f"'{nbt['Type']}'", # 注意：形状在component里是枚举字符串
-                'has_trail': 'true' if nbt.get('Trail') else 'false',
-                'has_twinkle': 'true' if nbt.get('Flicker') else 'false',
-                'colors': f"[{','.join(map(str, nbt.get('Colors', [])))}]",
-                'fade_colors': f"[{','.join(map(str, nbt.get('FadeColors', [])))}]"
-            }
-            # 这里我们直接构建字符串，因为格式比较特殊
-            explosion_str = f"{{shape:{component_nbt['shape']},has_trail:{component_nbt['has_trail']},has_twinkle:{component_nbt['has_twinkle']},colors:{component_nbt['colors']},fade_colors:{component_nbt['fade_colors']}}}"
-            explosions.append(explosion_str)
+            # Use the mapping to get the correct shape string for the component.
+            shape_string = SHAPE_ID_TO_STRING.get(nbt['Type'], 'small_ball')
+            
+            # Now, correctly format the component string.
+            explosion_parts = [
+                f"shape:'{shape_string}'",
+                f"has_trail:{'true' if nbt.get('Trail') else 'false'}",
+                f"has_twinkle:{'true' if nbt.get('Flicker') else 'false'}",
+            ]
+            if nbt.get('Colors'):
+                explosion_parts.append(f"colors:[{','.join(map(str, nbt.get('Colors')))}]")
+            if nbt.get('FadeColors'):
+                explosion_parts.append(f"fade_colors:[{','.join(map(str, nbt.get('FadeColors')))}]")
+            
+            explosions.append(f"{{{','.join(explosion_parts)}}}")
 
     if not explosions:
         return {}
-
-    # Minecraft 1.20.5+ 的 firework_explosions 是一个列表
+    
     return {'minecraft:firework_explosion': f"[{','.join(explosions)}]"}
+
 
 # ==============================================================================
 # THE COMPONENT REGISTRY
