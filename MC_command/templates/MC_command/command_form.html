@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const versionSelect = document.getElementById('id_target_version');
     const itemTypeSelect = document.getElementById('id_item_type');
     const componentGroups = document.querySelectorAll('.component-group');
-    const apiURL = '{% url "MC_command:api_get_components" %}'; // 修正：使用Django的url模板标签
+    const apiURL = '{% url "MC_command:api_get_components" %}';
 
     let versionData = {};
     try {
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         for (const select of selectsToUpdate) {
             const componentType = select.dataset.componentType;
-            if (!componentType) continue; // 跳过没有 component-type 的 select
+            if (!componentType) continue; 
 
             try {
                 const response = await fetch(`${apiURL}?version_id=${versionId}&type=${componentType}`);
@@ -203,14 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const optionEl = document.createElement('option');
                     optionEl.value = opt.id;
                     optionEl.textContent = opt.text;
-                    // **关键**: 将 attribute_id 存储在 data-* 属性中
                     if (opt.attribute_id) {
                         optionEl.dataset.attributeId = opt.attribute_id;
                     }
                     select.appendChild(optionEl);
                 });
 
-                // 尝试恢复之前选中的值
                 if (Array.from(select.options).some(o => o.value === selectedValue)) {
                     select.value = selectedValue;
                 }
@@ -236,33 +234,25 @@ document.addEventListener('DOMContentLoaded', function() {
             let totalForms = parseInt(totalFormsInput.value);
             const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
             
-            // 使用 table 的 insertRow 方法更健壮
-            const newRow = container.insertRow();
-            newRow.innerHTML = newRowHtml;
-            // 确保新行也有正确的 ID 和 class
-            const newRowElement = container.lastElementChild;
-            newRowElement.id = `${prefix}-${totalForms}-row`;
-            newRowElement.classList.add('dynamic-form');
+            container.insertAdjacentHTML('beforeend', newRowHtml);
+            const newRowElement = document.getElementById(`${prefix}-${totalForms}-row`);
 
             totalFormsInput.value = totalForms + 1;
             
-            // 为新行中的 select 加上 class 和 data-*, 以便版本切换时能更新
             newRowElement.querySelectorAll('select').forEach(s => {
                 s.classList.add('version-filtered-select');
-                // 从 prefix 推断 componentType, e.g., "attributes" -> "attribute"
                 const componentType = prefix.endsWith('s') ? prefix.slice(0, -1) : prefix;
                 s.dataset.componentType = componentType;
             });
 
-            // 重新应用UI逻辑以确保新行正确显示
             updateAttributeFormUI();
+            // *** CHANGE 1: Immediately populate the new row's dropdown and others ***
+            updateComponentOptions();
         });
     });
 
     // --- 功能 6: 处理属性选择变化的事件委托 (核心修复) ---
-    // 对整个容器进行事件监听,而不是每个select单独绑定
     document.body.addEventListener('change', function(event) {
-        // 确保事件源是属性下拉框
         const attributeSelect = event.target.closest('select[data-component-type="attribute"]');
         if (!attributeSelect) return;
 
@@ -274,16 +264,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const nameInput = row.querySelector('input[name$="-modifier_name"]');
         const attributesTable = document.getElementById('attributes-table');
 
-        // 如果 nameInput 不存在，或者修饰符名称列是隐藏的，则不进行任何操作
         if (!nameInput || !attributesTable || attributesTable.classList.contains('hide-modifier-name')) {
             return;
         }
 
-        // 填充值
         if (attributeId) {
             nameInput.value = toCamelCase(attributeId);
         } else {
-            nameInput.value = ''; // 如果选择了空选项，则清空
+            nameInput.value = '';
         }
     });
 
@@ -297,6 +285,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 页面加载时立即执行 ---
     updateComponentVisibility();
     updateAttributeFormUI();
+    // *** CHANGE 2: Call on page load to populate existing forms ***
+    updateComponentOptions();
 
     // 标记所有已存在的select，确保它们能被JS正确处理
     document.querySelectorAll('.inline-group select').forEach(s => {

@@ -9,7 +9,7 @@ git remote add origin https://github.com/amithyst/TestWebDemo.git
 git add .
 git commit -m "更新"
 git push -u origin master
-
+#
 ```
 
 切换到根目录创建文件夹**djangotutorial后创建**项目
