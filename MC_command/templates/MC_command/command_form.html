@@ -359,6 +359,22 @@ document.addEventListener('DOMContentLoaded', function() {
     updateComponentOptions();
 
     document.querySelectorAll('.firework-form-row').forEach(setupFireworkRow);
+    
+    // --- 新增：处理删除按钮的逻辑 ---
+    document.body.addEventListener('click', function(event) {
+        // 监听所有class为 'delete-row-btn' 的按钮
+        if (event.target.classList.contains('delete-row-btn')) {
+            const row = event.target.closest('.dynamic-form');
+            if (row) {
+                const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+                if (deleteCheckbox) {
+                    // 对于已存在的表单行，勾选隐藏的DELETE复选框并隐藏该行
+                    deleteCheckbox.checked = true;
+                    row.style.display = 'none';
+                }
+            }
+        }
+    });
 });
 </script>
 {% endblock %}

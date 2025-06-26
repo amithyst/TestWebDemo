@@ -14,7 +14,7 @@
                 <div class="card-body">
                     <h3><a href="{% url 'MC_command:detail' command.id %}">{{ command.title }}</a></h3>
                     <div class="card-meta">
-                        <span><strong>物品:</strong> {{ command.item_name }}</span>  <span style="margin-left: 20px;"><strong>版本:</strong> {{ command.target_version.version_number }}</span>
+                        <span><strong>物品:</strong> {{ command.item_name }}</span>  <span style="margin-left: 20px;"></span>
                         <span><strong>版本:</strong> {{ command.target_version.version_number }}</span>
                         <span><strong>上次更新:</strong> {{ command.updated_at|date:"Y-m-d H:i" }}</span>
                     </div>

@@ -515,3 +515,17 @@ form > .errorlist {
     top: 10px;
     right: 10px;
 }
+
+
+.firework-form-row .delete-row-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 4px 8px;
+    font-size: 0.8em;
+}
+
+.inline-group td .btn-delete {
+    padding: 4px 8px;
+    font-size: 0.8em;
+}
