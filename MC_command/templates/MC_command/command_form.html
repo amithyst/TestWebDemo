@@ -452,6 +452,37 @@ document.addEventListener('DOMContentLoaded', function() {
                  checkbox.dispatchEvent(new Event('change'));
             }
         });
+        // --- 初始化已有的颜色数据 ---
+        ['colors', 'fade_colors'].forEach(type => {
+            const hiddenInput = row.querySelector(`input[name$="-${type}"]`);
+            const palette = row.querySelector(`.color-palette[data-type="${type}"]`);
+            const randomCb = row.querySelector(`.random-color-cb[data-type="${type}"]`);
+            if (!hiddenInput || !palette || !randomCb) return;
+
+            const initialValue = hiddenInput.value;
+            if (initialValue === 'random') {
+                randomCb.checked = true;
+                randomCb.dispatchEvent(new Event('change'));
+            } else {
+                try {
+                    const colors = JSON.parse(initialValue);
+                    colors.forEach(val => {
+                        const hex = `#${parseInt(val, 10).toString(16).padStart(6, '0')}`;
+                        const chip = document.createElement('div');
+                        chip.className = 'color-chip';
+                        chip.style.backgroundColor = hex;
+                        chip.dataset.colorValue = val;
+                        chip.innerHTML = '<span>&times;</span>';
+                        chip.addEventListener('click', function() {
+                            this.remove();
+                            updateHiddenColorInput(row, type);
+                        });
+                        palette.appendChild(chip);
+                    });
+                } catch (e) { /* ignore malformed initial data */ }
+                updateHiddenColorInput(row, type);
+            }
+        });
     }
 
     // 页面加载时，为已存在的烟火效果行设置逻辑
