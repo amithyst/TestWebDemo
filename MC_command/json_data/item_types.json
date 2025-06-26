@@ -18,5 +18,6 @@
   { "system_name": "tipped_arrow", "display_name": "药箭💘", "function_type": "potion" },
   { "system_name": "firework_rocket", "display_name": "烟花火箭🧨", "function_type": "firework" },
   { "system_name": "ingot", "display_name": "锭", "function_type": "all" },
+  { "system_name": "block", "display_name": "块", "function_type": "all" },
   { "system_name": "written_book", "display_name": "成书📕", "function_type": "written_book" }
 ]
