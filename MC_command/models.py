@@ -298,6 +298,26 @@ class AppliedFireworkExplosion(models.Model):
     # 控制逻辑
     repeat_count = models.PositiveSmallIntegerField(default=1, verbose_name="重复次数", help_text="此爆炸效果重复多少次")
 
+    # --- 在此处添加以下两个方法 ---
+    def get_colors_list(self):
+        """将JSON字符串解析为主颜色列表"""
+        if self.colors and self.colors != 'random':
+            try:
+                return json.loads(self.colors)
+            except json.JSONDecodeError:
+                return []
+        return []
+
+    def get_fade_colors_list(self):
+        """将JSON字符串解析为淡出颜色列表"""
+        if self.fade_colors and self.fade_colors != 'random':
+            try:
+                return json.loads(self.fade_colors)
+            except json.JSONDecodeError:
+                return []
+        return []
+    # --- 添加结束 ---
+
     def __str__(self):
         shape_name = self.get_shape_display()
         return f"爆炸效果 ({shape_name})"

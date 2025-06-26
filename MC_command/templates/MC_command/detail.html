@@ -98,27 +98,35 @@
                         <p class="mb-1"><strong>闪烁效果:</strong> {{ explosion.has_twinkle|yesno:"是,否" }}</p>
                         <p class="mb-1"><strong>重复次数:</strong> {{ explosion.repeat_count }}</p>
 
-                        {% if explosion.colors != "[]" and explosion.colors != "" %}
+                        {# --- 这是需要修改的部分 --- #}
+                        {% if explosion.colors != "[]" and explosion.colors != "" and explosion.colors != 'random' %}
                         <div class="mb-1">
                             <strong>主颜色:</strong>
                             <div class="d-flex flex-wrap">
+                                {# 调用新的 get_colors_list 方法 #}
                                 {% for color in explosion.get_colors_list %}
-                                    <div class="color-box" style="background-color: #{{ color|stringformat:"06x" }};" title="#{{ color|stringformat:"06x" }}"></div>
+                                    <div class="color-box" style="background-color: #{{ color|stringformat:'06x' }};" title="#{{ color|stringformat:'06x' }}"></div>
                                 {% endfor %}
                             </div>
                         </div>
+                        {% elif explosion.colors == 'random' %}
+                        <p class="mb-1"><strong>主颜色:</strong> 随机</p>
                         {% endif %}
 
-                        {% if explosion.fade_colors != "[]" and explosion.fade_colors != "" %}
+                        {% if explosion.fade_colors != "[]" and explosion.fade_colors != "" and explosion.fade_colors != 'random' %}
                         <div class="mb-1">
                             <strong>淡出颜色:</strong>
                             <div class="d-flex flex-wrap">
+                                {# 调用新的 get_fade_colors_list 方法 #}
                                 {% for color in explosion.get_fade_colors_list %}
-                                    <div class="color-box" style="background-color: #{{ color|stringformat:"06x" }};" title="#{{ color|stringformat:"06x" }}"></div>
+                                    <div class="color-box" style="background-color: #{{ color|stringformat:'06x' }};" title="#{{ color|stringformat:'06x' }}"></div>
                                 {% endfor %}
                             </div>
                         </div>
+                        {% elif explosion.fade_colors == 'random' %}
+                        <p class="mb-1"><strong>淡出颜色:</strong> 随机</p>
                         {% endif %}
+                        {# --- 修改结束 --- #}
                     </div>
                     {% endfor %}
                 </div>

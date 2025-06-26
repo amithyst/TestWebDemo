@@ -1,86 +1,64 @@
-{# templates/MC_command/formsets/_firework_explosion_formset.html #}
-<div class="component-formset" id="{{ prefix }}-group">
-    {{ formset.management_form }}
-    <h4 class="component-title">{{ verbose_name }}</h4>
-    <div id="{{ prefix }}-forms-container">
-        {% for form in formset %}
-            <div class="form-row dynamic-form" id="{{ form.prefix }}-row">
-                {{ form.id }}
-                <div class="row align-items-center mb-2">
-                    <div class="col-md-2">
-                        {{ form.shape.label_tag }}
-                        {{ form.shape }}
-                    </div>
-                    <div class="col-md-3">
-                        <label>颜色</label>
-                        <div class="color-picker-widget" data-target-input="#{{ form.colors.id_for_label }}"></div>
-                        {{ form.colors }} {# Hidden input #}
-                    </div>
-                    <div class="col-md-3">
-                        <label>淡出颜色</label>
-                        <div class="color-picker-widget" data-target-input="#{{ form.fade_colors.id_for_label }}"></div>
-                        {{ form.fade_colors }} {# Hidden input #}
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-check form-check-inline">
-                            {{ form.has_trail }}
-                            <label class="form-check-label" for="{{ form.has_trail.id_for_label }}">拖尾</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            {{ form.has_twinkle }}
-                            <label class="form-check-label" for="{{ form.has_twinkle.id_for_label }}">闪烁</label>
-                        </div>
-                    </div>
-                    <div class="col-md-1">
-                        {% if form.instance.pk %}
-                            <div class="form-check">
-                                {{ form.DELETE }}
-                                <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">删除</label>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-    <button type="button" class="btn btn-outline-success btn-sm add-form-row" data-prefix="{{ prefix }}">添加一个爆炸效果</button>
-</div>
+{# templates/MC_command/formsets/_firework_explosion_row.html #}
+<div class="firework-form-row dynamic-form" id="{{ form.prefix }}-row">
+    {# 隐藏字段，如 id 和 DELETE #}
+    {% for hidden_field in form.hidden_fields %}{{ hidden_field }}{% endfor %}
 
-{# 空表单模板，用于JS动态添加 #}
-<div class="empty-form-template" id="{{ prefix }}-empty-form" style="display:none">
-    <div class="form-row dynamic-form" id="__prefix__-row">
-        {{ formset.empty_form.id }}
-        <div class="row align-items-center mb-2">
-            <div class="col-md-2">
-                {{ formset.empty_form.shape.label_tag }}
-                {{ formset.empty_form.shape }}
-            </div>
-            <div class="col-md-3">
-                <label>颜色</label>
-                <div class="color-picker-widget" data-target-input="#{{ formset.empty_form.colors.id_for_label }}"></div>
-                {{ formset.empty_form.colors }}
-            </div>
-            <div class="col-md-3">
-                <label>淡出颜色</label>
-                <div class="color-picker-widget" data-target-input="#{{ formset.empty_form.fade_colors.id_for_label }}"></div>
-                {{ formset.empty_form.fade_colors }}
-            </div>
-            <div class="col-md-3">
-                <div class="form-check form-check-inline">
-                    {{ formset.empty_form.has_trail }}
-                    <label class="form-check-label" for="{{ formset.empty_form.has_trail.id_for_label }}">拖尾</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    {{ formset.empty_form.has_twinkle }}
-                    <label class="form-check-label" for="{{ formset.empty_form.has_twinkle.id_for_label }}">闪烁</label>
-                </div>
-            </div>
-            <div class="col-md-1">
-                <div class="form-check">
-                    {{ formset.empty_form.DELETE }}
-                    <label class="form-check-label" for="{{ formset.empty_form.DELETE.id_for_label }}">删除</label>
-                </div>
-            </div>
+    <div class="fw-fields-grid">
+        <div class="form-field">
+            {{ form.shape.label_tag }}
+            {{ form.shape }}
+            <div class="errorlist">{{ form.shape.errors }}</div>
+        </div>
+        <div class="form-field">
+            {{ form.repeat_count.label_tag }}
+            {{ form.repeat_count }}
+            <div class="errorlist">{{ form.repeat_count.errors }}</div>
+        </div>
+        <div class="form-field-checkbox">
+            {{ form.has_trail }}
+            <label for="{{ form.has_trail.id_for_label }}">拖尾</label>
+        </div>
+        <div class="form-field-checkbox">
+            {{ form.has_twinkle }}
+            <label for="{{ form.has_twinkle.id_for_label }}">闪烁</label>
         </div>
     </div>
+
+    <div class="fw-color-section">
+        <div class="fw-color-group">
+            <label>主颜色</label>
+            <div class="color-controls">
+                <input type="color" class="color-picker" value="#ff0000">
+                <button type="button" class="btn btn-sm add-color-btn" data-type="colors">添加颜色</button>
+                <div class="random-toggle">
+                    <input type="checkbox" id="{{ form.prefix }}-colors-random" class="random-color-cb" data-type="colors">
+                    <label for="{{ form.prefix }}-colors-random">随机</label>
+                </div>
+            </div>
+            <div class="color-palette" data-type="colors"></div>
+            {{ form.colors }} {# 隐藏的 input #}
+            <div class="errorlist">{{ form.colors.errors }}</div>
+        </div>
+        <div class="fw-color-group">
+            <label>淡出颜色</label>
+            <div class="color-controls">
+                <input type="color" class="color-picker" value="#ffff00">
+                <button type="button" class="btn btn-sm add-color-btn" data-type="fade_colors">添加颜色</button>
+                 <div class="random-toggle">
+                    <input type="checkbox" id="{{ form.prefix }}-fade_colors-random" class="random-color-cb" data-type="fade_colors">
+                    <label for="{{ form.prefix }}-fade_colors-random">随机</label>
+                </div>
+            </div>
+            <div class="color-palette" data-type="fade_colors"></div>
+            {{ form.fade_colors }} {# 隐藏的 input #}
+            <div class="errorlist">{{ form.fade_colors.errors }}</div>
+        </div>
+    </div>
+    
+    {% if form.instance.pk or form.DELETE.value %}
+        <div class="delete-checkbox-container">
+            {{ form.DELETE.label_tag }} {{ form.DELETE }}
+        </div>
+    {% endif %}
+    <button type="button" class="action-btn btn-delete delete-row-btn">删除此效果</button>
 </div>

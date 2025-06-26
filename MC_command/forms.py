@@ -158,30 +158,40 @@ class AppliedFireworkExplosionForm(forms.ModelForm):
         model = AppliedFireworkExplosion
         fields = ['shape', 'colors', 'fade_colors', 'has_trail', 'has_twinkle', 'repeat_count']
         widgets = {
-            # 我们将使用自定义的前端小部件来处理颜色输入
             'colors': forms.HiddenInput(),
             'fade_colors': forms.HiddenInput(),
         }
 
+    # --- 替换旧的 clean_colors 方法 ---
     def clean_colors(self):
-        data = self.cleaned_data['colors']
+        # 使用 .get() 并提供默认值，使其更安全
+        data = self.cleaned_data.get('colors', '[]')
+        # 如果JS发送了空字符串，则视为空列表
+        if not data:
+            data = '[]'
+        
         if data == 'random':
             return data
         try:
-            # 确保它是一个有效的JSON列表
             parsed = json.loads(data)
             if not isinstance(parsed, list):
                 raise forms.ValidationError("颜色必须是JSON列表格式。")
-            return json.dumps(parsed) # 存回标准的JSON字符串
+            return json.dumps(parsed)
         except json.JSONDecodeError:
             raise forms.ValidationError("无效的颜色JSON格式。")
 
+    # --- 替换旧的 clean_fade_colors 方法 ---
     def clean_fade_colors(self):
-        data = self.cleaned_data['fade_colors']
-        if not data or data == '[]': # 允许为空
-            return '[]'
+        data = self.cleaned_data.get('fade_colors', '[]')
+        if not data:
+            data = '[]'
+        
         if data == 'random':
             return data
+        # 允许不填淡出颜色
+        if data == '[]':
+            return '[]'
+            
         try:
             parsed = json.loads(data)
             if not isinstance(parsed, list):

@@ -1,0 +1,17 @@
+{% load static %}
+<div class="color-widget-container" id="{{ widget.attrs.id }}_container">
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value|default:'[]' }}" id="{{ widget.attrs.id }}">
+    <div class="color-palette">
+        {% for color_hex in widget.colors_list %}
+            <div class="color-display" style="background-color: {{ color_hex }};" data-hex="{{ color_hex }}">
+                <span class="delete-color">&times;</span>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="color-controls">
+        <input type="color" class="color-picker-input" value="#ff0000">
+        <button type="button" class="button add-color-btn">添加</button>
+        <input type="checkbox" id="{{ widget.attrs.id }}_random" class="random-cb" {% if widget.is_random %}checked{% endif %}>
+        <label for="{{ widget.attrs.id }}_random">随机</label>
+    </div>
+</div>

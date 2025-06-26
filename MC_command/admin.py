@@ -1,6 +1,7 @@
 # amithyst/testwebdemo/TestWebDemo-d3881865a0685c402e5482491f008b28a2027598/MC_command/admin.py
 
 import re
+from django import forms
 from django.contrib import admin
 from django.db.models import Q
 from .models import (
@@ -13,6 +14,7 @@ from .models import (
 from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionForm,
                     VersionedModelChoiceField)
 
+from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
 # ... 之前的静态数据模型 Admin 定义保持不变 ...
 @admin.register(MinecraftVersion)
@@ -112,10 +114,20 @@ class AppliedPotionEffectInline(VersionedInlineMixin, admin.TabularInline):
     form = AppliedPotionEffectForm # Use the new form
     extra = 1
 
-class AppliedFireworkExplosionInline(admin.TabularInline): # <-- 新增
+class AppliedFireworkExplosionAdminForm(forms.ModelForm):
+    class Meta:
+        model = AppliedFireworkExplosion
+        fields = '__all__'
+        widgets = {
+            'colors': ColorPickerWidget(),
+            'fade_colors': ColorPickerWidget(),
+        }
+
+class AppliedFireworkExplosionInline(admin.TabularInline):
     model = AppliedFireworkExplosion
-    form = AppliedFireworkExplosionForm # 使用新的表单
+    form = AppliedFireworkExplosionAdminForm # <--- 使用自定义表单
     extra = 1
+
 
 # -----------------------------------------------------------------------------
 # GeneratedCommand 的 Admin 定义 (无需改变)
@@ -133,8 +145,8 @@ class GeneratedCommandAdmin(admin.ModelAdmin):
         AppliedEnchantmentInline,
         AppliedAttributeInline,
         AppliedPotionEffectInline,
+        AppliedFireworkExplosionInline, # <--- 添加这一行
         WrittenBookContentInline,
-        AppliedFireworkExplosion
     ]
     fieldsets = (
         (None, {

@@ -31,6 +31,7 @@
 
             {% for prefix, data in component_data.items %}
                 {% if prefix == 'firework_explosions' %}
+                    {# --- 这是需要修改的部分 --- #}
                     <div class="inline-group component-group" id="firework_explosions-group"
                         data-prefix="firework_explosions"
                         data-supported-types="{{ data.supported_types }}"
@@ -41,10 +42,13 @@
                             {{ data.formset.management_form }}
                             <div id="firework_explosions-form-container">
                                 {% for form in data.formset %}
+                                    {# 正确地包含行模板 #}
                                     {% include 'MC_command/formsets/_firework_explosion_row.html' with form=form %}
                                 {% endfor %}
                             </div>
                             <button type="button" class="add-row-btn" data-formset-prefix="firework_explosions">添加 {{ data.verbose_name }}</button>
+                            
+                            {# 为JavaScript动态添加新行准备的模板 #}
                             <template id="firework_explosions-empty-form-template">
                                 {% include 'MC_command/formsets/_firework_explosion_row.html' with form=data.formset.empty_form %}
                             </template>
@@ -227,21 +231,40 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupFireworkRow(row) {
         const hexToDec = (hex) => parseInt(hex.replace('#', ''), 16);
 
-        function updateHiddenColorInput(palette) {
-            const row = palette.closest('.firework-form-row');
-            const type = palette.dataset.type;
-            const hiddenInput = row.querySelector(`[name$="-${type}"]`);
-            if (!hiddenInput) return;
+        function updateHiddenColorInput(row) {
+            // 主颜色处理
+            const colorsPalette = row.querySelector('.color-palette[data-type="colors"]');
+            const colorsInput = row.querySelector('input[name$="-colors"]');
+            const colorsRandomCb = row.querySelector('.random-color-cb[data-type="colors"]');
 
-            const randomCheckbox = palette.closest('.fw-color-group').querySelector('.random-color-cb');
-            if (randomCheckbox.checked) {
-                hiddenInput.value = 'random';
-                return;
+            if (colorsRandomCb.checked) {
+                colorsInput.value = 'random';
+            } else {
+                const colorDivs = colorsPalette.querySelectorAll('.color-display');
+                const colors = Array.from(colorDivs).map(div => {
+                    const rgb = div.style.backgroundColor.match(/\d+/g);
+                    return (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2]);
+                });
+                // 关键修复：当没有颜色时，发送一个空数组的字符串
+                colorsInput.value = JSON.stringify(colors);
             }
 
-            const colorChips = palette.querySelectorAll('.color-chip');
-            const colorValues = Array.from(colorChips).map(chip => chip.dataset.colorDec);
-            hiddenInput.value = JSON.stringify(colorValues);
+            // 淡出颜色处理
+            const fadeColorsPalette = row.querySelector('.color-palette[data-type="fade_colors"]');
+            const fadeColorsInput = row.querySelector('input[name$="-fade_colors"]');
+            const fadeColorsRandomCb = row.querySelector('.random-color-cb[data-type="fade_colors"]');
+
+            if (fadeColorsRandomCb.checked) {
+                fadeColorsInput.value = 'random';
+            } else {
+                const fadeColorDivs = fadeColorsPalette.querySelectorAll('.color-display');
+                const fadeColors = Array.from(fadeColorDivs).map(div => {
+                    const rgb = div.style.backgroundColor.match(/\d+/g);
+                    return (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2]);
+                });
+                // 关键修复：当没有颜色时，发送一个空数组的字符串
+                fadeColorsInput.value = JSON.stringify(fadeColors);
+            }
         }
 
         row.querySelectorAll('.add-color-btn').forEach(button => {
