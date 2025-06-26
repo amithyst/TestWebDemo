@@ -238,7 +238,8 @@ body {
 }
 
 .inline-group-content {
-    padding: 0;
+    padding: 20px;
+    padding-top: 0;
 }
 
 .add-row-btn {
@@ -248,7 +249,7 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin: 15px 20px;
+    margin-top: 15px;
     display: inline-block;
     font-weight: bold;
     transition: background-color 0.2s;
@@ -261,11 +262,12 @@ body {
 .inline-group table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 15px;
 }
 
 .inline-group th,
 .inline-group td {
-    padding: 12px 20px;
+    padding: 12px;
     text-align: left;
     vertical-align: top;
     border-bottom: 1px solid #f0f0f0;
@@ -275,6 +277,8 @@ body {
     background-color: #fcfcfc;
     font-weight: 600;
     color: #555;
+    border-bottom-width: 2px;
+    border-bottom-color: #e0e0e0;
 }
 
 .inline-group tbody tr:last-of-type td {
@@ -301,12 +305,20 @@ body {
     vertical-align: middle;
 }
 
-.inline-group th:last-child,
-.inline-group td:last-child {
+.inline-group .delete-cell {
     text-align: center;
-    width: 100px;
+    width: 50px;
 }
-/* End of new table styles */
+
+/* --- 核心改动：用于控制旧版修饰符名称列的显示 --- */
+.attributes-table .modifier-name-col {
+    display: table-cell; /* 默认显示 */
+}
+
+.attributes-table.hide-modifier-name .modifier-name-col {
+    display: none; /* 当有 .hide-modifier-name 类时隐藏 */
+}
+
 
 .textarea-container {
     position: relative;
@@ -372,8 +384,11 @@ hr {
 .errorlist {
     color: #dc3545;
     font-size: 0.9em;
-    margin: 5px 0 0;
-    padding: 0;
+    margin: 10px 0;
+    padding: 10px;
     list-style-type: none;
     font-weight: bold;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 5px;
 }

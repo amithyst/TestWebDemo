@@ -14,7 +14,7 @@ from django.db.models import Q
 # 修改: 引入 Material, ItemType
 from .models import Enchantment, AttributeType, PotionEffectType, MinecraftVersion, Material, ItemType
 from .models import GeneratedCommand
-from .forms import GeneratedCommandForm
+from .forms import GeneratedCommandForm,VersionedModelChoiceField
 from .components import COMPONENT_REGISTRY
 
 # --- 核心视图 ---
@@ -288,7 +288,11 @@ def get_compatible_components(request):
         field = VersionedModelChoiceField(queryset=queryset)
         # UPDATE: Include attribute_id in the response for attributes
         data = [
-            {'id': obj.pk, 'text': field.label_from_instance(obj), 'attribute_id': obj.attribute_id}
+            {
+                'id': obj.pk,
+                'text': field.label_from_instance(obj),
+                'attribute_id': obj.attribute_id  # <--- 新增此行
+            }
             for obj in queryset
         ]
     elif component_type == 'effect':

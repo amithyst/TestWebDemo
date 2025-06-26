@@ -2,10 +2,6 @@
 
 {% block title %}{{ form_title }}{% endblock %}
 
-{% block extra_head %}
-{# The inline styles have been moved to style.css for better maintainability #}
-{% endblock %}
-
 {% block content %}
 <div class="card">
     <div class="card-header"><h1>{{ form_title }}</h1></div>
@@ -14,7 +10,7 @@
             {% csrf_token %}
 
             <fieldset>
-                <legend>基本配置</legend>
+                <legend style="padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 20px; font-weight: bold; font-size: 1.2em; color: #333;">基本配置</legend>
                 {% if form.non_field_errors %}
                     <div class="errorlist">
                         {% for error in form.non_field_errors %}
@@ -27,8 +23,8 @@
                     <div class="form-field">
                         {{ field.label_tag }}
                         {{ field }}
-                        {% if field.help_text %}<small style="color: #666;">{{ field.help_text }}</small>{% endif %}
-                        {{ field.errors }}
+                        {% if field.help_text %}<small style="color: #666; display: block; margin-top: 4px;">{{ field.help_text }}</small>{% endif %}
+                        <div class="errorlist">{{ field.errors }}</div>
                     </div>
                 {% endfor %}
             </fieldset>
@@ -38,41 +34,59 @@
                  data-prefix="{{ prefix }}"
                  data-supported-types="{{ data.supported_types }}"
                  style="display: none;">
+                
                 <h2>{{ data.verbose_name }}</h2>
+
                 <div class="inline-group-content">
                     {{ data.formset.management_form }}
-                    <table>
+                    
+                    <table class="{% if prefix == 'attributes' %}attributes-table{% endif %}" id="{{ prefix }}-table">
                         <thead>
                             <tr>
-                                {% for field in data.formset.empty_form %}{% if not field.is_hidden %}<th>{{ field.label }}</th>{% endif %}{% endfor %}
-                                {% if data.formset.can_delete %}<th>☯</th>{% endif %}
+                                {% for field in data.formset.empty_form.visible_fields %}
+                                    <th {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field.label }}</th>
+                                {% endfor %}
+                                {% if data.formset.can_delete %}<th class="delete-cell">删除</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody id="{{ prefix }}-form-container">
                             {% for form in data.formset %}
-                            <tr id="{{ form.prefix }}-row">
+                            <tr id="{{ form.prefix }}-row" class="dynamic-form">
                                 {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-                                {% for field in form.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}{{ field.errors }}</td>{% endif %}{% endfor %}
-                                {% if data.formset.can_delete %}<td>{{ form.DELETE }}</td>{% endif %}
+                                {% for field in form.visible_fields %}
+                                    <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>
+                                        {{ field }}
+                                        <div class="errorlist">{{ field.errors }}</div>
+                                    </td>
+                                {% endfor %}
+                                {% if data.formset.can_delete %}
+                                    <td class="delete-cell">{{ form.DELETE }}</td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                    
                     <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加 {{ data.verbose_name }}</button>
+                    
                     <template id="{{ prefix }}-empty-form-template">
-                        <tr>
+                        <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
                             {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
-                            {% for field in data.formset.visible_fields %}{% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}{% endfor %}
-                            {% if data.formset.can_delete %}<td>{{ data.formset.empty_form.DELETE }}</td>{% endif %}
+                            {% for field in data.formset.empty_form.visible_fields %}
+                                <td {% if field.name == 'modifier_name' %}class="modifier-name-col"{% endif %}>{{ field }}</td>
+                            {% endfor %}
+                            {% if data.formset.can_delete %}
+                                <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
+                            {% endif %}
                         </tr>
                     </template>
                 </div>
             </div>
             {% endfor %}
 
-            <div class="form-actions" style="margin-top: 25px;">
+            <div class="form-actions">
                 <button type="submit" class="btn">保存</button>
-                <a href="{% if command %}{% url 'MC_command:detail' command.id %}{% else %}{% url 'MC_command:index' %}{% endif %}" class="cancel-link" style="margin-left: 15px;">取消</a>
+                <a href="{% if command %}{% url 'MC_command:detail' command.id %}{% else %}{% url 'MC_command:index' %}{% endif %}" class="cancel-link">取消</a>
             </div>
         </form>
     </div>
@@ -83,19 +97,34 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // --- 数据准备 ---
+    const versionSelect = document.getElementById('id_target_version');
     const itemTypeSelect = document.getElementById('id_item_type');
     const componentGroups = document.querySelectorAll('.component-group');
+    const apiURL = '{{ api_component_url }}';
+
+    let versionData = {};
+    try {
+        versionData = JSON.parse('{{ version_data_json|escapejs|default:"{}" }}');
+    } catch (e) { console.error("解析 version_data_json 失败:", e); }
+
     let itemTypeData = {};
     try {
         itemTypeData = JSON.parse('{{ item_type_data_json|escapejs|default:"{}" }}');
-    } catch (e) {
-        console.error("解析 item_type_data_json 失败:", e);
+    } catch (e) { console.error("解析 item_type_data_json 失败:", e); }
+
+    const VERSION_1_20_5_ORDERING_ID = 12005;
+
+    // --- 功能 1: 驼峰化字符串 ---
+    function toCamelCase(str) {
+        // e.g., minecraft:generic.max_health -> MaxHealth
+        let cleanStr = str.includes('.') ? str.split('.').pop() : str;
+        return cleanStr.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
     }
 
-    // --- 核心功能: 根据物品类型更新组件的可见性 ---
+    // --- 功能 2: 更新组件可见性 (基于物品类型) ---
     const updateComponentVisibility = () => {
         const selectedItemTypeId = itemTypeSelect.value;
-        let currentItemFuncType = 'all'; // 默认功能类型
+        let currentItemFuncType = 'all'; 
 
         if (selectedItemTypeId && itemTypeData[selectedItemTypeId]) {
             currentItemFuncType = itemTypeData[selectedItemTypeId].type;
@@ -104,11 +133,10 @@ document.addEventListener('DOMContentLoaded', function() {
         componentGroups.forEach(group => {
             try {
                 const supportedTypes = JSON.parse(group.dataset.supportedTypes);
-                // 检查组件是否支持 'all' 或当前物品的功能类型
                 if (supportedTypes.includes('all') || supportedTypes.includes(currentItemFuncType)) {
-                    group.style.display = ''; // 显示
+                    group.style.display = '';
                 } else {
-                    group.style.display = 'none'; // 隐藏
+                    group.style.display = 'none';
                 }
             } catch (e) {
                 console.error(`解析组件 ${group.id} 的 supported-types 失败:`, e);
@@ -116,31 +144,145 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
+    
+    // --- 功能 3: 更新属性表单 (显隐 modifier_name) ---
+    const updateAttributeFormUI = () => {
+        const selectedVersionId = versionSelect.value;
+        const orderingId = versionData[selectedVersionId] || 0;
+        const attributesTable = document.getElementById('attributes-table');
+        if (!attributesTable) return;
+        
+        if (orderingId >= VERSION_1_20_5_ORDERING_ID) {
+            attributesTable.classList.add('hide-modifier-name');
+        } else {
+            attributesTable.classList.remove('hide-modifier-name');
+        }
+    };
 
-    // --- 表单集逻辑: 添加新行 ---
+    // --- 功能 4: 动态加载兼容的组件选项 ---
+    const updateComponentOptions = async () => {
+        const versionId = versionSelect.value;
+        if (!versionId) return;
+
+        // 获取所有需要更新的下拉框
+        const selectsToUpdate = document.querySelectorAll('.version-filtered-select');
+        
+        for (const select of selectsToUpdate) {
+            const componentType = select.dataset.componentType;
+            const originalValue = select.value;
+
+            try {
+                const response = await fetch(`${apiURL}?version_id=${versionId}&type=${componentType}`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const options = await response.json();
+                
+                // 缓存当前选中的值
+                const selectedValue = select.value;
+                
+                // 清空并重新填充
+                select.innerHTML = '<option value="">---------</option>'; 
+                options.forEach(opt => {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = opt.id;
+                    optionEl.textContent = opt.text;
+                    // 在此存储 attribute_id
+                    if (opt.attribute_id) {
+                        optionEl.dataset.attributeId = opt.attribute_id;
+                    }
+                    select.appendChild(optionEl);
+                });
+
+                // 尝试恢复之前选中的值
+                if (Array.from(select.options).some(o => o.value === selectedValue)) {
+                    select.value = selectedValue;
+                }
+
+            } catch (error) {
+                console.error(`Failed to fetch options for ${componentType}:`, error);
+            }
+        }
+    };
+    
+    // --- 功能 5: 修复 "添加词条" Bug 并绑定事件 ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
             const container = document.getElementById(`${prefix}-form-container`);
             const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
-            let totalForms = parseInt(totalFormsInput.value);
             const template = document.getElementById(`${prefix}-empty-form-template`);
             
-            // 创建新行并替换前缀
+            if(!template || !totalFormsInput || !container) {
+                console.error("Formset elements not found for prefix:", prefix);
+                return;
+            }
+            
+            let totalForms = parseInt(totalFormsInput.value);
+            
             const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
             const newRow = document.createElement('tr');
             newRow.innerHTML = newRowHtml;
-            container.appendChild(newRow);
+            newRow.id = `attributes-${totalForms}-row`;
+            newRow.classList.add('dynamic-form');
             
+            container.appendChild(newRow);
             totalFormsInput.value = totalForms + 1;
+
+            // 为新行中的select也加上class，确保版本切换时也能更新
+            newRow.querySelectorAll('select').forEach(s => {
+                 s.classList.add('version-filtered-select');
+                 s.dataset.componentType = prefix.slice(0,-1); // 'attributes' -> 'attribute'
+            });
+
+            // 关键：为新行添加事件监听器
+            if (prefix === 'attributes') {
+                const newAttributeSelect = newRow.querySelector(`select[name^="${prefix}"]`);
+                 if(newAttributeSelect) {
+                    newAttributeSelect.addEventListener('change', handleAttributeChange);
+                 }
+            }
         });
     });
 
-    // --- 事件监听 ---
+    // --- 功能 6: 处理属性选择变化的事件委托 ---
+    const handleAttributeChange = (event) => {
+        if (!event.target.matches('select[name^="attributes-"]')) return;
+        
+        const select = event.target;
+        const selectedOption = select.options[select.selectedIndex];
+        const attributeId = selectedOption.dataset.attributeId;
+        const row = select.closest('tr');
+        const nameInput = row.querySelector('input[name$="-modifier_name"]');
+
+        const attributesTable = document.getElementById('attributes-table');
+        if (!attributesTable || attributesTable.classList.contains('hide-modifier-name')) {
+            return; // 如果列是隐藏的，则不进行任何操作
+        }
+
+        if (attributeId && nameInput) {
+            nameInput.value = toCamelCase(attributeId);
+        }
+    };
+    
+    document.getElementById('attributes-form-container').addEventListener('change', handleAttributeChange);
+
+    // --- 初始化和事件监听 ---
+    versionSelect.addEventListener('change', () => {
+        updateAttributeFormUI();
+        updateComponentOptions();
+    });
     itemTypeSelect.addEventListener('change', updateComponentVisibility);
 
-    // --- 页面加载时初始化 ---
+    // --- 页面加载时立即执行 ---
     updateComponentVisibility();
+    updateAttributeFormUI();
+    // 标记所有已存在的select，以便版本切换时更新
+    document.querySelectorAll('.inline-group select').forEach(s => {
+        const prefix = s.closest('.inline-group').dataset.prefix;
+        if(prefix){
+             s.classList.add('version-filtered-select');
+             s.dataset.componentType = prefix.slice(0, -1);
+        }
+    });
 });
 </script>
 {% endblock %}
