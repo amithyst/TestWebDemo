@@ -5,11 +5,13 @@ from django.contrib import admin
 from django.db.models import Q
 from .models import (
     MinecraftVersion, Material, ItemType, Enchantment, PotionEffectType, AttributeType,
-    GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, WrittenBookContent
+    GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect,AppliedFireworkExplosion, 
+    WrittenBookContent
 )
 
 # --- FIX: Import the custom forms ---
-from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, VersionedModelChoiceField
+from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionForm,
+                    VersionedModelChoiceField)
 
 
 # ... 之前的静态数据模型 Admin 定义保持不变 ...
@@ -108,6 +110,11 @@ class AppliedAttributeInline(VersionedInlineMixin, admin.TabularInline):
 class AppliedPotionEffectInline(VersionedInlineMixin, admin.TabularInline):
     model = AppliedPotionEffect
     form = AppliedPotionEffectForm # Use the new form
+    extra = 1
+
+class AppliedFireworkExplosionInline(admin.TabularInline): # <-- 新增
+    model = AppliedFireworkExplosion
+    form = AppliedFireworkExplosionForm # 使用新的表单
     extra = 1
 
 # -----------------------------------------------------------------------------

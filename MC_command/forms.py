@@ -8,6 +8,7 @@
 代码高复用性 (DRY)：由于 admin.py 中的 AppliedEnchantmentInline 已配置为使用 AppliedEnchantmentForm，
 我们无需在 Admin 中编写任何重复代码，实现了“一次修改，处处生效”的效果。
 '''
+import json
 from django import forms
 from .models import (
     GeneratedCommand, MinecraftVersion, Material, ItemType, 
@@ -151,16 +152,40 @@ class AppliedPotionEffectForm(forms.ModelForm):
             'show_icon': '显示图标',
         }
 
-# --- 新增烟火之星表单 ---
+# --- 在文件末尾添加以下新表单 ---
 class AppliedFireworkExplosionForm(forms.ModelForm):
-    """烟火之星内联表单"""
     class Meta:
         model = AppliedFireworkExplosion
-        fields = [
-            'shape', 'has_trail', 'has_twinkle',
-            'colors', 'fade_colors', 'repeat_count'
-        ]
+        fields = ['shape', 'colors', 'fade_colors', 'has_trail', 'has_twinkle', 'repeat_count']
         widgets = {
-            'colors': forms.HiddenInput(),      # 颜色值将由JS控制
-            'fade_colors': forms.HiddenInput(), # 颜色值将由JS控制
+            # 我们将使用自定义的前端小部件来处理颜色输入
+            'colors': forms.HiddenInput(),
+            'fade_colors': forms.HiddenInput(),
         }
+
+    def clean_colors(self):
+        data = self.cleaned_data['colors']
+        if data == 'random':
+            return data
+        try:
+            # 确保它是一个有效的JSON列表
+            parsed = json.loads(data)
+            if not isinstance(parsed, list):
+                raise forms.ValidationError("颜色必须是JSON列表格式。")
+            return json.dumps(parsed) # 存回标准的JSON字符串
+        except json.JSONDecodeError:
+            raise forms.ValidationError("无效的颜色JSON格式。")
+
+    def clean_fade_colors(self):
+        data = self.cleaned_data['fade_colors']
+        if not data or data == '[]': # 允许为空
+            return '[]'
+        if data == 'random':
+            return data
+        try:
+            parsed = json.loads(data)
+            if not isinstance(parsed, list):
+                raise forms.ValidationError("淡出颜色必须是JSON列表格式。")
+            return json.dumps(parsed)
+        except json.JSONDecodeError:
+            raise forms.ValidationError("无效的淡出颜色JSON格式。")

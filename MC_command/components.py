@@ -47,10 +47,15 @@ def generate_component_attributes(related_manager):
     modifier_list = []
     for attr in related_manager.all():
         modifier_list.append({
-            "attribute": attr.attribute.attribute_id, "amount": attr.amount,
-            "operation": op_map.get(attr.operation, "add_value"), "slot": attr.slot
+            "type": attr.attribute.attribute_id,
+            "amount": attr.amount,
+            "operation": op_map.get(attr.operation, "add_value"),
+            "slot": attr.slot
         })
-    return {'minecraft:attribute_modifiers': f'{{modifiers:{json.dumps(modifier_list, ensure_ascii=False)}}}'}
+    # For 1.20.5+, 'show_in_tooltip' is a root property of the component, not per-modifier.
+    # We will assume 'True' as a sensible default.
+    return {'minecraft:attribute_modifiers': f'{{modifiers:{json.dumps(modifier_list, ensure_ascii=False)},show_in_tooltip:true}}'}
+
 
 # --- Potion Effects ---
 def generate_nbt_potion_effects(related_manager):
@@ -77,12 +82,9 @@ def generate_component_potion_effects(related_manager):
 # --- 新增: 烟花组件生成逻辑 ---
 def _generate_single_explosion_nbt(explosion_obj):
     """为单个 AppliedFireworkExplosion 实例生成 NBT 字典 (考虑随机性)"""
-    shape_map = {str(k): v for k, v in explosion_obj.SHAPE_CHOICES}
-
     # 处理随机形状
     shape_val = explosion_obj.shape
     if shape_val == 'random':
-        # 从 choices 中排除 'random' 本身
         possible_shapes = [s[0] for s in explosion_obj.SHAPE_CHOICES if s[0] != 'random']
         shape_id = random.choice(possible_shapes)
     else:
@@ -91,9 +93,9 @@ def _generate_single_explosion_nbt(explosion_obj):
     # 处理随机颜色
     def get_colors(color_str):
         if color_str == 'random':
-            return [random.randint(0, 16777215)]
+            # Generate 1 to 8 random colors, as per Minecraft's default random generation
+            return random.sample(range(0, 16777216), k=random.randint(1, 8))
         try:
-            # 假设 color_str 是一个 JSON 数组字符串，例如 '[16711680, 255]'
             return json.loads(color_str)
         except (json.JSONDecodeError, TypeError):
             return []
@@ -117,48 +119,49 @@ def _generate_single_explosion_nbt(explosion_obj):
 def generate_nbt_fireworks(related_manager):
     explosions = []
     for explosion in related_manager.all():
+        # Each explosion can be repeated
         for _ in range(explosion.repeat_count):
             explosions.append(_generate_single_explosion_nbt(explosion))
 
     if not explosions:
         return {}
 
+    # For NBT, explosions are nested under 'Fireworks'
     return {'Fireworks': {'Explosions': explosions}}
 
 def generate_component_fireworks(related_manager):
-    # I've added a mapping from shape ID to the correct component string ID.
+    """Generates the `minecraft:fireworks` component for a firework rocket."""
     SHAPE_ID_TO_STRING = {
-        0: 'small_ball',
-        1: 'large_ball',
-        2: 'star',
-        3: 'creeper',
-        4: 'burst',
+        0: 'small_ball', 1: 'large_ball', 2: 'star',
+        3: 'creeper', 4: 'burst'
     }
-    explosions = []
+    explosions_list = []
     for explosion in related_manager.all():
         for _ in range(explosion.repeat_count):
             nbt = _generate_single_explosion_nbt(explosion)
-            # Use the mapping to get the correct shape string for the component.
-            shape_string = SHAPE_ID_TO_STRING.get(nbt['Type'], 'small_ball')
-            
-            # Now, correctly format the component string.
-            explosion_parts = [
-                f"shape:'{shape_string}'",
-                f"has_trail:{'true' if nbt.get('Trail') else 'false'}",
-                f"has_twinkle:{'true' if nbt.get('Flicker') else 'false'}",
-            ]
+            shape_string = SHAPE_ID_TO_STRING.get(nbt.get('Type'), 'small_ball')
+
+            # --- START MODIFICATION ---
+            # Correctly format the explosion component string
+            explosion_parts = [f"shape:'{shape_string}'"]
+            if nbt.get('Trail'): explosion_parts.append("has_trail:true")
+            if nbt.get('Flicker'): explosion_parts.append("has_twinkle:true") # Note: 'Flicker' in NBT is 'twinkle' in component
             if nbt.get('Colors'):
-                explosion_parts.append(f"colors:[{','.join(map(str, nbt.get('Colors')))}]")
+                # Correctly format color array with 'I;' prefix
+                explosion_parts.append(f"colors:[I;{','.join(map(str, nbt['Colors']))}]")
             if nbt.get('FadeColors'):
-                explosion_parts.append(f"fade_colors:[{','.join(map(str, nbt.get('FadeColors')))}]")
-            
-            explosions.append(f"{{{','.join(explosion_parts)}}}")
+                # Correctly format fade color array with 'I;' prefix
+                explosion_parts.append(f"fade_colors:[I;{','.join(map(str, nbt['FadeColors']))}]")
+            # --- END MODIFICATION ---
 
-    if not explosions:
+            explosions_list.append(f"{{{','.join(explosion_parts)}}}")
+
+    if not explosions_list:
         return {}
-    
-    return {'minecraft:firework_explosion': f"[{','.join(explosions)}]"}
 
+    # The final component is `minecraft:fireworks` which contains the list
+    explosions_str = f"[{','.join(explosions_list)}]"
+    return {'minecraft:fireworks': f"{{explosions:{explosions_str},flight_duration:1}}"}
 
 # ==============================================================================
 # THE COMPONENT REGISTRY
@@ -191,7 +194,7 @@ COMPONENT_REGISTRY = {
         'model': AppliedPotionEffect,
         'form': AppliedPotionEffectForm,
         'template_path': 'MC_command/formsets/_potion_effect_formset.html',
-        'supported_function_types': ['potion'], # VULNERABILITY: This can now be easily changed to ['all'] or ['potion', 'food']
+        'supported_function_types': ['potion'],
         'generate_nbt': generate_nbt_potion_effects,
         'generate_component': generate_component_potion_effects,
     },
@@ -200,7 +203,7 @@ COMPONENT_REGISTRY = {
         'verbose_name': '烟火之星',
         'model': AppliedFireworkExplosion,
         'form': AppliedFireworkExplosionForm,
-        'template_path': 'MC_command/formsets/_firework_explosion_formset.html', # 我们将创建这个模板
+        'template_path': 'MC_command/formsets/_firework_explosion_formset.html',
         'supported_function_types': ['firework'], # 关键：仅对烟花火箭显示
         'generate_nbt': generate_nbt_fireworks,
         'generate_component': generate_component_fireworks,
