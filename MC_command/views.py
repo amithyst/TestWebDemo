@@ -52,8 +52,21 @@ def create(request):
         form = GeneratedCommandForm(request.POST)
         formsets = {prefix: FormSetClasses[prefix](request.POST, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
-        if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        forms_are_valid = form.is_valid() and all(fs.is_valid() for fs in formsets.values())
+
+        if forms_are_valid:
             try:
+                # 在保存前运行自定义验证
+                _validate_version_compatibility(
+                    form,
+                    formsets.get('enchantments'),
+                    formsets.get('attributes'),
+                    form.cleaned_data['target_version']
+                )
+
                 with transaction.atomic():
                     command_instance = form.save(commit=False)
                     command_instance.user = request.user
@@ -63,14 +76,17 @@ def create(request):
                         formset.save()
                     return redirect(reverse('MC_command:detail', args=[command_instance.id]))
             except forms.ValidationError:
+                # 验证失败，错误已添加到表单中，将重新渲染页面以显示错误
                 pass
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+
     else:
         form = GeneratedCommandForm()
         formsets = {prefix: FormSetClasses[prefix](prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
-    # 修改: 准备新的 context 数据
     version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
-    # 新增: 传递 ItemType 的功能类型数据给模板
     item_type_data = {it.pk: {'type': it.function_type} for it in ItemType.objects.all()}
 
     component_data = {
@@ -83,7 +99,6 @@ def create(request):
         'component_data': component_data,
         'form_title': '创建新命令',
         'version_data_json': json.dumps(version_data),
-        # 修改: 移除 base_item_data_json, 添加 item_type_data_json
         'item_type_data_json': json.dumps(item_type_data),
     }
     return render(request, 'MC_command/command_form.html', context)
@@ -100,15 +115,33 @@ def edit(request, command_id):
         form = GeneratedCommandForm(request.POST, instance=command_obj)
         formsets = {prefix: FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
 
-        if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        forms_are_valid = form.is_valid() and all(fs.is_valid() for fs in formsets.values())
+
+        if forms_are_valid:
             try:
+                # 在保存前运行自定义验证
+                _validate_version_compatibility(
+                    form,
+                    formsets.get('enchantments'),
+                    formsets.get('attributes'),
+                    form.cleaned_data['target_version']
+                )
+
                 with transaction.atomic():
                     form.save()
                     for formset in formsets.values():
                         formset.save()
                     return redirect(reverse('MC_command:detail', args=[command_obj.id]))
             except forms.ValidationError:
+                # 验证失败，错误已添加到表单中，将重新渲染页面以显示错误
                 pass
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+        # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
+        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+
     else:
         form = GeneratedCommandForm(instance=command_obj)
         formsets = {prefix: FormSetClasses[prefix](instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
@@ -139,47 +172,53 @@ def _validate_version_compatibility(form, enchant_formset, attribute_formset, ta
     如果不兼容，则会向主表单添加一个错误并引发 ValidationError。
     """
     all_components = [form.cleaned_data.get('base_item')]
-    for enchant_form in enchant_formset.cleaned_data:
-        if enchant_form and not enchant_form.get('DELETE'):
-            all_components.append(enchant_form.get('enchantment'))
-    for attr_form in attribute_formset.cleaned_data:
-        if attr_form and not attr_form.get('DELETE'):
-            all_components.append(attr_form.get('attribute'))
+    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+    # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
+    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+    if enchant_formset: # 确保 formset 存在
+        for enchant_form in enchant_formset.cleaned_data:
+            if enchant_form and not enchant_form.get('DELETE'):
+                all_components.append(enchant_form.get('enchantment'))
+    
+    if attribute_formset: # 确保 formset 存在
+        for attr_form in attribute_formset.cleaned_data:
+            if attr_form and not attr_form.get('DELETE'):
+                all_components.append(attr_form.get('attribute'))
+    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+    # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
+    # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 
     min_v_id = 0
     max_v_id = float('inf')
 
     # 计算所有组件版本号的交集
     for component in filter(None, all_components):
-        # 修复: 在访问 .ordering_id 前检查对象是否存在
         if component.min_version:
             min_v_id = max(min_v_id, component.min_version.ordering_id)
         
-        # 修复: 同样检查 max_version
         if component.max_version:
             max_v_id = min(max_v_id, component.max_version.ordering_id)
 
-    # 新增: 检查是否存在有效的版本范围交集
     if min_v_id > max_v_id:
-        min_v_str = MinecraftVersion.objects.get(ordering_id=min_v_id).version_number
-        max_v_str = "更早版本"
-        if max_v_id != float('inf'):
-            max_v_str = MinecraftVersion.objects.get(ordering_id=max_v_id).version_number
+        min_v_obj = MinecraftVersion.objects.filter(ordering_id=min_v_id).first()
+        max_v_obj = MinecraftVersion.objects.filter(ordering_id=max_v_id).first()
+        min_v_str = min_v_obj.version_number if min_v_obj else f"ID({min_v_id})"
+        max_v_str = max_v_obj.version_number if max_v_obj else "更早版本"
         
         error_msg = f"组件冲突：所选组件之间没有兼容的Minecraft版本 (计算出的最低版本需求为 {min_v_str}，最高为 {max_v_str})。请调整您的选择。"
-        # 引发一个非字段错误，它将显示在表单顶部
-        raise forms.ValidationError(error_msg)
+        raise forms.ValidationError(error_msg, code='version_conflict')
 
-    # 现有逻辑: 检查用户选择的版本是否在有效范围内
     if not (min_v_id <= target_version.ordering_id <= max_v_id):
-        min_v_str = MinecraftVersion.objects.get(ordering_id=min_v_id).version_number
+        min_v_obj = MinecraftVersion.objects.filter(ordering_id=min_v_id).first()
+        max_v_obj = MinecraftVersion.objects.filter(ordering_id=max_v_id).first()
+        min_v_str = min_v_obj.version_number if min_v_obj else f"ID({min_v_id})"
         max_v_str = "最新"
-        if max_v_id != float('inf'):
-            max_v_str = MinecraftVersion.objects.get(ordering_id=max_v_id).version_number
+        if max_v_id != float('inf') and max_v_obj:
+            max_v_str = max_v_obj.version_number
         
         error_msg = f"版本不兼容。根据所选组件，可用版本应在 {min_v_str} 和 {max_v_str} 之间。"
         form.add_error('target_version', error_msg)
-        raise forms.ValidationError(error_msg)
+        raise forms.ValidationError(error_msg, code='version_incompatible')
     
 
 @login_required
@@ -195,7 +234,6 @@ def delete(request, command_id):
 def _generate_command_context(command: GeneratedCommand) -> dict:
     # This function remains mostly the same, but calls the refactored builders.
     target_version_id = command.target_version.ordering_id
-    # 修改: 使用 command 上的 item_id 属性
     base_item_id = command.item_id
     if target_version_id >= 12005: # Minecraft 1.20.5+
         data_structure = _build_component_structure(command)
@@ -224,20 +262,15 @@ def _build_nbt_tag_structure(command: GeneratedCommand) -> dict:
     if display:
         nbt_data['display'] = display
 
-    # Dynamic part using the registry
-    fireworks_nbt = {} # <-- 新增
+    fireworks_nbt = {}
     for prefix, config in COMPONENT_REGISTRY.items():
         related_manager = getattr(command, prefix)
         if related_manager.exists():
-            # --- 修改开始 ---
             if prefix == 'firework_explosions':
-                # 烟花数据需要特殊嵌套
                 fireworks_nbt.update(config['generate_nbt'](related_manager))
             else:
                 nbt_part = config['generate_nbt'](related_manager)
                 nbt_data.update(nbt_part)
-            # --- 修改结束 ---
-    # 如果有烟花数据，将其添加到主NBT中
     if fireworks_nbt:
         nbt_data['Fireworks'] = fireworks_nbt.get('Fireworks', {})
 
@@ -254,25 +287,19 @@ def _build_component_structure(command: GeneratedCommand) -> dict:
         if lore_lines:
             components['minecraft:lore'] = f'[{",".join(lore_lines)}]'
 
-    # Dynamic part using the registry
-    fireworks_component = {} # <-- 新增
+    fireworks_component = {}
     for prefix, config in COMPONENT_REGISTRY.items():
         related_manager = getattr(command, prefix)
         if related_manager.exists():
-             # --- 修改开始 ---
             if prefix == 'firework_explosions':
                  fireworks_component.update(config['generate_component'](related_manager))
             else:
                 component_part = config['generate_component'](related_manager)
                 components.update(component_part)
-            # --- 修改结束 ---
 
-    # 1.20.5+ 中，烟花信息在 minecraft:fireworks 组件中
     if fireworks_component:
         explosions_list = fireworks_component.get('minecraft:firework_explosion', '[]')
-        # 假设 flight_duration 默认为1，可以之后再添加该字段
         components['minecraft:fireworks'] = f"{{explosions:{explosions_list},flight_duration:1}}"
-
 
     return components
 
@@ -311,7 +338,6 @@ def get_compatible_components(request):
             {'id': obj.pk, 'text': field.label_from_instance(obj), 'attribute_id': obj.attribute_id}
             for obj in queryset
         ]
-    # --- CHANGE: Handle 'potion_effect' type ---
     elif component_type == 'potion_effect':
         queryset = PotionEffectType.objects.filter(version_filter).order_by('name')
         field = VersionedModelChoiceField(queryset=queryset)
@@ -319,13 +345,9 @@ def get_compatible_components(request):
             {'id': obj.pk, 'text': field.label_from_instance(obj)}
             for obj in queryset
         ]
-    # --- CHANGE: Handle 'firework_explosion' by returning empty list ---
-    elif component_type == 'firework_explosion':
-        # Firework explosions do not have version-specific data to load,
-        # so we return an empty list to prevent a 400 error.
+    elif component_type == 'firework_explosions':
         data = []
     else:
         return JsonResponse({'error': 'Invalid component type'}, status=400)
     
     return JsonResponse(data, safe=False)
-    

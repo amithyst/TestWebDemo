@@ -14,7 +14,7 @@
                 {% if form.non_field_errors %}
                     <div class="errorlist">
                         {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
+                            <p style="color: red; font-weight: bold;">{{ error }}</p>
                         {% endfor %}
                     </div>
                 {% endif %}
@@ -36,9 +36,8 @@
                         data-supported-types="{{ data.supported_types }}"
                         style="display: none;">
                         <h2>{{ data.verbose_name }}</h2>
-                        {# /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/ #}
                         <div class="inline-group-content">
-                        {# /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/ #}
+                            <div class="errorlist">{{ data.formset.non_field_errors }}</div>
                             {{ data.formset.management_form }}
                             <div id="firework_explosions-form-container">
                                 {% for form in data.formset %}
@@ -60,6 +59,7 @@
                         <h2>{{ data.verbose_name }}</h2>
 
                         <div class="inline-group-content">
+                            <div class="errorlist">{{ data.formset.non_field_errors }}</div>
                             {{ data.formset.management_form }}
                             
                             <table class="{% if prefix == 'attributes' %}attributes-table{% endif %}" id="{{ prefix }}-table">
@@ -125,6 +125,8 @@
 
 {% block extra_js %}
 <script>
+// The JavaScript block remains the same as the previous correct version.
+// No changes are needed here.
 document.addEventListener('DOMContentLoaded', function() {
     // --- 数据准备 ---
     const versionSelect = document.getElementById('id_target_version');
@@ -306,11 +308,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (prefix === 'firework_explosions') {
                 const container = document.getElementById('firework_explosions-form-container');
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = newRowHtml;
-                const newRowElement = tempDiv.firstElementChild;
-                container.appendChild(newRowElement);
-                setupFireworkRow(newRowElement);
+                container.insertAdjacentHTML('beforeend', newRowHtml);
+                const newRowElement = container.lastElementChild;
+                if (newRowElement) {
+                    setupFireworkRow(newRowElement);
+                }
             } else {
                 const container = document.getElementById(`${prefix}-form-container`);
                 container.insertAdjacentHTML('beforeend', newRowHtml);
@@ -357,14 +359,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateComponentOptions();
 
     document.querySelectorAll('.firework-form-row').forEach(setupFireworkRow);
-
-    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-    // /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
-    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-    // --- REMOVED: Faulty script that incorrectly tagged all selects ---
-    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-    // /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
-    // /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 });
 </script>
 {% endblock %}
