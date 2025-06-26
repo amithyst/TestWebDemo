@@ -84,6 +84,52 @@
                 {% endfor %}
                 </ul>
             {% endif %}
+
+            {% if command.firework_explosions.all %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>烟火之星效果</h5>
+                </div>
+                <div class="card-body">
+                    {% for explosion in command.firework_explosions.all %}
+                    <div class="mb-3 p-2 border rounded">
+                        <p class="mb-1"><strong>形状:</strong> {{ explosion.get_shape_display }}</p>
+                        <p class="mb-1"><strong>拖尾效果:</strong> {{ explosion.has_trail|yesno:"是,否" }}</p>
+                        <p class="mb-1"><strong>闪烁效果:</strong> {{ explosion.has_twinkle|yesno:"是,否" }}</p>
+                        <p class="mb-1"><strong>重复次数:</strong> {{ explosion.repeat_count }}</p>
+
+                        {% if explosion.colors != "[]" and explosion.colors != "" %}
+                        <div class="mb-1">
+                            <strong>主颜色:</strong>
+                            <div class="d-flex flex-wrap">
+                                {% for color in explosion.get_colors_list %}
+                                    <div class="color-box" style="background-color: #{{ color|stringformat:"06x" }};" title="#{{ color|stringformat:"06x" }}"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if explosion.fade_colors != "[]" and explosion.fade_colors != "" %}
+                        <div class="mb-1">
+                            <strong>淡出颜色:</strong>
+                            <div class="d-flex flex-wrap">
+                                {% for color in explosion.get_fade_colors_list %}
+                                    <div class="color-box" style="background-color: #{{ color|stringformat:"06x" }};" title="#{{ color|stringformat:"06x" }}"></div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if command.custom_data %}
+                <hr>
+                <h3>自定义数据</h3>
+                <pre>{{ command.custom_data }}</pre>
+            {% endif %}
             
         </div>
     </div>
