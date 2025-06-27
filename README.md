@@ -12,7 +12,7 @@
 git remote add origin https://github.com/amithyst/TestWebDemo.git
 git add .
 git commit -m "更新"
-git push -u origin master
+git push -u origin main#/master
 #
 ```
 
@@ -24,14 +24,19 @@ django-admin startproject mysite djangotutorial
 
 改变模型需要这三步：
 
-* 编辑 `models.py` 文件，改变模型。
-* 运行 [`python manage.py makemigrations`](https://docs.djangoproject.com/zh-hans/5.2/ref/django-admin/#django-admin-makemigrations) 为模型的改变生成迁移文件。
-* 运行 [`python manage.py migrate`](https://docs.djangoproject.com/zh-hans/5.2/ref/django-admin/#django-admin-migrate) 来应用数据库迁移。
-* ```python
-  python manage.py makemigrations
-  python manage.py migrate
-  #
-  ```
+```python
+python manage.py makemigrations
+python manage.py migrate
+#
+```
+
+创建git分支
+
+```bash
+git branch
+git checkout -b main
+#git branch your-new-branch-name  # 创建新分支  git checkout your-new-branch-name # 切换到新分支
+```
 
 ## 导入数据
 
