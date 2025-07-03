@@ -21,4 +21,5 @@ urlpatterns = [
     path("", include("MC_command.urls")),
     path("command_new/", include("nbt_builder.urls")),
     path("admin/", admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
 ]
