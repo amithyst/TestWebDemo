@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path("command/", include("MC_command.urls")),
+    path("", include("MC_command.urls")),
     path("command_new/", include("nbt_builder.urls")),
     path("admin/", admin.site.urls),
 ]
