@@ -13,7 +13,8 @@ from django import forms
 from .models import (
     GeneratedCommand, MinecraftVersion, Material, ItemType, 
     Enchantment,AppliedEnchantment, AttributeType, AppliedAttribute, 
-    PotionEffectType,AppliedPotionEffect, AppliedFireworkExplosion
+    PotionEffectType,AppliedPotionEffect, AppliedFireworkExplosion,
+    BooleanComponentType,AppliedBooleanComponent, 
 )
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
@@ -213,3 +214,14 @@ class AppliedFireworkExplosionAdminForm(forms.ModelForm):
             'colors': ColorPickerWidget(),
             'fade_colors': ColorPickerWidget(),
         }
+
+class AppliedBooleanComponentForm(forms.ModelForm):
+    component = VersionedModelChoiceField(
+        queryset=BooleanComponentType.objects.select_related('min_version', 'max_version').all().order_by('name'),
+        label="组件",
+    )
+
+    class Meta:
+        model = AppliedBooleanComponent
+        fields = ['component', 'value']
+        labels = {'value': '启用'}

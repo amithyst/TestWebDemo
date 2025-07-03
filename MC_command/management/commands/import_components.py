@@ -1,8 +1,11 @@
 import os
 import json
 from django.core.management.base import BaseCommand, CommandError
-# 核心改动：导入 Material 和 ItemType 模型
-from MC_command.models import MinecraftVersion, Material, ItemType, Enchantment, AttributeType, PotionEffectType
+
+from MC_command.models import (MinecraftVersion, Material, ItemType, 
+                               Enchantment, AttributeType, PotionEffectType,
+                               BooleanComponentType
+)
 
 class Command(BaseCommand):
     help = 'Imports Minecraft components like versions, materials, item types, enchantments, attributes, and effects from a specified JSON file into the database.'
@@ -131,6 +134,27 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'  Successfully created potion effect: {effect.name}'))
         self.stdout.write(self.style.SUCCESS(f'Total {count} new potion effects imported.'))
 
+    def import_boolean_components(self, data):
+        count = 0
+        for comp in data:
+            min_v = self.get_version_object(comp.get('min_version'), 'boolean component', comp['name'])
+            max_v = self.get_version_object(comp.get('max_version'), 'boolean component', comp['name'])
+
+            obj, created = BooleanComponentType.objects.update_or_create(
+                name=comp['name'],
+                defaults={
+                    'description': comp.get('description', ''),
+                    'true_str': comp.get('true_str', ''),
+                    'false_str': comp.get('false_str', ''),
+                    'min_version': min_v,
+                    'max_version': max_v,
+                }
+            )
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Created: {obj.name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} boolean components imported.'))
+
     def handle(self, *args, **options):
         file_path = options['file_path']
         # 修正：移除旧的 '..' 片段，因为 'BASE_DIR' 已经指向项目根目录
@@ -165,6 +189,9 @@ class Command(BaseCommand):
         elif file_path == 'effects.json':
             self.stdout.write(self.style.HTTP_INFO('Importing potion effects...'))
             self.import_potion_effects(data)
+        elif file_path == 'boolean_components.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing boolean components...'))
+            self.import_boolean_components(data)
         else:
             self.stdout.write(self.style.WARNING(f'No specific importer for "{file_path}". Please check the filename.'))
             # 更新提示信息，加入新的可用文件

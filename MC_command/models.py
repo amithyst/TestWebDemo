@@ -155,6 +155,22 @@ class AttributeType(VersionedItem):
 
     def __str__(self):
         return self.name
+    
+class BooleanComponentType(VersionedItem):
+    """布尔型物品组件的定义。"""
+    name = models.CharField(max_length=100, verbose_name="名称")
+    description = models.CharField(max_length=200, blank=True, verbose_name="说明")
+    true_str = models.CharField(max_length=100, verbose_name="启用时字符串",default="")
+    false_str = models.CharField(max_length=100, blank=True, verbose_name="关闭时字符串",default="")
+
+    class Meta:
+        verbose_name = "布尔型组件定义"
+        verbose_name_plural = "[⚙]布尔型组件定义"
+
+    def __str__(self):
+        return self.name
+    
+
 # ==============================================================================
 # 3. 核心用户创建内容模型 (已修改)
 # ==============================================================================
@@ -326,3 +342,18 @@ class AppliedFireworkExplosion(models.Model):
     class Meta:
         verbose_name = "烟火爆炸效果"
         verbose_name_plural = "烟火爆炸效果"
+
+class AppliedBooleanComponent(models.Model):
+    """在 GeneratedCommand 上应用的布尔组件。"""
+    command = models.ForeignKey(
+        GeneratedCommand,
+        on_delete=models.CASCADE,
+        related_name="boolean_components",
+    )
+    component = models.ForeignKey(BooleanComponentType, on_delete=models.PROTECT)
+    value = models.BooleanField(default=True, verbose_name="启用？")
+
+    class Meta:
+        unique_together = ("command", "component")
+        verbose_name = "布尔型组件"
+        verbose_name_plural = "布尔型组件"

@@ -12,7 +12,7 @@
 git remote add origin https://github.com/amithyst/TestWebDemo.git
 git add .
 git commit -m "更新"
-git push -u origin main#/master
+git push -u origin main #/master
 #
 ```
 
@@ -38,7 +38,15 @@ git checkout -b main
 #git branch your-new-branch-name  # 创建新分支  git checkout your-new-branch-name # 切换到新分支
 ```
 
-## 导入数据
+注册app
+
+```bash
+python manage.py startapp nbt_builder
+```
+
+## 
+
+导入数据
 
 ```python
 python manage.py import_components enchantments.json
@@ -46,7 +54,7 @@ python manage.py import_components attributes.json
 python manage.py import_components effects.json
 python manage.py import_components materials.json
 python manage.py import_components item_types.json
-
+python manage.py import_components boolean_components.json
 
 
 ```

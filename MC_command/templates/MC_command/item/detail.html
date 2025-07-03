@@ -85,6 +85,16 @@
                 </ul>
             {% endif %}
 
+            {% if command.boolean_components.all %}
+                <hr>
+                <h3>布尔组件</h3>
+                <ul>
+                {% for comp in command.boolean_components.all %}
+                    <li>{{ comp.component.name }}: {{ comp.value|yesno:"是,否" }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
             {% if command.firework_explosions.all %}
             <div class="card mb-4">
                 <div class="card-header">

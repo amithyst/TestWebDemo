@@ -94,5 +94,47 @@
     "name": "⛏方块破坏速度 (玩家)",
     "min_version": "1.20.2",
     "max_version": null
+  },
+  {
+    "id": "forge:block_reach",
+    "name": "🙌方块触及距离",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "forge:entity_gravity",
+    "name": "🟰实体重力",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "forge:entity_reach",
+    "name": "🫴实体触及距离",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "forge:step_height_addition",
+    "name": "步高增加",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "forge:swim_speed",
+    "name": "游泳速度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "hundred_years_war:attack_reach",
+    "name": "攻击距离",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "hundred_years_war:ranged_attack_damage",
+    "name": "远程攻击伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
   }
 ]

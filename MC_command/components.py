@@ -1,8 +1,14 @@
 import json
 import random # <--- 新增导入
-from .models import AppliedEnchantment, AppliedAttribute, AppliedPotionEffect, AppliedFireworkExplosion # <--- 导入新模型
-from .forms import AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, AppliedFireworkExplosionForm # <--- 导入新表单
-
+from .models import (AppliedEnchantment, AppliedAttribute, 
+                     AppliedPotionEffect, AppliedFireworkExplosion,
+                     AppliedBooleanComponent
+                       # <--- 导入新模型
+)
+from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, 
+                    AppliedPotionEffectForm, AppliedFireworkExplosionForm,
+                    AppliedBooleanComponentForm
+)
 # ==============================================================================
 # Helper Functions
 # ==============================================================================
@@ -163,6 +169,54 @@ def generate_component_fireworks(related_manager):
     explosions_str = f"[{','.join(explosions_list)}]"
     return {'minecraft:fireworks': f"{{explosions:{explosions_str},flight_duration:1}}"}
 
+def generate_nbt_boolean(related_manager):
+    """
+    为布尔型组件生成根级 NBT 标签字典 (用于 1.20.4 及更早版本)。
+    此函数直接“粘贴”数据库中定义的字符串。
+    它会遍历所有应用的组件，将 "true_str" 或 "false_str" 的内容直接作为NBT片段。
+    """
+    nbt_parts = []
+    for applied_comp in related_manager.all():
+        comp_type = applied_comp.component
+        
+        # 根据组件值是 True 还是 False，选择对应的字符串
+        nbt_string = comp_type.true_str if applied_comp.value else comp_type.false_str
+            
+        # 只有在字符串非空时才添加。这允许在禁用时完全不生成标签。
+        if nbt_string:
+            nbt_parts.append(nbt_string)
+            
+    # 返回一个特殊的键，其值为需要直接拼接的字符串列表。
+    # 命令生成器的主逻辑需要知道如何处理这个特殊的 '_raw_nbt' 键。
+    if nbt_parts:
+        return {'_raw_nbt': nbt_parts}
+    return {}
+
+def generate_component_boolean(related_manager):
+    """
+    修改后，为布尔型组件生成一个包含预格式化 'key=value' 字符串的列表。
+    这些字符串将用于在新版命令中“直接粘贴”。
+    """
+    raw_components_list = []
+    for applied_comp in related_manager.all():
+        comp_type = applied_comp.component
+        
+        # 'comp_type.name' 应该是组件的ID, 如 'minecraft:unbreakable'
+        # 'comp_type.true_str' 应该是组件的值, 如 'true' 或 '{}'
+        component_key = comp_type.name
+        component_value = comp_type.true_str if applied_comp.value else comp_type.false_str
+            
+        # 仅当key和value都存在时才生成
+        if component_key and component_value:
+            # 预先格式化为 "key=value" 的完整字符串
+            full_component_string = f"{component_key}={component_value}"
+            raw_components_list.append(full_component_string)
+            
+    # 如果列表不为空，则用特殊的 _raw_components 键返回
+    if raw_components_list:
+        return {'_raw_components': raw_components_list}
+    return {}
+
 # ==============================================================================
 # THE COMPONENT REGISTRY
 # ==============================================================================
@@ -207,6 +261,16 @@ COMPONENT_REGISTRY = {
         'supported_function_types': ['firework'], # 关键：仅对烟花火箭显示
         'generate_nbt': generate_nbt_fireworks,
         'generate_component': generate_component_fireworks,
+    },
+    # --- 在此添加新的布尔组件注册信息 ---
+    'boolean_components': {
+        'verbose_name': '布尔型组件',
+        'model': AppliedBooleanComponent,
+        'form': AppliedBooleanComponentForm, # 确保你已经创建了这个表单
+        'template_path': 'MC_command/formsets/_boolean_component_formset.html', # 模板路径示例
+        'supported_function_types': ['all'], # 对所有物品类型都可用
+        'generate_nbt': generate_nbt_boolean, 
+        'generate_component': generate_component_boolean, # 关联到我们上面创建的新函数
     }
     # Add future components here, e.g., 'fireworks', 'book_content'
 }
