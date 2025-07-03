@@ -10,24 +10,28 @@
 </head>
 <body>
 
-    {# 顶部栏：始终显示网站标题和登录状态 #}
+    {# 顶部栏：包含首页链接、登录/注销、管理后台入口 #}
     <header class="top-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background-color: #f2f2f2; border-bottom: 1px solid #ddd;">
-        {# 这里假设你的首页URL名字是 'home' #}
+        
+        {# 1. 首页URL已更新为 'home' #}
         <a href="{% url 'MC_command:home' %}" style="text-decoration: none; color: #333; font-weight: bold; font-size: 1.2em;">
             Minecraft 命令生成器
         </a>
-        <div class="user-status">
+
+        <div class="user-status" style="display: flex; align-items: center; gap: 15px;">
             {% if user.is_authenticated %}
                 <span>欢迎, {{ user.username }}!</span>
                 
-                {# --- 这是修改过的部分 --- #}
-                <form action="{% url 'admin:logout' %}" method="post" style="display: inline; margin-left: 15px;">
+                {# 2. 新增“管理后台”链接 #}
+                <a href="{% url 'admin:index' %}">管理后台</a>
+
+                {# 安全的注销表单 #}
+                <form action="{% url 'admin:logout' %}" method="post" style="display: inline; margin: 0;">
                     {% csrf_token %}
                     <button type="submit" style="background: none; border: none; padding: 0; font: inherit; color: #007bff; cursor: pointer; text-decoration: underline;">
                         注销
                     </button>
                 </form>
-                {# --- 修改结束 --- #}
 
             {% else %}
                 <a href="{% url 'admin:login' %}">登录</a>
