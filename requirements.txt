@@ -52,3 +52,4 @@ websocket-client==1.8.0
     # via selenium
 wsproto==1.2.0
     # via trio-websocket
+djangorestframework

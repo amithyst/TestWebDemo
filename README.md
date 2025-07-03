@@ -79,6 +79,7 @@ pip install pip-tools
 
 ```
 django
+djangorestframework
 selenium
 ```
 
