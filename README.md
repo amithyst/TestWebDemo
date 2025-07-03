@@ -8,6 +8,8 @@
 
 `python manage.py runserver`
 
+更新并上传到github
+
 ```bash
 git remote add origin https://github.com/amithyst/TestWebDemo.git
 git add .
@@ -59,6 +61,14 @@ python manage.py import_components boolean_components.json
 
 ```
 
+更新静态文件
+
+```python
+source /home/JackDu/.virtualenvs/env/bin/activate
+cd /home/JackDu/TestWebDemo
+python manage.py collectstatic
+```
+
 # 导出依赖
 
 #### 第 1 步：安装 `pip-tools`
@@ -79,7 +89,6 @@ pip install pip-tools
 
 ```
 django
-djangorestframework
 selenium
 ```
 
