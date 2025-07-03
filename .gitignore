@@ -1,0 +1,9 @@
+# Database
+db.sqlite3
+
+# Python bytecode files
+__pycache__/
+*.pyc
+
+# Django static files
+staticfiles/
