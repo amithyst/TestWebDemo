@@ -4,10 +4,20 @@
 
 {% block content %}
     <h1>命令生成器首页</h1>
-    <p>请选择一个分类进入：</p>
-    <ul>
-        <li><a href="{% url 'MC_command:item_index' %}">物品</a></li>
-        <li><a href="{% url 'MC_command:entity_index' %}">实体</a></li>
-        <li><a href="{% url 'MC_command:book_index' %}">书籍</a></li>
-    </ul>
+
+    {% if user.is_authenticated %}
+        {# --- 如果用户已登录，显示这些内容 --- #}
+        <p>请选择一个分类进入：</p>
+        <ul>
+            <li><a href="{% url 'MC_command:item_index' %}">物品</a></li>
+            <li><a href="{% url 'MC_command:entity_index' %}">实体</a></li>
+            <li><a href="{% url 'MC_command:book_index' %}">书籍</a></li>
+        </ul>
+
+    {% else %}
+        {# --- 如果用户未登录，显示这些内容 --- #}
+        <p>欢迎使用命令生成器！请先登录以访问全部功能。</p>
+        <a href="{% url 'admin:login' %}" style="text-decoration: none; padding: 10px; background-color: #4CAF50; color: white; border-radius: 5px;">前往登录</a>
+    {% endif %}
+
 {% endblock %}

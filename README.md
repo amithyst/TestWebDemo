@@ -90,6 +90,7 @@ pip install pip-tools
 ```
 django
 selenium
+djangorestframework
 ```
 
 **关键点**：您不需要在这里写版本号，`pip-compile` 会自动找出最新的兼容版本。您也不需要写 `jinja2` 或 `click`，因为它们是 `flask` 的子依赖，`pip-compile` 会自动处理。
