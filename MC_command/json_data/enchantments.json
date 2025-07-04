@@ -326,5 +326,13 @@
     "max_version": null,
     "max_level": 127,
     "enchant_type": "weapon"
+  },
+  {
+    "name": "🔱穿刺",
+    "id": "impaling",
+    "min_version": "1.13",
+    "max_version": null,
+    "max_level": 127,
+    "enchant_type": "weapon"
   }
 ]

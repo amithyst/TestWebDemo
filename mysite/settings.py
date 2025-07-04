@@ -25,7 +25,12 @@ SECRET_KEY = "django-insecure-=p95@@s7fh=y-wfj+(=#$*h)c77msg)8+6m39gl_4v-jt^nhd0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['jackdu.pythonanywhere.com', 'www.jackdu.pythonanywhere.com','127.0.0.1']
+ALLOWED_HOSTS = ['jackdu.pythonanywhere.com', 
+                 'www.jackdu.pythonanywhere.com',
+                 '127.0.0.1',
+                 'localhost',
+                 '192.168.71.100'
+                ]
 
 LOGIN_URL = 'admin:login'
 # Application definition

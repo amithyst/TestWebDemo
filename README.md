@@ -8,16 +8,6 @@
 
 `python manage.py runserver`
 
-更新并上传到github
-
-```bash
-git remote add origin https://github.com/amithyst/TestWebDemo.git
-git add .
-git commit -m "更新"
-git push -u origin main #/master
-#
-```
-
 切换到根目录创建文件夹**djangotutorial后创建**项目
 
 ```
@@ -32,21 +22,13 @@ python manage.py migrate
 #
 ```
 
-创建git分支
-
-```bash
-git branch
-git checkout -b main
-#git branch your-new-branch-name  # 创建新分支  git checkout your-new-branch-name # 切换到新分支
-```
-
 注册app
 
 ```bash
 python manage.py startapp nbt_builder
 ```
 
-## 
+## 更新命令
 
 导入数据
 
@@ -57,8 +39,6 @@ python manage.py import_components effects.json
 python manage.py import_components materials.json
 python manage.py import_components item_types.json
 python manage.py import_components boolean_components.json
-
-
 ```
 
 更新静态文件
@@ -69,7 +49,11 @@ cd /home/JackDu/TestWebDemo
 python manage.py collectstatic
 ```
 
-# 导出依赖
+## 导出依赖
+
+```
+
+```
 
 #### 第 1 步：安装 `pip-tools`
 
@@ -106,3 +90,31 @@ pip-compile requirements.in
 ```
 
 运行后，您会看到 `pip-compile` 开始解析依赖。
+
+## Github命令
+
+创建git分支
+
+```bash
+git branch
+git checkout -b main
+#git branch your-new-branch-name  # 创建新分支  git checkout your-new-branch-name # 切换到新分支
+```
+
+更新并上传到github
+
+```bash
+git remote add origin https://github.com/amithyst/TestWebDemo.git
+git add .
+git commit -m "更新"
+git push -u origin main #/master
+#
+```
+
+## Gitea命令
+
+```bash
+git remote add gitea http://192.168.71.100:3000/dkj/TestWebDemo.git
+git push -u gitea main
+#
+```
