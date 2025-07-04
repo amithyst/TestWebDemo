@@ -1,0 +1,29 @@
+[
+  {
+    "id": "django-deploy",
+    "execute-command": "/var/www/TestWebDemo/deploy_scripts/deploy.sh",
+    "command-working-directory": "/var/www/TestWebDemo/deploy_scripts/",
+    "trigger-rule": {
+      "and": [
+        {
+          "match": {
+            "type": "payload-hash-sha256",
+            "secret": "0" 
+          }
+        },
+        {
+          "match": {
+            "type": "value",
+            "event": {
+              "push": {
+                "branch": "main" 
+              }
+            }
+          },
+          "type": "string"
+        }
+      ]
+    },
+    "response-message": "Deployment webhook received and script triggered."
+  }
+]

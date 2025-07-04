@@ -7,3 +7,4 @@ __pycache__/
 
 # Django static files
 staticfiles/
+venv/
