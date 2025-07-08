@@ -1,26 +1,23 @@
 [
   {
     "id": "django-deploy",
-    "execute-command": "/var/www/TestWebDemo/deploy_scripts/deploy.sh",
-    "command-working-directory": "/var/www/TestWebDemo/deploy_scripts/",
+    "execute-command": "/home/dkj/deploy_scripts/deploy.sh",
+    "command-working-directory": "/home/dkj/deploy_scripts/",
     "trigger-rule": {
       "and": [
         {
           "match": {
             "type": "payload-hash-sha256",
-            "secret": "0" 
+            "secret": "0"
           }
         },
         {
+          "type": "value",
+          "extract": "ref",
           "match": {
-            "type": "value",
-            "event": {
-              "push": {
-                "branch": "main" 
-              }
-            }
-          },
-          "type": "string"
+            "type": "string",
+            "value": "refs/heads/main"
+          }
         }
       ]
     },
