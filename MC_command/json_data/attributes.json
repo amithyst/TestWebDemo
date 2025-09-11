@@ -103,37 +103,272 @@
   },
   {
     "id": "forge:entity_gravity",
-    "name": "🟰实体重力",
+    "name": "[forge]🟰实体重力",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "forge:entity_reach",
-    "name": "🫴实体触及距离",
+    "name": "[forge]🫴实体触及距离",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "forge:step_height_addition",
-    "name": "步高增加",
+    "name": "[forge]👢步高增加",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "forge:swim_speed",
-    "name": "游泳速度",
+    "name": "[forge]🏊‍游泳速度",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "hundred_years_war:attack_reach",
-    "name": "攻击距离",
+    "name": "[百年战争]🗡攻击距离",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "hundred_years_war:ranged_attack_damage",
-    "name": "远程攻击伤害",
+    "name": "[百年战争]🗡远程攻击伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  }
+  ,
+  {
+    "id": "irons_spellbooks:nature_magic_resist",
+    "name": "[铁魔法]🍃自然魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:nature_spell_power",
+    "name": "[铁魔法]🍃自然魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:spell_power",
+    "name": "[铁魔法]🪄魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:spell_resist",
+    "name": "[铁魔法]🪄魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:summon_damage",
+    "name": "[铁魔法]🐕召唤物伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:fire_magic_resist",
+    "name": "[铁魔法]🔥炽焰魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:fire_spell_power",
+    "name": "[铁魔法]🔥炽焰魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:holy_magic_resist",
+    "name": "[铁魔法]⭐神圣魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:holy_spell_power",
+    "name": "[铁魔法]⭐神圣魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:ice_magic_resist",
+    "name": "[铁魔法]🧊冰霜魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:ice_spell_power",
+    "name": "[铁魔法]🧊冰霜魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:lightning_magic_resist",
+    "name": "[铁魔法]⚡雷霆魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:lightning_spell_power",
+    "name": "[铁魔法]⚡雷霆魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:mana_regen",
+    "name": "[铁魔法]🪄法力恢复",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:max_mana",
+    "name": "[铁魔法]🪄最大法力值",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:blood_magic_resist",
+    "name": "[铁魔法]🩸猩红魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:blood_spell_power",
+    "name": "[铁魔法]🩸猩红魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:cast_time_reduction",
+    "name": "[铁魔法]🪄施法时间缩减",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:cooldown_reduction",
+    "name": "[铁魔法]🪄冷却时间缩减",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:eldritch_magic_resist",
+    "name": "[铁魔法]🧿上古魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:eldritch_spell_power",
+    "name": "[铁魔法]🧿上古魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:ender_magic_resist",
+    "name": "[铁魔法]🔮末影魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:ender_spell_power",
+    "name": "[铁魔法]🔮末影魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:evocation_magic_resist",
+    "name": "[铁魔法]🦾唤魔魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "irons_spellbooks:evocation_spell_power",
+    "name": "[铁魔法]🦾唤魔魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "caelus:fall_flying",
+    "name": "[caelus]🪶跌落飞行",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "cataclysm_spellbooks:abyssal_magic_resist",
+    "name": "[铁魔法附属-灾变魔法]🕳深渊魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "cataclysm_spellbooks:abyssal_spell_power",
+    "name": "[铁魔法附属-灾变魔法]🕳深渊魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "cataclysm_spellbooks:technomancy_magic_resist",
+    "name": "[铁魔法附属-灾变魔法]⚙械术魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "cataclysm_spellbooks:technomancy_spell_power",
+    "name": "[铁魔法附属-灾变魔法]⚙械术魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:dream_shadow_damage",
+    "name": "[铁魔法附属-梦幻终焉]👁️梦境暗影伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:dream_shadow_damage_resistance",
+    "name": "[铁魔法附属-梦幻终焉]👁️梦境暗影伤害抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:evasion",
+    "name": "[铁魔法附属-梦幻终焉]🥾闪避",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:fantasy_ending_damage",
+    "name": "[铁魔法附属-梦幻终焉]🌌梦幻终焉伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:fantasy_ending_damage_resistance",
+    "name": "[铁魔法附属-梦幻终焉]🌌梦幻终焉伤害抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:fantasy_magic_resist",
+    "name": "[铁魔法附属-梦幻终焉]🫧梦幻魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:fantasy_spell_power",
+    "name": "[铁魔法附属-梦幻终焉]🫧梦幻魔法强度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:magic_damage_resistance",
+    "name": "[铁魔法附属-梦幻终焉]🪄魔法伤害抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "fantasy_ending:out_of_world_damage_resistance",
+    "name": "[铁魔法附属-梦幻终焉]🌠界外伤害抗性",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   }

@@ -109,13 +109,18 @@ class Enchantment(VersionedItem):
             ('weapon', '武器'),
             ('tool', '工具'),
             ('armor', '盔甲'),
+            ('chestplate', '胸甲'),
+            ('leggings', '护腿'),
+            ('boots', '靴子'),
             ('fishing_rod', '钓鱼竿'),
             ('trident', '三叉戟'),
             ('bow', '弓'),
             ('crossbow', '弩'),
-            ('all', '杂项'),
+            ('all', '所有物品'),
             ('helmet', '头盔'),
-            ('boots', '靴子'),
+            ('wand', '[铁魔法]法杖'),
+            ('magic_books', '[铁魔法]法术书'),
+            ('unknown', '未知'),
         ],
         default='all'
     )
@@ -203,7 +208,7 @@ class GeneratedCommand(models.Model):
             base_id = f"{material_sn}_{type_sn}"
         else:
             base_id = material_sn or type_sn
-        return f"minecraft:{base_id}" if base_id else ""
+        return f"{base_id}" if base_id else ""
 
     @property
     def function_type(self):

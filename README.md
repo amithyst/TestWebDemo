@@ -118,3 +118,4 @@ git remote add gitea http://192.168.71.100:3000/dkj/TestWebDemo.git
 git push -u gitea main
 #
 ```
+git push -u gitea main有时候输2次就好了，-u可有可无。有时候第一次就是会失败。

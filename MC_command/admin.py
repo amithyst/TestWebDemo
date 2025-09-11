@@ -34,8 +34,8 @@ class MaterialAdmin(admin.ModelAdmin):
 @admin.register(ItemType)
 class ItemTypeAdmin(admin.ModelAdmin):
     # 修正: 使用模型中真实存在的字段 'display_name' 和 'system_name'
-    list_display = ('display_name', 'system_name')
-    search_fields = ('display_name', 'system_name')
+    list_display = ('display_name', 'system_name', 'function_type')
+    search_fields = ('display_name', 'system_name', 'function_type')
 
 @admin.register(Enchantment)
 class EnchantmentAdmin(admin.ModelAdmin):
