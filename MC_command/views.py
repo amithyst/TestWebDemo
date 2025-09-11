@@ -298,9 +298,12 @@ def _to_snbt(data, parent_key=None):
                 display_items = []
                 if 'Name' in v and isinstance(v['Name'], str):
                     json_str = json.dumps({'text':v['Name']}, ensure_ascii=False, separators=(',', ':'))
-                    display_items.append(f"Name:{json_str}")
+                    display_items.append(f"Name:'{json_str}'")
+                # if 'Lore' in v and isinstance(v['Lore'], list):
+                #     lore_list = [json.dumps({'text':line}, ensure_ascii=False, separators=(',', ':')) for line in v['Lore']]
+                #     display_items.append(f"Lore:[{','.join(lore_list)}]")
                 if 'Lore' in v and isinstance(v['Lore'], list):
-                    lore_list = [json.dumps({'text':line}, ensure_ascii=False, separators=(',', ':')) for line in v['Lore']]
+                    lore_list = [f"'{json.dumps({'text':line}, ensure_ascii=False, separators=(',', ':'))}'" for line in v['Lore']]
                     display_items.append(f"Lore:[{','.join(lore_list)}]")
                 items.append(f"display:{{{','.join(display_items)}}}")
                 continue
