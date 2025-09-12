@@ -6,15 +6,20 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, modelform_factory # <--- 确保导入 modelform_factory
 from django.db import transaction
 
 from django.http import JsonResponse
 from django.db.models import Q
 # 修改:引入 Material, ItemType
-from .models import Enchantment, AttributeType, PotionEffectType, MinecraftVersion, Material, ItemType
+# 修改:引入 Material, ItemType, Spell
+from .models import (Enchantment, AttributeType, PotionEffectType, 
+                     MinecraftVersion, Material, ItemType, Spell, # <--- 导入 Spell
+                     SpellInfusion, AppliedSpell) # <--- 导入 SpellInfusion 和 AppliedSpell
+
 from .models import GeneratedCommand
-from .forms import GeneratedCommandForm,VersionedModelChoiceField, AppliedFireworkExplosionAdminForm
+from .forms import (GeneratedCommandForm, VersionedModelChoiceField, # <--- 导入新的 SpellInfusionForm
+                    AppliedFireworkExplosionAdminForm, SpellInfusionForm)
 from .components import COMPONENT_REGISTRY
 
 # --- 核心视图 ---
@@ -37,7 +42,6 @@ def entity_index(request):
 def book_index(request):
     return render(request, 'MC_command/book/index.html')
 
-
 @login_required
 def detail(request, command_id):
     command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
@@ -49,43 +53,43 @@ def detail(request, command_id):
     }
     return render(request, 'MC_command/item/detail.html', context)
 
-# --- 增删改查 (CRUD) 视图 ---
-# --- 完全替换旧的 CREATE 和 EDIT 视图 ---
-# --- Replace the create and edit views with these refactored versions ---
 @login_required
 def create(request):
-    FormSetClasses = {}
-    for prefix, config in COMPONENT_REGISTRY.items():
-        form_class = config['form']
-        # # 如果是烟火组件，就强制使用 AdminForm
-        # if prefix == 'firework_explosions':
-        #     form_class = AppliedFireworkExplosionAdminForm
-        
-        FormSetClasses[prefix] = inlineformset_factory(
-            GeneratedCommand, 
-            config['model'], 
-            form=form_class, 
-            extra=1, 
-            can_delete=True, 
-            min_num=0
-        )
+    # 将法术组件与其他组件分开处理
+    spell_prefix = 'applied_spells'
+    spell_config = COMPONENT_REGISTRY.get(spell_prefix, {})
+    other_components = {k: v for k, v in COMPONENT_REGISTRY.items() if k != spell_prefix}
+
+    # 1. 为常规组件创建 FormSet 类
+    FormSetClasses = {
+        prefix: inlineformset_factory(
+            GeneratedCommand, config['model'], form=config['form'], extra=1, can_delete=True, min_num=0
+        ) for prefix, config in other_components.items()
+    }
+
+    # 2. 为法术注入组件创建独立的 Form 和 FormSet
+    SpellInfusionFormSet = inlineformset_factory(
+        SpellInfusion, AppliedSpell, form=spell_config.get('form'), extra=1, can_delete=True, min_num=0
+    )
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST)
-        formsets = {prefix:FormSetClasses[prefix](request.POST, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
+        formsets = {prefix: FormSetClasses[prefix](request.POST, prefix=prefix) for prefix in other_components}
+        spell_infusion_form = SpellInfusionForm(request.POST, prefix='spell_infusion')
+        spell_formset = SpellInfusionFormSet(request.POST, prefix=spell_prefix)
 
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-        # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-        all_forms_valid = form.is_valid() and all(fs.is_valid() for fs in formsets.values())
+        all_valid = (form.is_valid() and
+                     all(fs.is_valid() for fs in formsets.values()) and
+                     spell_infusion_form.is_valid() and
+                     spell_formset.is_valid())
 
-        if all_forms_valid:
+        if all_valid:
             try:
-                # Run custom validation only after standard validation passes
                 _validate_version_compatibility(
                     form,
                     formsets.get('enchantments'),
                     formsets.get('attributes'),
+                    spell_formset,
                     form.cleaned_data['target_version']
                 )
 
@@ -93,126 +97,175 @@ def create(request):
                     command_instance = form.save(commit=False)
                     command_instance.user = request.user
                     command_instance.save()
+
+                    # 保存常规组件
                     for prefix, formset in formsets.items():
                         formset.instance = command_instance
                         formset.save()
+
+                    # --- 新的、更健壮的法术保存逻辑 ---
+                    # 检查用户是否填写了任何与法术相关的数据
+                    has_spell_data = spell_infusion_form.has_changed() or spell_formset.has_changed()
+
+                    if has_spell_data:
+                        # 计算实际的法术数量
+                        num_spells = len([f for f in spell_formset.cleaned_data if f and not f.get('DELETE')])
+                        
+                        infusion_instance = spell_infusion_form.save(commit=False)
+                        
+                        # 智能调整 max_spells
+                        if num_spells > infusion_instance.max_spells:
+                            infusion_instance.max_spells = num_spells
+                        
+                        # 只有在确实有法术时才保存容器
+                        if num_spells > 0:
+                            infusion_instance.command = command_instance
+                            infusion_instance.save()
+                            spell_formset.instance = infusion_instance
+                            spell_formset.save()
+
                     return redirect(reverse('MC_command:detail', args=[command_instance.id]))
             except forms.ValidationError:
-                # Custom validation failed, errors are already in the form.
-                # The view will now fall through and re-render the form with errors.
-                pass
-        # If we are here, it means some form was invalid.
-        # The view will proceed to render the form with errors below.
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-        # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
+                pass 
 
-    else:
+    else: # GET 请求
         form = GeneratedCommandForm()
-        formsets = {prefix:FormSetClasses[prefix](prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
+        formsets = {prefix: FormSetClasses[prefix](prefix=prefix) for prefix in other_components}
+        spell_infusion_form = SpellInfusionForm(prefix='spell_infusion')
+        spell_formset = SpellInfusionFormSet(prefix=spell_prefix)
 
-    version_data = {v.pk:v.ordering_id for v in MinecraftVersion.objects.all()}
-    item_type_data = {it.pk:{'type':it.function_type} for it in ItemType.objects.all()}
-
+    # ... (视图的 context 部分保持不变) ...
+    version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
+    item_type_data = {it.pk: {'type': it.function_type} for it in ItemType.objects.all()}
     component_data = {
-        prefix:{'formset':formsets[prefix], 'verbose_name':config['verbose_name'], 'supported_types':json.dumps(config['supported_function_types'])}
-        for prefix, config in COMPONENT_REGISTRY.items()
+        prefix: {'formset': formsets[prefix], 'verbose_name': config['verbose_name'], 'supported_types': json.dumps(config['supported_function_types'])}
+        for prefix, config in other_components.items()
     }
-
+    component_data[spell_prefix] = {
+        'formset': spell_formset,
+        'verbose_name': spell_config.get('verbose_name'),
+        'supported_types': json.dumps(spell_config.get('supported_function_types', ['all'])),
+        'extra_form': spell_infusion_form
+    }
     context = {
-        'form':form,
-        'component_data':component_data,
-        'form_title':'创建新命令',
-        'version_data_json':json.dumps(version_data),
-        'item_type_data_json':json.dumps(item_type_data),
+        'form': form,
+        'component_data': component_data,
+        'form_title': '创建新命令',
+        'version_data_json': json.dumps(version_data),
+        'item_type_data_json': json.dumps(item_type_data),
     }
     return render(request, 'MC_command/item/command_form.html', context)
 
+
+# --- 用这个新版本替换旧的 EDIT 视图 ---
 @login_required
 def edit(request, command_id):
     command_obj = get_object_or_404(GeneratedCommand, pk=command_id, user=request.user)
-    FormSetClasses = {}
-    for prefix, config in COMPONENT_REGISTRY.items():
-        form_class = config['form']
-        # 如果是烟火组件，就强制使用 AdminForm
-        # if prefix == 'firework_explosions':
-        #     form_class = AppliedFireworkExplosionAdminForm
-        
-        FormSetClasses[prefix] = inlineformset_factory(
-            GeneratedCommand, 
-            config['model'], 
-            form=form_class, 
-            extra=1, 
-            can_delete=True, 
-            min_num=0
-        )
+    
+    try:
+        spell_infusion_instance = command_obj.spell_infusion
+    except SpellInfusion.DoesNotExist:
+        spell_infusion_instance = None
+
+    spell_prefix = 'applied_spells'
+    spell_config = COMPONENT_REGISTRY.get(spell_prefix, {})
+    other_components = {k: v for k, v in COMPONENT_REGISTRY.items() if k != spell_prefix}
+
+    FormSetClasses = {
+        prefix: inlineformset_factory(
+            GeneratedCommand, config['model'], form=config['form'], extra=1, can_delete=True, min_num=0
+        ) for prefix, config in other_components.items()
+    }
+
+    SpellInfusionFormSet = inlineformset_factory(
+        SpellInfusion, AppliedSpell, form=spell_config.get('form'), extra=1, can_delete=True, min_num=0
+    )
 
     if request.method == 'POST':
         form = GeneratedCommandForm(request.POST, instance=command_obj)
-        formsets = {prefix:FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
-
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-        # /-/-/-/-/-/- START OF MODIFICATION /-/-/-/-/-/
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-        all_forms_valid = form.is_valid() and all(fs.is_valid() for fs in formsets.values())
-
-        if all_forms_valid:
+        formsets = {prefix: FormSetClasses[prefix](request.POST, instance=command_obj, prefix=prefix) for prefix in other_components}
+        spell_infusion_form = SpellInfusionForm(request.POST, instance=spell_infusion_instance, prefix='spell_infusion')
+        spell_formset = SpellInfusionFormSet(request.POST, instance=spell_infusion_instance, prefix=spell_prefix)
+        
+        all_valid = (form.is_valid() and
+                     all(fs.is_valid() for fs in formsets.values()) and
+                     spell_infusion_form.is_valid() and
+                     spell_formset.is_valid())
+        
+        if all_valid:
             try:
-                # Run custom validation only after standard validation passes
                 _validate_version_compatibility(
                     form,
                     formsets.get('enchantments'),
                     formsets.get('attributes'),
+                    spell_formset,
                     form.cleaned_data['target_version']
                 )
 
                 with transaction.atomic():
-                    form.save()
+                    command_instance = form.save()
+                    
                     for formset in formsets.values():
                         formset.save()
+                    
+                    # --- 新的、更健Robust的法术保存逻辑 ---
+                    num_spells = len([f for f in spell_formset.cleaned_data if f and not f.get('DELETE')])
+
+                    if num_spells > 0:
+                        infusion_instance = spell_infusion_form.save(commit=False)
+                        
+                        # 智能调整 max_spells
+                        if num_spells > infusion_instance.max_spells:
+                            infusion_instance.max_spells = num_spells
+                        
+                        # 确保与 command 关联
+                        infusion_instance.command = command_instance
+                        infusion_instance.save()
+                        
+                        spell_formset.instance = infusion_instance
+                        spell_formset.save()
+                    elif spell_infusion_instance:
+                        # 如果法术数量变为0，且之前存在容器，则删除
+                        spell_infusion_instance.delete()
+
                     return redirect(reverse('MC_command:detail', args=[command_obj.id]))
             except forms.ValidationError:
-                # Custom validation failed, errors are already in the form.
-                # The view will now fall through and re-render the form with errors.
                 pass
-        # If we are here, it means some form was invalid.
-        # The view will proceed to render the form with errors below.
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
-        # /-/-/-/-/-/- END OF MODIFICATION /-/-/-/-/-/
-        # /-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/
 
-    else:
+    else: # GET 请求
         form = GeneratedCommandForm(instance=command_obj)
-        formsets = {prefix:FormSetClasses[prefix](instance=command_obj, prefix=prefix) for prefix in COMPONENT_REGISTRY.keys()}
+        formsets = {prefix: FormSetClasses[prefix](instance=command_obj, prefix=prefix) for prefix in other_components}
+        spell_infusion_form = SpellInfusionForm(instance=spell_infusion_instance, prefix='spell_infusion')
+        spell_formset = SpellInfusionFormSet(instance=spell_infusion_instance, prefix=spell_prefix)
 
-    version_data = {v.pk:v.ordering_id for v in MinecraftVersion.objects.all()}
-    item_type_data = {it.pk:{'type':it.function_type} for it in ItemType.objects.all()}
-
+    # ... (视图的 context 部分保持不变) ...
+    version_data = {v.pk: v.ordering_id for v in MinecraftVersion.objects.all()}
+    item_type_data = {it.pk: {'type': it.function_type} for it in ItemType.objects.all()}
     component_data = {
-        prefix:{'formset':formsets[prefix], 'verbose_name':config['verbose_name'], 'supported_types':json.dumps(config['supported_function_types'])}
-        for prefix, config in COMPONENT_REGISTRY.items()
+        prefix: {'formset': formsets[prefix], 'verbose_name': config['verbose_name'], 'supported_types': json.dumps(config['supported_function_types'])}
+        for prefix, config in other_components.items()
     }
-
+    component_data[spell_prefix] = {
+        'formset': spell_formset,
+        'verbose_name': spell_config.get('verbose_name'),
+        'supported_types': json.dumps(spell_config.get('supported_function_types', ['all'])),
+        'extra_form': spell_infusion_form
+    }
     context = {
-        'form':form,
-        'component_data':component_data,
-        'command':command_obj,
-        'form_title':'编辑命令',
-        'version_data_json':json.dumps(version_data),
-        'item_type_data_json':json.dumps(item_type_data),
+        'form': form,
+        'component_data': component_data,
+        'command': command_obj,
+        'form_title': '编辑命令',
+        'version_data_json': json.dumps(version_data),
+        'item_type_data_json': json.dumps(item_type_data),
     }
     return render(request, 'MC_command/item/command_form.html', context)
 
-
-# ... (文件其他部分不变) ...
-
-def _validate_version_compatibility(form, enchant_formset, attribute_formset, target_version):
+def _validate_version_compatibility(form, enchant_formset, attribute_formset, spell_formset, target_version):
     """
     一个辅助函数，用于检查所选版本是否与所有组件兼容。
     如果不兼容，则会向主表单添加一个错误并引发 ValidationError。
     """
-    # I have removed the obsolete reference to 'base_item'. The validation now
-    # correctly checks only the versioned components from the formsets.
     all_components = []
 
     if enchant_formset:
@@ -224,6 +277,13 @@ def _validate_version_compatibility(form, enchant_formset, attribute_formset, ta
         for attr_form in attribute_formset.cleaned_data:
             if attr_form and not attr_form.get('DELETE'):
                 all_components.append(attr_form.get('attribute'))
+    
+    # --- 新增：检查法术表单集 ---
+    if spell_formset:
+        for spell_form in spell_formset.cleaned_data:
+            if spell_form and not spell_form.get('DELETE'):
+                all_components.append(spell_form.get('spell'))
+    # --- 新增结束 ---
 
     min_v_id = 0
     max_v_id = float('inf')
@@ -489,8 +549,6 @@ def _build_component_structure(command:GeneratedCommand) -> dict:
     return components
 
 
-
-# --- 新增：用于 AJAX 的 API 视图 ---
 def get_compatible_components(request):
     version_pk = request.GET.get('version_id')
     component_type = request.GET.get('type')
@@ -511,30 +569,24 @@ def get_compatible_components(request):
     )
 
     data = []
+    queryset = None
+
     if component_type == 'enchantment':
         queryset = Enchantment.objects.filter(version_filter).order_by('enchant_type', 'name')
-        field = VersionedModelChoiceField(queryset=queryset)
-        data = [
-            {'id':obj.pk, 'text':field.label_from_instance(obj)}
-            for obj in queryset
-        ]
     elif component_type == 'attribute':
         queryset = AttributeType.objects.filter(version_filter).order_by('name')
-        field = VersionedModelChoiceField(queryset=queryset)
-        data = [
-            {'id':obj.pk, 'text':field.label_from_instance(obj), 'attribute_id':obj.attribute_id}
-            for obj in queryset
-        ]
     elif component_type == 'potion_effect':
         queryset = PotionEffectType.objects.filter(version_filter).order_by('name')
-        field = VersionedModelChoiceField(queryset=queryset)
-        data = [
-            {'id':obj.pk, 'text':field.label_from_instance(obj)}
-            for obj in queryset
-        ]
-    elif component_type == 'firework_explosions':
-        data = []
+    # --- 新增：处理法术组件的请求 ---
+    elif component_type == 'spell':
+        queryset = Spell.objects.filter(version_filter).order_by('name')
+    # --- 新增结束 ---
     else:
-        return JsonResponse({'error':'Invalid component type'}, status=400)
+        # 对于不支持动态加载的组件（如烟花），返回空列表
+        return JsonResponse([], safe=False)
+
+    if queryset:
+        field = VersionedModelChoiceField(queryset=queryset)
+        data = [{'id': obj.pk, 'text': field.label_from_instance(obj)} for obj in queryset]
 
     return JsonResponse(data, safe=False)

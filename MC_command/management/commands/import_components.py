@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from MC_command.models import (MinecraftVersion, Material, ItemType, 
                                Enchantment, AttributeType, PotionEffectType,
-                               BooleanComponentType
+                               BooleanComponentType, Spell  # <--- 1. 在这里导入 Spell 模型
 )
 
 class Command(BaseCommand):
@@ -155,6 +155,28 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'  Created: {obj.name}'))
         self.stdout.write(self.style.SUCCESS(f'Total {count} boolean components imported.'))
 
+        # --- 2. 在此处添加新的 import_spells 函数 ---
+    def import_spells(self, data):
+        """导入法术"""
+        count = 0
+        for spell_data in data:
+            # 获取版本对象，这会自动处理版本兼容性
+            min_version = self.get_version_object(spell_data.get('min_version'), 'spell', spell_data['name'])
+            max_version = self.get_version_object(spell_data.get('max_version'), 'spell', spell_data['name'])
+
+            spell, created = Spell.objects.update_or_create(
+                spell_id=spell_data['id'],
+                defaults={
+                    'name': spell_data['name'],
+                    'min_version': min_version,
+                    'max_version': max_version,
+                }
+            )
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created spell: {spell.name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new spells imported.'))
+
     def handle(self, *args, **options):
         file_path = options['file_path']
         # 修正：移除旧的 '..' 片段，因为 'BASE_DIR' 已经指向项目根目录
@@ -192,9 +214,13 @@ class Command(BaseCommand):
         elif file_path == 'boolean_components.json':
             self.stdout.write(self.style.HTTP_INFO('Importing boolean components...'))
             self.import_boolean_components(data)
+            # --- 3. 在此处添加对 spells.json 的处理 ---
+        elif file_path == 'spells.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing spells...'))
+            self.import_spells(data)
         else:
             self.stdout.write(self.style.WARNING(f'No specific importer for "{file_path}". Please check the filename.'))
-            # 更新提示信息，加入新的可用文件
-            self.stdout.write(self.style.WARNING('Available files: versions.json, materials.json, item_types.json, enchantments.json, attributes.json, effects.json'))
+            # --- 4. 更新提示信息，加入新的可用文件 ---
+            self.stdout.write(self.style.WARNING('Available files: versions.json, materials.json, item_types.json, enchantments.json, attributes.json, effects.json, boolean_components.json, spells.json'))
 
         self.stdout.write(self.style.SUCCESS('Import process finished.'))

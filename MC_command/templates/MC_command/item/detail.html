@@ -73,6 +73,31 @@
                 </ul>
             {% endif %}
 
+            {% if command.spell_infusion %}
+                <hr>
+                <h3>法术注入</h3>
+                
+                {# 显示 SpellInfusion 的核心配置 #}
+                <ul>
+                    <li><strong>启用法术轮盘:</strong> {{ command.spell_infusion.spell_wheel|yesno:"是,否" }}</li>
+                    <li><strong>必须装备于[法术书位]施法:</strong> {{ command.spell_infusion.must_equip|yesno:"是,否" }}</li>
+                    <li><strong>最大法术槽位:</strong> {{ command.spell_infusion.max_spells }}</li>
+                </ul>
+
+                {# 显示注入的具体法术列表 #}
+                {% if command.spell_infusion.spells.all %}
+                    <h5 style="margin-top: 15px;">注入的法术:</h5>
+                    <ul>
+                    {% for spell in command.spell_infusion.spells.all %}
+                        <li>
+                            [索引 {{ spell.index }}] {{ spell.spell.name }} - 等级 {{ spell.level }}
+                            {% if spell.locked %}<small style="color: #777;">(已锁定)</small>{% endif %}
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endif %}
+
             {% if command.potion_effects.all %}
                 <hr>
                 <h3>药水效果</h3>
@@ -142,6 +167,8 @@
                 </div>
             </div>
             {% endif %}
+
+
 
             {% if command.custom_data %}
                 <hr>

@@ -15,6 +15,7 @@ from .models import (
     Enchantment,AppliedEnchantment, AttributeType, AppliedAttribute, 
     PotionEffectType,AppliedPotionEffect, AppliedFireworkExplosion,
     BooleanComponentType,AppliedBooleanComponent, 
+    Spell, AppliedSpell,SpellInfusion # <--- 在这里导入新模型
 )
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
@@ -225,3 +226,35 @@ class AppliedBooleanComponentForm(forms.ModelForm):
         model = AppliedBooleanComponent
         fields = ['component', 'value']
         labels = {'value': '启用'}
+
+class AppliedSpellForm(forms.ModelForm):
+    """法术内联表单"""
+    spell = VersionedModelChoiceField(
+        queryset=Spell.objects.select_related('min_version', 'max_version').all().order_by('name'),
+        label="法术",
+        # 添加这些属性是为了给前端JS提供版本过滤的钩子，保持与其他组件一致
+        widget=forms.Select(attrs={
+            'class': 'version-filtered-select',
+            'data-component-type': 'spell'
+        })
+    )
+
+    class Meta:
+        model = AppliedSpell
+        fields = ['spell', 'level', 'index', 'locked']
+        labels = {
+            'level': '等级',
+            'index': '索引',
+            'locked': '是否锁定',
+        }
+
+class SpellInfusionForm(forms.ModelForm):
+    """用于处理法术注入容器配置的表单"""
+    class Meta:
+        model = SpellInfusion
+        fields = ['spell_wheel', 'must_equip', 'max_spells']
+        labels = {
+            'spell_wheel': '启用/禁用 法术轮盘',
+            'must_equip': '必须装备于[法术书位]才能施法',
+            'max_spells': '最大法术槽位',
+        }

@@ -1,14 +1,15 @@
 import json
 import random # <--- 新增导入
-from .models import (AppliedEnchantment, AppliedAttribute, 
+from .models import (AppliedEnchantment, AppliedAttribute,
                      AppliedPotionEffect, AppliedFireworkExplosion,
-                     AppliedBooleanComponent
-                       # <--- 导入新模型
-)
-from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, 
+                     AppliedBooleanComponent,
+                     SpellInfusion, AppliedSpell  # <--- 1. 导入新模型
+                     )
+from .forms import (AppliedEnchantmentForm, AppliedAttributeForm,
                     AppliedPotionEffectForm, AppliedFireworkExplosionForm,
-                    AppliedBooleanComponentForm
-)
+                    AppliedBooleanComponentForm,
+                    AppliedSpellForm  # <--- 2. 导入新表单
+                    )
 # ==============================================================================
 # Helper Functions
 # ==============================================================================
@@ -217,6 +218,49 @@ def generate_component_boolean(related_manager):
         return {'_raw_components': raw_components_list}
     return {}
 
+
+def generate_nbt_spells(related_manager):
+    """
+    为法术注入组件生成 NBT 数据。
+    (已修正)
+    """
+    # related_manager 是 command.applied_spells, 
+    # 所以它的 .instance 属性直接就是 SpellInfusion 对象。
+    spell_infusion_obj = related_manager.instance
+
+    # 从 related_manager (即 command.applied_spells) 获取所有法术
+    all_spells = related_manager.all().order_by('index')
+
+    data_list = []
+    # 为了NBT格式正确，我们需要将Python的布尔值转为0b/1b，并将id/level等字段的顺序固定
+    for spell in all_spells:
+        # 注意：在生成NBT时，字段的顺序有时很重要，这里我们手动构建
+        # 并且根据你的NBT格式要求，level是整数，id是字符串，index是整数，locked是byte
+        spell_nbt = {
+            "level": spell.level,
+            "id": spell.spell.spell_id,
+            "index": spell.index,
+            "locked": 1 if spell.locked else 0
+        }
+        data_list.append(spell_nbt)
+
+    # 构建最终的 NBT 字典
+    return {
+        "ISB_Spells": {
+            "spellWheel": 1 if spell_infusion_obj.spell_wheel else 0,
+            "mustEquip": 1 if spell_infusion_obj.must_equip else 0,
+            "data": data_list,
+            "maxSpells": spell_infusion_obj.max_spells
+        }
+    }
+
+def generate_component_spells(related_manager):
+    """
+    法术注入的组件生成逻辑 (占位符)。
+    由于目标版本是 1.20.1，主要使用 NBT，此函数暂时为空。
+    """
+    return {}
+
 # ==============================================================================
 # THE COMPONENT REGISTRY
 # ==============================================================================
@@ -271,6 +315,15 @@ COMPONENT_REGISTRY = {
         'supported_function_types': ['all'], # 对所有物品类型都可用
         'generate_nbt': generate_nbt_boolean, 
         'generate_component': generate_component_boolean, # 关联到我们上面创建的新函数
+    },
+    'applied_spells': {
+        'verbose_name': '法术注入',
+        'model': AppliedSpell,
+        'form': AppliedSpellForm,
+        'template_path': 'MC_command/formsets/_spell_formset.html', # 你需要创建这个模板文件
+        'supported_function_types': ['all'], # 假设所有物品都可注入法术
+        'generate_nbt': generate_nbt_spells,
+        'generate_component': generate_component_spells,
     }
     # Add future components here, e.g., 'fireworks', 'book_content'
 }

@@ -29,6 +29,7 @@
                 {% endfor %}
             </fieldset>
 
+
             {% for prefix, data in component_data.items %}
                 {% if prefix == 'firework_explosions' %}
                     <div class="inline-group component-group" id="firework_explosions-group"
@@ -55,7 +56,89 @@
                                 </template>
                             </div>
                     </div>
+
+                {% elif prefix == 'applied_spells' %}
+                    {# --- 这是为法术注入新增的特殊渲染块 --- #}
+                    <div class="inline-group component-group" id="{{ prefix }}-group"
+                        data-prefix="{{ prefix }}"
+                        data-supported-types="{{ data.supported_types }}"
+                        style="display: none;">
+                        
+                        <h2>{{ data.verbose_name }}</h2>
+
+                        <div class="inline-group-content">
+                            
+                            {# 1. 渲染法术容器的配置 (来自 extra_form) #}
+                            <fieldset class="spell-infusion-properties" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                                <legend style="padding: 0 10px; font-weight: bold; color: #555; width: auto; border: none;">核心配置</legend>
+                                {% if data.extra_form.non_field_errors %}
+                                    <div class="errorlist">{{ data.extra_form.non_field_errors }}</div>
+                                {% endif %}
+                                {% for field in data.extra_form %}
+                                    <div class="form-field" style="margin-bottom: 10px;">
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.help_text %}<small style="color: #666; display: block; margin-top: 4px;">{{ field.help_text }}</small>{% endif %}
+                                        <div class="errorlist">{{ field.errors }}</div>
+                                    </div>
+                                {% endfor %}
+                            </fieldset>
+
+                            {# 2. 渲染具体的法术列表 (来自 formset)，样式与其他组件表格相同 #}
+                            <div class="errorlist">{{ data.formset.non_field_errors }}</div>
+                            {{ data.formset.management_form }}
+                            
+                            <table id="{{ prefix }}-table">
+                                <thead>
+                                    <tr>
+                                        {% for field in data.formset.empty_form.visible_fields %}
+                                            {% if field.name != 'DELETE' %}
+                                                <th>{{ field.label }}</th>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if data.formset.can_delete %}<th class="delete-cell">删除</th>{% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody id="{{ prefix }}-form-container">
+                                    {% for form in data.formset %}
+                                    <tr id="{{ form.prefix }}-row" class="dynamic-form">
+                                        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                                        {% for field in form.visible_fields %}
+                                            {% if field.name != 'DELETE' %}
+                                                <td>
+                                                    {{ field }}
+                                                    <div class="errorlist">{{ field.errors }}</div>
+                                                </td>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if data.formset.can_delete %}
+                                            <td class="delete-cell">{{ form.DELETE }}</td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加法术</button>
+                            
+                            <template id="{{ prefix }}-empty-form-template">
+                                <tr id="{{ data.formset.empty_form.prefix }}-row" class="dynamic-form">
+                                    {% for field in data.formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+                                    {% for field in data.formset.empty_form.visible_fields %}
+                                        {% if field.name != 'DELETE' %}
+                                            <td>{{ field }}</td>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if data.formset.can_delete %}
+                                        <td class="delete-cell">{{ data.formset.empty_form.DELETE }}</td>
+                                    {% endif %}
+                                </tr>
+                            </template>
+                        </div>
+                    </div>
+
                 {% else %}
+                    {# --- 这是其他所有普通组件的渲染块 (保持不变) --- #}
                     <div class="inline-group component-group" id="{{ prefix }}-group"
                         data-prefix="{{ prefix }}"
                         data-supported-types="{{ data.supported_types }}"
@@ -120,7 +203,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="btn">保存</button>
-                <a href="{% if command %}{% url 'MC_command:detail' command.id %}{% else %}{% url 'MC_command:index' %}{% endif %}" class="cancel-link">取消</a>
+                <a href="{% if command %}{% url 'MC_command:detail' command.id %}{% else %}{% url 'MC_command:item_index' %}{% endif %}" class="cancel-link">取消</a>
             </div>
         </form>
     </div>
@@ -485,8 +568,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // --- 在 setupFireworkRow 函数之后，添加这个新的函数 ---
+    function updateSpellIntelligence() {
+        const container = document.getElementById('applied_spells-form-container');
+        const maxSpellsInput = document.querySelector('input[name="spell_infusion-max_spells"]');
+        if (!container || !maxSpellsInput) return;
+
+        const visibleForms = container.querySelectorAll('tr.dynamic-form');
+        let spellCount = 0;
+        
+        visibleForms.forEach((formRow, index) => {
+            const deleteCheckbox = formRow.querySelector('input[name$="-DELETE"]');
+            // 只计算未被标记为删除的法术
+            if (!deleteCheckbox || !deleteCheckbox.checked) {
+                // 智能 index: 更新当前行的 index 字段
+                const indexInput = formRow.querySelector('input[name$="-index"]');
+                if (indexInput) {
+                    indexInput.value = spellCount;
+                }
+                spellCount++;
+            }
+        });
+
+        // 智能 max_spells: 如果实际法术数大于设定值，自动增加
+        if (spellCount > parseInt(maxSpellsInput.value)) {
+            maxSpellsInput.value = spellCount;
+        }
+    }
+
+
+    document.querySelectorAll('.add-row-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const prefix = this.dataset.formsetPrefix;
+            const template = document.getElementById(`${prefix}-empty-form-template`);
+            const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+            if (!template || !totalFormsInput) {
+                console.error("Formset elements not found for prefix:", prefix);
+                return;
+            }
+            let totalForms = parseInt(totalFormsInput.value);
+            
+            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+            const container = document.getElementById(`${prefix}-form-container`);
+            
+            container.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            const newRowElement = document.getElementById(`${prefix}-${totalForms}-row`);
+            if (prefix === 'firework_explosions') {
+                 setupFireworkRow(newRowElement);
+            }
+            updateComponentOptions();
+            
+            totalFormsInput.value = totalForms + 1;
+
+            // --- 在添加新行后，调用智能更新函数 ---
+            if (prefix === 'applied_spells') {
+                updateSpellIntelligence();
+            }
+        });
+    });
+
     // 页面加载时，为已存在的烟火效果行设置逻辑
     document.querySelectorAll('.firework-form-row').forEach(setupFireworkRow);
+
+        // --- 新增：监听删除复选框的变化 ---
+    document.getElementById('applied_spells-form-container').addEventListener('change', function(event) {
+        // 如果是删除复选框被更改
+        if (event.target.matches('input[name$="-DELETE"]')) {
+            updateSpellIntelligence();
+        }
+    });
 
 
     // --- 初始化和事件监听 ---
@@ -500,6 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateComponentVisibility();
     updateAttributeFormUI();
     updateComponentOptions();
+    updateSpellIntelligence(); // 页面加载时也执行一次，确保初始状态正确
 
     
     // --- 新增：处理删除按钮的逻辑 ---

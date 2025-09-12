@@ -146,6 +146,21 @@ class PotionEffectType(VersionedItem):
 
     def __str__(self):
         return self.name
+    
+class Spell(VersionedItem):
+    """存储所有可用的法术，例如 'cataclysm_spellbooks:summon_koboleton'"""
+    spell_id = models.CharField(max_length=150, unique=True, help_text="法术的唯一ID, 例如 'cataclysm_spellbooks:summon_koboleton'")
+    name = models.CharField(max_length=100, help_text="法术的显示名称, 例如 '召唤骷髅兵'")
+    min_version = models.ForeignKey(MinecraftVersion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name="最低兼容版本")
+    max_version = models.ForeignKey(MinecraftVersion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+', verbose_name="最高兼容版本")
+   
+    class Meta:
+        verbose_name = "法术"
+        verbose_name_plural = "[🪄]法术"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 # --- 新增的静态数据模型 ---
 class AttributeType(VersionedItem):
@@ -215,6 +230,17 @@ class GeneratedCommand(models.Model):
         if self.item_type:
             return self.item_type.function_type
         return 'all'
+    
+    @property
+    def applied_spells(self):
+        """
+        一个属性，用于直接访问与此命令关联的应用法术列表。
+        这为组件注册表提供了一个统一的接口。
+        """
+        if hasattr(self, 'spell_infusion') and self.spell_infusion is not None:
+            return self.spell_infusion.spells
+        # 如果没有关联的 SpellInfusion 对象，则返回一个空的 manager
+        return AppliedSpell.objects.none()
     
     def clean(self):
         if not self.material and not self.item_type:
@@ -362,3 +388,49 @@ class AppliedBooleanComponent(models.Model):
         unique_together = ("command", "component")
         verbose_name = "布尔型组件"
         verbose_name_plural = "布尔型组件"
+
+class SpellInfusion(models.Model):
+    """
+    存储物品的法术注入核心配置 (对应 NBT 的 ISB_Spells 标签)。
+    与 GeneratedCommand 是一对一关系。
+    """
+    command = models.OneToOneField(
+        GeneratedCommand,
+        on_delete=models.CASCADE,
+        related_name="spell_infusion" # 方便从 command 反向查询
+    )
+    spell_wheel = models.BooleanField(default=True, verbose_name="启用法术轮盘 (spellWheel)")
+    must_equip = models.BooleanField(default=False, verbose_name="必须装备才能施法 (mustEquip)")
+    max_spells = models.PositiveSmallIntegerField(default=1, verbose_name="最大法术数量 (maxSpells)")
+
+    class Meta:
+        verbose_name = "法术注入配置"
+        verbose_name_plural = "法术注入配置"
+
+    def __str__(self):
+        return f"为 '{self.command.title}' 配置的法术"
+
+
+class AppliedSpell(models.Model):
+    """
+    存储应用到物品上的具体法术及其属性 (对应 NBT 的 data 数组中的每个条目)。
+    """
+    infusion_config = models.ForeignKey(
+        SpellInfusion,
+        on_delete=models.CASCADE,
+        related_name="spells", # 对应 NBT 的 data 字段
+        verbose_name="所属法术配置"
+    )
+    spell = models.ForeignKey(Spell, on_delete=models.PROTECT, verbose_name="选择的法术")
+    level = models.PositiveIntegerField(default=1, verbose_name="法术等级 (level)")
+    index = models.PositiveSmallIntegerField(default=0, verbose_name="法术索引 (index)", help_text="法术在列表中的位置，从0开始")
+    locked = models.BooleanField(default=False, verbose_name="是否锁定 (locked)")
+
+    class Meta:
+        verbose_name = "应用的法术"
+        verbose_name_plural = "应用的法术"
+        ordering = ['index'] # 默认按索引排序
+        unique_together = ('infusion_config', 'index') # 同一个物品配置中，每个索引只能有一个法术
+
+    def __str__(self):
+        return f"[{self.index}] {self.spell.name} (Lv. {self.level}) for '{self.infusion_config.command.title}'"

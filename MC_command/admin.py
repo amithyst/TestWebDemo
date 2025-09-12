@@ -8,13 +8,14 @@ from .models import (
     MinecraftVersion, Material, ItemType, Enchantment, PotionEffectType, AttributeType,
     GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect,
     AppliedFireworkExplosion, BooleanComponentType, AppliedBooleanComponent,
-    WrittenBookContent
+    WrittenBookContent, Spell, SpellInfusion, AppliedSpell # <--- 在这里添加新模型
 )
 
 # --- FIX: Import the custom forms ---
 from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, 
                     AppliedFireworkExplosionAdminForm,AppliedBooleanComponentForm,
-                    VersionedModelChoiceField)
+                    VersionedModelChoiceField, AppliedSpellForm) # <--- 1. 在这里添加导入
+
 
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
@@ -59,6 +60,15 @@ class AttributeTypeAdmin(admin.ModelAdmin):
 class BooleanComponentTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'true_str', 'false_str', 'min_version', 'max_version')
     search_fields = ('name', 'true_str', 'false_str')
+
+
+@admin.register(Spell)
+class SpellAdmin(admin.ModelAdmin):
+    list_display = ('name', 'spell_id', 'min_version', 'max_version')
+    search_fields = ('name', 'spell_id')
+    list_filter = ('min_version', 'max_version')
+
+
 # -----------------------------------------------------------------------------
 # 增强版的内联定义
 # -----------------------------------------------------------------------------
@@ -132,8 +142,74 @@ class AppliedBooleanComponentInline(VersionedInlineMixin, admin.TabularInline):
     form = AppliedBooleanComponentForm
     extra = 1
 
+
+# --- 在此处添加法术注入相关的 Admin 和 Inline ---
+
+class AppliedSpellInline(admin.TabularInline):
+    """
+    用于在 SpellInfusion 管理页面内联添加具体的法术。
+    """
+    model = AppliedSpell
+    form = AppliedSpellForm  # <--- 2. 在这里指定使用新的表单
+    extra = 1
+    # 设置 autocomplete_fields 可以获得一个好用的搜索框
+    autocomplete_fields = ['spell']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        """
+        重写此方法，为 'spell' 字段动态添加基于父对象版本的过滤。
+        """
+        if db_field.name == "spell":
+            # 从请求的 URL 中解析出父对象 SpellInfusion 的 ID
+            match = re.search(r'/spellinfusion/(\d+)/change', request.path_info)
+            if match:
+                object_id = match.group(1)
+                try:
+                    # 获取 SpellInfusion 对象，并进一步找到其关联的 GeneratedCommand
+                    infusion_config = SpellInfusion.objects.get(pk=object_id)
+                    target_version = infusion_config.command.target_version
+                    
+                    # 构建版本查询条件
+                    version_q = (
+                        Q(min_version__ordering_id__lte=target_version.ordering_id) | Q(min_version__isnull=True)
+                    ) & (
+                        Q(max_version__ordering_id__gte=target_version.ordering_id) | Q(max_version__isnull=True)
+                    )
+                    # 应用查询条件
+                    kwargs['queryset'] = Spell.objects.filter(version_q)
+                except SpellInfusion.DoesNotExist:
+                    pass
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(SpellInfusion)
+class SpellInfusionAdmin(admin.ModelAdmin):
+    """
+    SpellInfusion 的独立管理页面。
+    """
+    list_display = ('__str__', 'command')
+    # 将 AppliedSpellInline 嵌入到此页面
+    inlines = [AppliedSpellInline]
+    fields = ('command', 'spell_wheel', 'must_equip', 'max_spells')
+    # command 字段设为只读，防止误操作
+    readonly_fields = ('command',)
+
+
+class SpellInfusionInline(admin.StackedInline):
+    """
+    用于在 GeneratedCommand 页面嵌入 SpellInfusion 的主要配置。
+    """
+    model = SpellInfusion
+    # 设置为0，默认不显示，除非用户点击 "添加"
+    extra = 0
+    can_delete = False
+    verbose_name_plural = '法术注入配置'
+    # 移除 'command' 字段，因为它会被自动设置
+    fields = ('spell_wheel', 'must_equip', 'max_spells')
+
+
 # -----------------------------------------------------------------------------
-# GeneratedCommand 的 Admin 定义 (无需改变)
+# GeneratedCommand 的 Admin 定义 
 # -----------------------------------------------------------------------------
 @admin.register(GeneratedCommand)
 class GeneratedCommandAdmin(admin.ModelAdmin):
@@ -145,6 +221,7 @@ class GeneratedCommandAdmin(admin.ModelAdmin):
     
     search_fields = ('title', 'custom_name', 'material__display_name', 'item_type__display_name')
     inlines = [
+        SpellInfusionInline,
         AppliedEnchantmentInline,
         AppliedAttributeInline,
         AppliedPotionEffectInline,
