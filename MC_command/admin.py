@@ -9,12 +9,19 @@ from .models import (
     GeneratedCommand, AppliedEnchantment, AppliedAttribute, AppliedPotionEffect,
     AppliedFireworkExplosion, BooleanComponentType, AppliedBooleanComponent,
     WrittenBookContent, Spell, SpellInfusion, AppliedSpell # <--- 在这里添加新模型
+       , # ... (existing models) ...
+    EntityTag, EntityType, EntityComponentType, GeneratedEntity,
+    AppliedEntityComponent, EntityEquipmentSlot, TradeRecipe
 )
 
 # --- FIX: Import the custom forms ---
 from .forms import (AppliedEnchantmentForm, AppliedAttributeForm, AppliedPotionEffectForm, 
                     AppliedFireworkExplosionAdminForm,AppliedBooleanComponentForm,
-                    VersionedModelChoiceField, AppliedSpellForm) # <--- 1. 在这里添加导入
+                    VersionedModelChoiceField, AppliedSpellForm
+                    ,    # ... (existing forms) ...
+                    GeneratedEntityForm, AppliedEntityComponentForm,
+                    EntityEquipmentSlotForm, TradeRecipeForm
+    ) # <--- 1. 在这里添加导入
 
 
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件

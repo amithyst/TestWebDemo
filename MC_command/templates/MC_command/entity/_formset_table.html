@@ -1,0 +1,52 @@
+
+{# File: MC_command/templates/MC_command/entity/_formset_table.html #}
+
+<fieldset class="inline-group">
+    <legend>{{ title }}</legend>
+    <div class="inline-group-content">
+        {{ formset.management_form }}
+        {% if formset.non_field_errors %}<div class="errorlist">{{ formset.non_field_errors }}</div>{% endif %}
+        
+        <table id="{{ prefix }}-table">
+            <thead>
+                <tr>
+                    {% for field in formset.empty_form.visible_fields %}
+                        {% if field.name != 'DELETE' %}<th>{{ field.label }}</th>{% endif %}
+                    {% endfor %}
+                    {% if formset.can_delete %}<th>删除</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="{{ prefix }}-form-container">
+                {% for form in formset %}
+                <tr id="{{ form.prefix }}-row" class="dynamic-form">
+                    {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                    {% for field in form.visible_fields %}
+                        {% if field.name != 'DELETE' %}
+                            <td>
+                                {{ field }}
+                                {% if field.errors %}<div class="errorlist">{{ field.errors }}</div>{% endif %}
+                            </td>
+                        {% endif %}
+                    {% endfor %}
+                    {% if formset.can_delete %}
+                        <td class="delete-cell">{{ form.DELETE }}</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="button" class="add-row-btn" data-formset-prefix="{{ prefix }}">添加{{ title }}</button>
+        
+        <template id="{{ prefix }}-empty-form-template">
+            <tr id="{{ formset.empty_form.prefix }}-row" class="dynamic-form">
+                {% for field in formset.empty_form.hidden_fields %}{{ field }}{% endfor %}
+                {% for field in formset.empty_form.visible_fields %}
+                    {% if field.name != 'DELETE' %}<td>{{ field }}</td>{% endif %}
+                {% endfor %}
+                {% if formset.can_delete %}
+                    <td class="delete-cell">{{ formset.empty_form.DELETE }}</td>
+                {% endif %}
+            </tr>
+        </template>
+    </div>
+</fieldset>

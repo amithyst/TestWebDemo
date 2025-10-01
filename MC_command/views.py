@@ -7,20 +7,32 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.forms import inlineformset_factory, modelform_factory # <--- 确保导入 modelform_factory
+
+# --- 实体更新新增：导入通用内联表单工厂 ---
+from django.contrib.contenttypes.forms import generic_inlineformset_factory
+
 from django.db import transaction
 
 from django.http import JsonResponse
 from django.db.models import Q
 # 修改:引入 Material, ItemType
 # 修改:引入 Material, ItemType, Spell
-from .models import (Enchantment, AttributeType, PotionEffectType, 
-                     MinecraftVersion, Material, ItemType, Spell, # <--- 导入 Spell
-                     SpellInfusion, AppliedSpell) # <--- 导入 SpellInfusion 和 AppliedSpell
+from .models import (Enchantment, AttributeType, PotionEffectType,
+                     MinecraftVersion, Material, ItemType, Spell,
+                     SpellInfusion, AppliedSpell, GeneratedCommand,
+                     # --- 新增：导入实体相关的模型 ---
+                     GeneratedEntity, EntityEquipmentSlot, TradeRecipe,
+                     AppliedEntityComponent, AppliedAttribute, AppliedPotionEffect)
 
 from .models import GeneratedCommand
-from .forms import (GeneratedCommandForm, VersionedModelChoiceField, # <--- 导入新的 SpellInfusionForm
-                    AppliedFireworkExplosionAdminForm, SpellInfusionForm)
-from .components import COMPONENT_REGISTRY
+from .forms import (
+    GeneratedCommandForm, VersionedModelChoiceField, 
+    AppliedFireworkExplosionAdminForm, SpellInfusionForm,
+    # --- 以下是为实体视图新添加的，请确保它们都在这里 ---
+    GeneratedEntityForm, EntityEquipmentSlotForm, TradeRecipeForm,
+    AppliedEntityComponentForm, AppliedAttributeForm, AppliedPotionEffectForm
+)
+from .components import COMPONENT_REGISTRY, generate_entity_nbt # <--- 导入实体NBT生成函数
 
 # --- 核心视图 ---
 def home(request):
@@ -590,3 +602,201 @@ def get_compatible_components(request):
         data = [{'id': obj.pk, 'text': field.label_from_instance(obj)} for obj in queryset]
 
     return JsonResponse(data, safe=False)
+
+
+# ==============================================================================
+# ==============================================================================
+#  新增：实体 (ENTITY) 相关的视图和辅助函数
+# ==============================================================================
+# ==============================================================================
+
+# --- 1. 新的SNBT格式化函数，专为实体NBT设计 ---
+
+def _entity_nbt_to_string(data):
+    """
+    将Python字典递归转换为实体命令所用的SNBT字符串。
+    这个版本比物品的 _to_snbt 更通用，能处理字节(b)/浮点(f)等类型。
+    """
+    if isinstance(data, dict):
+        # 移除内部使用的、值为None的键
+        items = [f"{k}:{_entity_nbt_to_string(v)}" for k, v in data.items() if v is not None]
+        return f"{{{','.join(items)}}}"
+    
+    if isinstance(data, list):
+        return f"[{','.join([_entity_nbt_to_string(item) for item in data])}]"
+
+    if isinstance(data, str):
+        # 如果字符串本身就是个JSON或者已经被正确引用，直接返回
+        if (data.startswith(('{', '[')) and data.endswith(('}', ']'))) or \
+           (data.startswith("'") and data.endswith("'")) or \
+           (data.startswith('"') and data.endswith('"')):
+            return data
+        # 否则，使用JSON库来安全地添加引号并转义
+        return json.dumps(data, ensure_ascii=False)
+
+    if isinstance(data, bool): return '1b' if data else '0b'
+    
+    # 依据Python类型来猜测NBT类型
+    if isinstance(data, int): return f"{data}b" # 默认为byte类型，如有需要可扩展为Short/Int/Long
+    if isinstance(data, float): return f"{data}f"
+
+    return str(data)
+
+
+# --- 2. 更新实体索引视图 ---
+
+@login_required
+def entity_index(request):
+    """
+    更新后的视图，用于显示用户创建的实体列表。
+    """
+    entity_list = GeneratedEntity.objects.filter(user=request.user).order_by("-updated_at")
+    context = {
+        'entity_list': entity_list,
+    }
+    return render(request, 'MC_command/entity/index.html', context)
+
+
+# --- 3. 实体详情、创建、编辑、删除视图 ---
+
+@login_required
+def entity_detail(request, entity_id):
+    """显示单个实体配置的详情和生成的 /summon 命令。"""
+    entity_obj = get_object_or_404(GeneratedEntity, pk=entity_id, user=request.user)
+    
+    # 1. 调用components.py中的函数生成NBT字典
+    nbt_data = generate_entity_nbt(entity_obj)
+    
+    # 2. 将NBT字典格式化为字符串
+    nbt_string = _entity_nbt_to_string(nbt_data)
+    
+    # 3. 组装最终命令
+    summon_command = f"/summon {entity_obj.entity_type.entity_id} ~ ~1 ~ {nbt_string}"
+    
+    context = {
+        'entity': entity_obj,
+        'summon_command_string': summon_command,
+        'data_structure_json': json.dumps(nbt_data, indent=4, ensure_ascii=False),
+    }
+    return render(request, 'MC_command/entity/detail.html', context)
+
+@login_required
+def entity_create(request):
+    """处理实体创建的视图。"""
+    # 为每个关联模型定义内联表单集
+    # a. 通用关系表单集 (属性和药水效果)
+    AttributeFormSet = generic_inlineformset_factory(AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True)
+    PotionEffectFormSet = generic_inlineformset_factory(AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True)
+    
+    # b. 标准外键关系表单集
+    ComponentFormSet = inlineformset_factory(GeneratedEntity, AppliedEntityComponent, form=AppliedEntityComponentForm, extra=1, can_delete=True)
+    EquipmentFormSet = inlineformset_factory(GeneratedEntity, EntityEquipmentSlot, form=EntityEquipmentSlotForm, extra=1, can_delete=True)
+    TradeFormSet = inlineformset_factory(GeneratedEntity, TradeRecipe, form=TradeRecipeForm, extra=1, can_delete=True)
+
+    if request.method == 'POST':
+        form = GeneratedEntityForm(request.POST)
+        formsets = {
+            'attributes': AttributeFormSet(request.POST, prefix='attributes'),
+            'potion_effects': PotionEffectFormSet(request.POST, prefix='potions'),
+            'components': ComponentFormSet(request.POST, prefix='components'),
+            'equipment': EquipmentFormSet(request.POST, prefix='equipment'),
+            'trades': TradeFormSet(request.POST, prefix='trades'),
+        }
+
+        if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
+            with transaction.atomic():
+                entity_instance = form.save(commit=False)
+                entity_instance.user = request.user
+                entity_instance.save()
+
+                for fs in formsets.values():
+                    fs.instance = entity_instance
+                    fs.save()
+            
+            return redirect(reverse('MC_command:entity_detail', args=[entity_instance.id]))
+        
+        # --- 在这里添加 else 块来打印错误 ---
+        else:
+            print("="*20, "FORM VALIDATION FAILED", "="*20)
+            if not form.is_valid():
+                print("Main Form Errors:", form.errors)
+            for name, fs in formsets.items():
+                if not fs.is_valid():
+                    print(f"Formset '{name}' Errors:", fs.errors)
+                    print(f"Formset '{name}' Non-form Errors:", fs.non_form_errors())
+            print("="*58)
+
+    else: # GET 请求
+        form = GeneratedEntityForm()
+        formsets = {
+            'attributes': AttributeFormSet(prefix='attributes'),
+            'potion_effects': PotionEffectFormSet(prefix='potions'),
+            'components': ComponentFormSet(prefix='components'),
+            'equipment': EquipmentFormSet(prefix='equipment'),
+            'trades': TradeFormSet(prefix='trades'),
+        }
+
+    context = {
+        'form': form,
+        'formsets': formsets,
+        'form_title': '创建新实体配置',
+    }
+    return render(request, 'MC_command/entity/entity_form.html', context)
+
+
+@login_required
+def entity_edit(request, entity_id):
+    """处理实体编辑的视图。"""
+    entity_obj = get_object_or_404(GeneratedEntity, pk=entity_id, user=request.user)
+    
+    # (表单集的定义与 create 视图中完全相同)
+    AttributeFormSet = generic_inlineformset_factory(AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True)
+    PotionEffectFormSet = generic_inlineformset_factory(AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True)
+    ComponentFormSet = inlineformset_factory(GeneratedEntity, AppliedEntityComponent, form=AppliedEntityComponentForm, extra=1, can_delete=True)
+    EquipmentFormSet = inlineformset_factory(GeneratedEntity, EntityEquipmentSlot, form=EntityEquipmentSlotForm, extra=1, can_delete=True)
+    TradeFormSet = inlineformset_factory(GeneratedEntity, TradeRecipe, form=TradeRecipeForm, extra=1, can_delete=True)
+
+    if request.method == 'POST':
+        form = GeneratedEntityForm(request.POST, instance=entity_obj)
+        formsets = {
+            'attributes': AttributeFormSet(request.POST, instance=entity_obj, prefix='attributes'),
+            'potion_effects': PotionEffectFormSet(request.POST, instance=entity_obj, prefix='potions'),
+            'components': ComponentFormSet(request.POST, instance=entity_obj, prefix='components'),
+            'equipment': EquipmentFormSet(request.POST, instance=entity_obj, prefix='equipment'),
+            'trades': TradeFormSet(request.POST, instance=entity_obj, prefix='trades'),
+        }
+
+        if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
+            with transaction.atomic():
+                entity_instance = form.save()
+                for fs in formsets.values():
+                    fs.save()
+            
+            return redirect(reverse('MC_command:entity_detail', args=[entity_instance.id]))
+            
+    else: # GET 请求
+        form = GeneratedEntityForm(instance=entity_obj)
+        formsets = {
+            'attributes': AttributeFormSet(instance=entity_obj, prefix='attributes'),
+            'potion_effects': PotionEffectFormSet(instance=entity_obj, prefix='potions'),
+            'components': ComponentFormSet(instance=entity_obj, prefix='components'),
+            'equipment': EquipmentFormSet(instance=entity_obj, prefix='equipment'),
+            'trades': TradeFormSet(instance=entity_obj, prefix='trades'),
+        }
+        
+    context = {
+        'form': form,
+        'formsets': formsets,
+        'entity': entity_obj,
+        'form_title': '编辑实体配置',
+    }
+    return render(request, 'MC_command/entity/entity_form.html', context)
+
+
+@login_required
+@require_POST
+def entity_delete(request, entity_id):
+    """处理实体删除的视图。"""
+    entity_obj = get_object_or_404(GeneratedEntity, pk=entity_id, user=request.user)
+    entity_obj.delete()
+    return redirect(reverse('MC_command:entity_index'))

@@ -21,5 +21,19 @@
   { "system_name": "block", "display_name": "块", "function_type": "all" },
   { "system_name": "written_book", "display_name": "成书📕", "function_type": "written_book" },
   { "system_name": "irons_spellbooks:wimpy_spell_book", "display_name": "[铁魔法]无用之书📚", "function_type": "magic_book" },
-  { "system_name": "irons_spellbooks:blood_staff", "display_name": "[铁魔法]猩红神杖🪄", "function_type": "wand" }
+  { "system_name": "irons_spellbooks:blood_staff", "display_name": "[铁魔法]猩红神杖🪄", "function_type": "wand" },
+  { "system_name": "irons_spellbooks:artificer_cane", "display_name": "[铁魔法] 匠师之杖🪄", "function_type": "wand" },
+  { "system_name": "irons_spellbooks:graybeard_staff", "display_name": "[铁魔法] 长者手杖🪄", "function_type": "wand" },
+  { "system_name": "irons_spellbooks:ice_staff", "display_name": "[铁魔法] 冰霜魔杖🪄", "function_type": "wand" },
+  { "system_name": "irons_spellbooks:lightning_rod", "display_name": "[铁魔法] 雷霆之杖🪄", "function_type": "wand" },
+  { "system_name": "cataclysm_spellbooks:coral_staff", "display_name": "[灾变魔法] 珊瑚法杖🪄", "function_type": "wand" },
+  { "system_name": "cataclysm_spellbooks:fake_wudjets_staff", "display_name": "[灾变魔法] 伪造蛇妖法杖🪄", "function_type": "wand" },
+  { "system_name": "cataclysm_spellbooks:bloom_stone_staff", "display_name": "[灾变魔法] 花岩法杖🪄", "function_type": "wand" },
+  { "system_name": "cataclysm_spellbooks:void_staff", "display_name": "[灾变魔法] 虚空法杖🪄", "function_type": "wand" },
+  { "system_name": "cataclysm_spellbooks:spirit_sunderer", "display_name": "[灾变魔法] 灵魂撕裂者法杖🪄", "function_type": "wand" },
+  { "system_name": "cataclysm_spellbooks:soul_brazier", "display_name": "[灾变魔法] 灵魂火盆法杖🪄", "function_type": "wand" },
+  {"system_name": "traveloptics:titanlord_scepter_tectonic", "display_name": "[旅行光学] 地壳·泰坦领主权杖🪄", "function_type": "wand" },
+  { "system_name": "traveloptics:titanlord_scepter_retro", "display_name": "[旅行光学] 复古·泰坦领主权杖🪄", "function_type": "wand" },
+  { "system_name": "traveloptics:wand_of_final_light", "display_name": "[旅行光学] 终焉光辉之杖🪄", "function_type": "wand" },
+  { "system_name": "traveloptics:titanlord_scepter", "display_name": "[旅行光学] 泰坦领主权杖🪄", "function_type": "wand" }
 ]

@@ -1,1105 +1,1465 @@
 [
   {
     "id": "\"irons_spellbooks:cone_of_cold\"",
-    "name": "[冰霜🧊][0学徒法术🪄]刺骨寒风",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:frost_step\"",
-    "name": "[冰霜🧊][2高等魔法🧙‍♂️]霜步",
+    "name": "[冰霜🧊][0学徒法术🪄普通]刺骨寒风",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:icicle\"",
-    "name": "[冰霜🧊][0学徒法术🪄]冰锥·冰霜箭",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:summon_polar_bear\"",
-    "name": "[冰霜🧊][2高等魔法🧙‍♂️]召唤北极熊",
+    "name": "[冰霜🧊][0学徒法术🪄普通]冰锥·冰霜箭",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:frostwave\"",
-    "name": "[冰霜🧊][0学徒法术🪄]冰浪",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:ice_block\"",
-    "name": "[冰霜🧊][3失落秘咒✨]霜降",
+    "name": "[冰霜🧊][0学徒法术🪄普通]冰浪",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:ray_of_frost\"",
-    "name": "[冰霜🧊][0学徒法术🪄]冰霜射线",
+    "name": "[冰霜🧊][0学徒法术🪄普通]冰霜射线",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"peyroscythe:glacier\"",
-    "name": "[冰霜🧊][3失落秘咒✨][佩罗的镰刀]冰山坠落",
+    "id": "\"traveloptics:despair\"",
+    "name": "[冰霜🧊][0学徒法术🪄普通][旅行学]死灰斩",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"peyroscythe:frost_hell\"",
-    "name": "[冰霜🧊][4传奇秘术💫][佩罗的镰刀]寒霜地狱",
+    "id": "\"traveloptics:cursed_revenants\"",
+    "name": "[冰霜🧊][0学徒法术🪄普通][旅行学]怨咒尸众",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:frost_step\"",
+    "name": "[冰霜🧊][2高等魔法🧙‍♂️稀有]霜步",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:summon_polar_bear\"",
+    "name": "[冰霜🧊][2高等魔法🧙‍♂️稀有]召唤北极熊",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"peyroscythe:icy_comet_rain\"",
-    "name": "[冰霜🧊][2高等魔法🧙‍♂️][佩罗的镰刀]冰陨星雨",
+    "name": "[冰霜🧊][2高等魔法🧙‍♂️稀有][佩罗的镰刀]冰陨星雨",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"snowwaifuspell:summon_snow_queen\"",
-    "name": "[冰霜🧊][4传奇秘术💫][雪之誓言]雪之誓约",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:the_frozen_world\"",
-    "name": "[冰霜🧊][4传奇秘术💫][佩罗的镰刀]冰霜世界",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:firebolt\"",
-    "name": "[炽焰🔥][0学徒法术🪄]火焰箭",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:scorch\"",
-    "name": "[炽焰🔥][1基础魔咒🧙]灼烧",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:burning_dash\"",
-    "name": "[炽焰🔥][0学徒法术🪄]烈焰冲锋",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:flaming_strike\"",
-    "name": "[炽焰🔥][1基础魔咒🧙]炽焰斩击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:summon_blaze\"",
-    "name": "[炽焰🔥][1基础魔咒🧙][佩罗的镰刀]真理之门的派对·召唤烈焰人",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:fire_breath\"",
-    "name": "[炽焰🔥][0学徒法术🪄]火焰吐息",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:fireball\"",
-    "name": "[炽焰🔥][2高等魔法🧙‍♂️]巨型火球",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:magma_bomb\"",
-    "name": "[炽焰🔥][1基础魔咒🧙]岩浆炸弹",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:infernal_strike\"",
-    "name": "[炽焰🔥][3失落秘咒✨][灾变]炼狱打击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:blaze_storm\"",
-    "name": "[炽焰🔥][0学徒法术🪄]烈焰风暴",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:flaming_barrage\"",
-    "name": "[炽焰🔥][2高等魔法🧙‍♂️]炽焰追踪弹幕",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:heat_surge\"",
-    "name": "[炽焰🔥][0学徒法术🪄]焰涌",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:wall_of_fire\"",
-    "name": "[炽焰🔥][0学徒法术🪄]火墙术",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:ashen_breath\"",
-    "name": "[炽焰🔥][2高等魔法🧙‍♂️][灾变]灰烬吐息",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:hellish_blade\"",
-    "name": "[炽焰🔥][2高等魔法🧙‍♂️][灾变]地狱之刃",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:incineration\"",
-    "name": "[炽焰🔥][3失落秘咒✨][灾变]焚化",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:meteor_spew\"",
-    "name": "[炽焰🔥][3失落秘咒✨][灾变]陨星喷射",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:scorched_earth\"",
-    "name": "[炽焰🔥][4传奇秘术💫][灾变]焦土策略",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:amethyst_puncture\"",
-    "name": "[自然🍃][2高等魔法🧙‍♂️][灾变]紫晶穿刺",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:gravitation_pull\"",
-    "name": "[末影🔮][3失落秘咒✨][灾变]引力牵引",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:tectonic_tremble\"",
-    "name": "[炽焰🔥][3失落秘咒✨][灾变]地壳震动",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:gravity_storm\"",
-    "name": "[末影🔮][4传奇秘术💫][灾变]重力风暴",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:monolith_crash\"",
-    "name": "[自然🍃][2高等魔法🧙‍♂️][灾变]巨石坠落",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:abyss_fireball\"",
-    "name": "[炽焰🔥][4传奇秘术💫][灾变]深渊火球",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:ryan_tempest_edge\"",
-    "name": "[自然🍃][4传奇秘术💫][佩罗的镰刀]剑圣莱恩的剑刃风暴",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:firecracker\"",
-    "name": "[唤魔🪄][0学徒法术🪄]烟火四射",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:gust\"",
-    "name": "[唤魔🪄][1基础魔咒🧙]呼啸之风",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:shield\"",
-    "name": "[唤魔🪄][0学徒法术🪄]护盾术",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:slow\"",
-    "name": "[唤魔🪄][3失落秘咒✨]迟缓",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:disabling_swipe\"",
-    "name": "[械术⚙][1基础魔咒🧙][灾变]致残挥击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:charge\"",
-    "name": "[雷霆⚡][2高等魔法🧙‍♂️]超负荷",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:fang_strike\"",
-    "name": "[唤魔🪄][0学徒法术🪄]唤魔尖牙",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:summon_horse\"",
-    "name": "[唤魔🪄][0学徒法术🪄]召唤骏马",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:conjure_koboldiator\"",
-    "name": "[唤魔🪄][2高等魔法🧙‍♂️][灾变]召唤狗头人角斗士-骸骨斩首者",
+    "id": "\"traveloptics:halberd_horizon\"",
+    "name": "[冰霜🧊][2高等魔法🧙‍♂️稀有][旅行学]钢戟战境",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"cataclysm_spellbooks:phantasmal_blade\"",
-    "name": "[冰霜🧊][2高等魔法🧙‍♂️][灾变]幻影冰霜之刃",
+    "name": "[冰霜🧊][2高等魔法🧙‍♂️稀有][灾变]幻影冰霜之刃",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"cataclysm_spellbooks:summon_koboleton\"",
-    "name": "[冰霜🧊][2高等魔法🧙‍♂️][灾变]召唤骷髅狗头人",
+    "name": "[冰霜🧊][2高等魔法🧙‍♂️稀有][灾变]召唤骷髅狗头人",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:arrow_volley\"",
-    "name": "[唤魔🪄][1基础魔咒🧙]万箭齐发",
+    "id": "\"irons_spellbooks:ice_block\"",
+    "name": "[冰霜🧊][3失落秘咒✨史诗]霜降",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:fang_ward\"",
-    "name": "[唤魔🪄][0学徒法术🪄]尖牙之环",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:invisibility\"",
-    "name": "[唤魔🪄][2高等魔法🧙‍♂️]真实隐身术",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:spectral_hammer\"",
-    "name": "[唤魔🪄][1基础魔咒🧙]幽冥锤",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:summon_vex\"",
-    "name": "[唤魔🪄][2高等魔法🧙‍♂️]召唤恼鬼",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:conjure_ignited_reinforcement\"",
-    "name": "[炽焰🔥][3失落秘咒✨][灾变]召唤炽燃增援",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:conjure_thralls\"",
-    "name": "[唤魔🪄][3失落秘咒✨][灾变]召唤亡灵仆从",
+    "id": "\"peyroscythe:glacier\"",
+    "name": "[冰霜🧊][3失落秘咒✨史诗][佩罗的镰刀]冰山坠落",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"cataclysm_spellbooks:forgone_rage\"",
-    "name": "[冰霜🧊][3失落秘咒✨][灾变]遗弃之怒",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:wololo\"",
-    "name": "[唤魔🪄][4传奇秘术💫]Wololo",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:illusion_crazy\"",
-    "name": "[远古📜][3失落秘咒✨][佩罗的镰刀]幻灭·疯狂幻象",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:illusion_fear\"",
-    "name": "[远古📜][3失落秘咒✨][佩罗的镰刀]幻灭·恐惧幻象",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:electrocute\"",
-    "name": "[雷霆⚡][0学徒法术🪄]电刑",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:lightning_bolt\"",
-    "name": "[雷霆⚡][3失落秘咒✨]落雷",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:aerial_assault\"",
-    "name": "[雷霆⚡][2高等魔法🧙‍♂️][灾变]空中突袭",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:ball_lightning\"",
-    "name": "[雷霆⚡][0学徒法术🪄]闪电球",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:chain_lightning\"",
-    "name": "[雷霆⚡][1基础魔咒🧙]连锁闪电",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:lightning_lance\"",
-    "name": "[雷霆⚡][2高等魔法🧙‍♂️]雷鸣长枪",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:shockwave\"",
-    "name": "[雷霆⚡][0学徒法术🪄]冲击波",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:ascension\"",
-    "name": "[雷霆⚡][2高等魔法🧙‍♂️]飞升",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:thunderstorm\"",
-    "name": "[雷霆⚡][2高等魔法🧙‍♂️]雷暴",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"fantasy_ending:runic_shield\"",
-    "name": "[梦幻🫧][3失落秘咒✨][梦幻终焉]如尼文护盾",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"fantasy_ending:star_arrow_spell\"",
-    "name": "[梦幻🫧][3失落秘咒✨][梦幻终焉]星辰之矢",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"fantasy_ending:multi_star_arrow\"",
-    "name": "[梦幻🫧][4传奇秘术💫][梦幻终焉]多重星辰之矢",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"fantasy_ending:multiple_eldritch_blast\"",
-    "name": "[梦幻🫧][4传奇秘术💫][梦幻终焉]魔聚合巫术湮灭射线",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"fantasy_ending:health_reverse\"",
-    "name": "[梦幻🫧][4传奇秘术💫][梦幻终焉]生命回溯",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"fantasy_ending:time_stop\"",
-    "name": "[梦幻🫧][5始源禁咒👑][梦幻终焉]时间停止",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:magic_arrow\"",
-    "name": "[末影🔮][2高等魔法🧙‍♂️]魔法箭",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:magic_missile\"",
-    "name": "[末影🔮][0学徒法术🪄]魔法飞弹",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:evasion\"",
-    "name": "[末影🔮][3失落秘咒✨]末影闪避",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:recall\"",
-    "name": "[末影🔮][1基础魔咒🧙]回溯",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:summon_ender_chest\"",
-    "name": "[末影🔮][2高等魔法🧙‍♂️]召唤末影箱",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:teleport\"",
-    "name": "[末影🔮][1基础魔咒🧙]瞬间移动",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:counterspell\"",
-    "name": "[末影🔮][2高等魔法🧙‍♂️]法术反制",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:dragon_breath\"",
-    "name": "[末影🔮][0学徒法术🪄]龙息",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:echoing_strikes\"",
-    "name": "[末影🔮][2高等魔法🧙‍♂️]回响打击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:portal\"",
-    "name": "[末影🔮][2高等魔法🧙‍♂️]传送门",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:starfall\"",
-    "name": "[末影🔮][1基础魔咒🧙]星海落瀑",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:black_hole\"",
-    "name": "[末影🔮][3失落秘咒✨]黑洞",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:desert_winds\"",
-    "name": "[自然🍃][2高等魔法🧙‍♂️][灾变]沙漠之风",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:sandstorm\"",
-    "name": "[自然🍃][3失落秘咒✨][灾变]沙尘暴",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:pharaohs_wrath\"",
-    "name": "[自然🍃][4传奇秘术💫][灾变]法老之怒",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:thoths_witness\"",
-    "name": "[自然🍃][4传奇秘术💫][灾变]图特之证",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:cleanse\"",
-    "name": "[神圣⭐][3失落秘咒✨]净化",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:guiding_bolt\"",
-    "name": "[神圣⭐][0学徒法术🪄]曳光弹",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:heal\"",
-    "name": "[神圣⭐][0学徒法术🪄]治疗",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:cloud_of_regeneration\"",
-    "name": "[神圣⭐][0学徒法术🪄]再生云域",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:fortify\"",
-    "name": "[神圣⭐][0学徒法术🪄]神圣守护",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:haste\"",
-    "name": "[神圣⭐][3失落秘咒✨]急迫",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:greater_heal\"",
-    "name": "[神圣⭐][2高等魔法🧙‍♂️]强效治疗",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:holy_bell\"",
-    "name": "[神圣⭐][3失落秘咒✨][佩罗的镰刀]圣钟",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:divine_smite\"",
-    "name": "[神圣⭐][0学徒法术🪄]神圣打击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:healing_circle\"",
-    "name": "[神圣⭐][0学徒法术🪄]治愈之环",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:sunbeam\"",
-    "name": "[神圣⭐][1基础魔咒🧙]烈阳射线",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:holy_lance\"",
-    "name": "[神圣⭐][1基础魔咒🧙][佩罗的镰刀]圣枪",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:nero_holy_ray\"",
-    "name": "[神圣⭐][3失落秘咒✨][佩罗的镰刀]尼禄枢机的圣光射线",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:angel_wing\"",
-    "name": "[神圣⭐][3失落秘咒✨]天使之翼",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:blessing_of_life\"",
-    "name": "[神圣⭐][0学徒法术🪄]生命祝福",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:tidal_grab\"",
-    "name": "[深渊🕳][2高等魔法🧙‍♂️][灾变]触手撕裂",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:conjure_amethyst_crab\"",
-    "name": "[深渊🕳][2高等魔法🧙‍♂️][灾变]召唤紫晶蟹",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:conjure_coral_golem\"",
-    "name": "[深渊🕳][3失落秘咒✨][灾变]召唤珊瑚魔像",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:cryopiercer\"",
-    "name": "[深渊🕳][3失落秘咒✨][灾变]低温穿透者",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:depth_charge\"",
-    "name": "[深渊🕳][3失落秘咒✨][灾变]深水炸弹",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:conjure_coralssus\"",
-    "name": "[深渊🕳][4传奇秘术💫][灾变]召唤珊瑚巨像",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:abyssal_slash\"",
-    "name": "[深渊🕳][3失落秘咒✨][灾变]潮汐撕裂·深渊斩击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:void_rune\"",
-    "name": "[深渊🕳][1基础魔咒🧙][灾变]召唤虚空符文",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:black_fireball\"",
-    "name": "[深渊🕳][3失落秘咒✨][佩罗的镰刀]混沌黑焰·暗黑火球",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:death_smoke\"",
-    "name": "[深渊🕳][4传奇秘术💫][佩罗的镰刀]死烟吞噬",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:abyssal_blast\"",
-    "name": "[深渊🕳][4传奇秘术💫][灾变]深渊爆破",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:abyssal_predator\"",
-    "name": "[深渊🕳][4传奇秘术💫][灾变]深渊掠食者",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:dimensional_rift\"",
-    "name": "[深渊🕳][4传奇秘术💫][灾变]维度裂隙",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:void_beam\"",
-    "name": "[深渊🕳][4传奇秘术💫][灾变]虚空光束",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:void_bulwark\"",
-    "name": "[深渊🕳][2高等魔法🧙‍♂️][灾变]虚空壁垒",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:black_flame_wings\"",
-    "name": "[深渊🕳][4传奇秘术💫][佩罗的镰刀]伪·黑焰之翼",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:sinfire_embrace\"",
-    "name": "[深渊🕳][2高等魔法🧙‍♂️][佩罗的镰刀]业火焚身",
+    "name": "[冰霜🧊][3失落秘咒✨史诗][灾变]遗弃之怒",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"cataclysm_spellbooks:malevolent_battlefield\"",
-    "name": "[深渊🕳][5始源禁咒👑][灾变]恶意战场",
+    "name": "[冰霜🧊][3失落秘咒✨史诗][灾变]极恶战境·恶意战场",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"peyroscythe:chaos_cradle\"",
-    "name": "[深渊🕳][5始源禁咒👑][佩罗的镰刀]混沌温床",
+    "id": "\"peyroscythe:frost_hell\"",
+    "name": "[冰霜🧊][4传奇秘术💫传说][佩罗的镰刀]寒霜地狱",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"peyroscythe:mundus\"",
-    "name": "[深渊🕳][5始源禁咒👑][佩罗的镰刀]尘世幻龙",
+    "id": "\"peyroscythe:the_frozen_world\"",
+    "name": "[冰霜🧊][4传奇秘术💫传说][佩罗的镰刀]冰霜世界",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"peyroscythe:made_in_heaven\"",
-    "name": "[远古📜][5始源禁咒👑][佩罗的镰刀]天堂制造",
+    "id": "\"traveloptics:sticky_steed_summon\"",
+    "name": "[冰霜🧊][4传奇秘术💫传说][旅行学]胶粘坐骑之唤",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"peyroscythe:made_in_heaven_real\"",
-    "name": "[远古📜][5始源禁咒👑][佩罗的镰刀]真·天堂制造",
+    "id": "\"traveloptics:cursed_blast\"",
+    "name": "[冰霜🧊][4传奇秘术💫传说][旅行学]诅咒爆裂",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:blood_needles\"",
-    "name": "[猩红🩸][1基础魔咒🧙]猩红之刺脉",
+    "id": "\"traveloptics:axe_of_the_doomed\"",
+    "name": "[冰霜🧊][4传奇秘术💫传说][旅行学]劫数之巨斧",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:blood_slash\"",
-    "name": "[猩红🩸][2高等魔法🧙‍♂️]猩红斩击",
+    "id": "\"snowwaifuspell:summon_snow_queen\"",
+    "name": "[冰霜🧊][4传奇秘术💫传说][雪之誓言]雪之誓约",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:blood_step\"",
-    "name": "[猩红🩸][1基础魔咒🧙]血步",
+    "id": "\"irons_spellbooks:firecracker\"",
+    "name": "[唤魔🪄][0学徒法术🪄普通]烟火四射",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"cataclysm_spellbooks:cursed_rush\"",
-    "name": "[猩红🩸][2高等魔法🧙‍♂️][灾变]诅咒冲锋",
+    "id": "\"irons_spellbooks:shield\"",
+    "name": "[唤魔🪄][0学徒法术🪄普通]护盾术",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"cataclysm_spellbooks:piercing_bone\"",
-    "name": "[猩红🩸][2高等魔法🧙‍♂️][灾变]穿刺骨矛",
+    "id": "\"irons_spellbooks:fang_strike\"",
+    "name": "[唤魔🪄][0学徒法术🪄普通]唤魔尖牙",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:devour\"",
-    "name": "[猩红🩸][1基础魔咒🧙]噬咬·嗜血啃咬",
+    "id": "\"irons_spellbooks:summon_horse\"",
+    "name": "[唤魔🪄][0学徒法术🪄普通]召唤骏马",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:wither_skull\"",
-    "name": "[猩红🩸][1基础魔咒🧙]凋灵之首",
+    "id": "\"irons_spellbooks:fang_ward\"",
+    "name": "[唤魔🪄][0学徒法术🪄普通]尖牙之环",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"cataclysm_spellbooks:hemorrhaging_impact\"",
-    "name": "[猩红🩸][3失落秘咒✨][灾变]出血冲击",
+    "id": "\"traveloptics:ashen_breath\"",
+    "name": "[唤魔🪄][0学徒法术🪄普通][旅行学]余烬之息",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"cataclysm_spellbooks:pilfer\"",
-    "name": "[猩红🩸][3失落秘咒✨][灾变]行窃术",
+    "id": "\"irons_spellbooks:gust\"",
+    "name": "[唤魔🪄][1基础魔咒🧙卓越]呼啸之风",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:heartstop\"",
-    "name": "[猩红🩸][0学徒法术🪄]止心术",
+    "id": "\"irons_spellbooks:arrow_volley\"",
+    "name": "[唤魔🪄][1基础魔咒🧙卓越]万箭齐发",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
-    "id": "\"irons_spellbooks:raise_dead\"",
-    "name": "[猩红🩸][1基础魔咒🧙]亡者复生·驱役亡灵",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:ray_of_siphoning\"",
-    "name": "[猩红🩸][0学徒法术🪄]血吸光束",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:sacrifice\"",
-    "name": "[猩红🩸][2高等魔法🧙‍♂️]献祭",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:bone_storm\"",
-    "name": "[炽焰🔥][2高等魔法🧙‍♂️][灾变]白骨风暴",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:crimson_moon\"",
-    "name": "[猩红🩸][4传奇秘术💫][佩罗的镰刀]绯红赤月",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:flash_bang\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]闪光弹",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:construct_prowler\"",
-    "name": "[械术⚙][4传奇秘术💫][灾变]构造潜行者",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:construct_watchers\"",
-    "name": "[械术⚙][1基础魔咒🧙][灾变]构造哨卫",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:dos_swarm\"",
-    "name": "[械术⚙][2高等魔法🧙‍♂️][灾变]拒绝服务蜂群",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:gear_shift\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]齿轮迁跃",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:laserbolt\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]激光束",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:lock_on\"",
-    "name": "[械术⚙][2高等魔法🧙‍♂️][灾变]锁定目标",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:parting_shot\"",
-    "name": "[械术⚙][4传奇秘术💫][灾变]临别一枪",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:surveillance_drone\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]监视无人机",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:ddos\"",
-    "name": "[械术⚙][2高等魔法🧙‍♂️][灾变]分布式拒绝服务",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:emp_blast\"",
-    "name": "[械术⚙][2高等魔法🧙‍♂️][灾变]电磁脉冲爆破",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:hardware_update\"",
-    "name": "[械术⚙][1基础魔咒🧙][灾变]硬件更新",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:overcharged\"",
-    "name": "[械术⚙][4传奇秘术💫][灾变]超载",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:rewire\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]重接线路",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:software_update\"",
-    "name": "[械术⚙][1基础魔咒🧙][灾变]软件更新",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:atomic_laser\"",
-    "name": "[械术⚙][4传奇秘术💫][灾变]原子激光",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:intrusion_prevention_system\"",
-    "name": "[械术⚙][4传奇秘术💫][灾变]入侵防御系统",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:missile_launch\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]导弹发射",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:reboot\"",
-    "name": "[械术⚙][0学徒法术🪄][灾变]重启",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"cataclysm_spellbooks:shutdown\"",
-    "name": "[械术⚙][1基础魔咒🧙][灾变]关机",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:eldritch_blast\"",
-    "name": "[远古📜][4传奇秘术💫]邪术冲击波·巫术湮灭射线",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:sculk_tentacles\"",
-    "name": "[远古📜][4传奇秘术💫]幽匿之触",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:abyssal_shroud\"",
-    "name": "[远古📜][4传奇秘术💫]深渊庇佑",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:planar_sight\"",
-    "name": "[远古📜][4传奇秘术💫]位面视觉",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:sonic_boom\"",
-    "name": "[远古📜][4传奇秘术💫]音爆",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:telekinesis\"",
-    "name": "[远古📜][4传奇秘术💫]念力",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:acid_orb\"",
-    "name": "[自然🍃][0学徒法术🪄]腐蚀喷吐·酸液球",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:poison_arrow\"",
-    "name": "[自然🍃][0学徒法术🪄]毒箭射击",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:acupuncture\"",
-    "name": "[猩红🩸][1基础魔咒🧙]猩红刺狱",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:firefly_swarm\"",
-    "name": "[自然🍃][1基础魔咒🧙]萤火虫群",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:oakskin\"",
-    "name": "[自然🍃][0学徒法术🪄]树皮·橡肤术",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:poison_splash\"",
-    "name": "[自然🍃][1基础魔咒🧙]毒液飞溅",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:root\"",
-    "name": "[自然🍃][1基础魔咒🧙]纠缠根须",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:spider_aspect\"",
-    "name": "[自然🍃][2高等魔法🧙‍♂️]蛛之势",
+    "id": "\"irons_spellbooks:spectral_hammer\"",
+    "name": "[唤魔🪄][1基础魔咒🧙卓越]幽冥锤",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:chain_creeper\"",
-    "name": "[唤魔🪄][1基础魔咒🧙]苦力怕之环",
+    "name": "[唤魔🪄][1基础魔咒🧙卓越]苦力怕之环",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:lob_creeper\"",
-    "name": "[唤魔🪄][1基础魔咒🧙]苦力怕迫击炮",
+    "name": "[唤魔🪄][1基础魔咒🧙卓越]苦力怕迫击炮",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:invisibility\"",
+    "name": "[唤魔🪄][2高等魔法🧙‍♂️稀有]真实隐身术",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:summon_vex\"",
+    "name": "[唤魔🪄][2高等魔法🧙‍♂️稀有]召唤恼鬼",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:conjure_koboldiator\"",
+    "name": "[唤魔🪄][4传奇秘术💫传说][灾变]召唤狗头人角斗士-骸骨斩首者",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:slow\"",
+    "name": "[唤魔🪄][3失落秘咒✨史诗]迟缓",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:lingering_strain\"",
+    "name": "[唤魔🪄][3失落秘咒✨史诗][旅行学]绵绵伤痛",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:conjure_thralls\"",
+    "name": "[唤魔🪄][3失落秘咒✨史诗][灾变]召唤亡灵仆从",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:wololo\"",
+    "name": "[唤魔🪄][4传奇秘术💫传说]Wololo",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:magic_missile\"",
+    "name": "[末影🔮][0学徒法术🪄普通]魔法飞弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:dragon_breath\"",
+    "name": "[末影🔮][0学徒法术🪄普通]龙息",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:cursed_minefield\"",
+    "name": "[末影🔮][0学徒法术🪄普通][旅行学]诅咒雷区",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:recall\"",
+    "name": "[末影🔮][1基础魔咒🧙卓越]回溯",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:teleport\"",
+    "name": "[末影🔮][1基础魔咒🧙卓越]瞬间移动",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:starfall\"",
+    "name": "[末影🔮][1基础魔咒🧙卓越]星海落瀑",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:magic_arrow\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有]魔法箭",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:summon_ender_chest\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有]召唤末影箱",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:counterspell\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有]法术反制",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:echoing_strikes\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有]回响打击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:portal\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有]传送门",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:astral_sense\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有][旅行学]星界感应",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:orbital_void\"",
+    "name": "[末影🔮][2高等魔法🧙‍♂️稀有][旅行学]轨路虚空",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:evasion\"",
+    "name": "[末影🔮][3失落秘咒✨史诗]末影闪避",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:black_hole\"",
+    "name": "[末影🔮][3失落秘咒✨史诗]黑洞",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:void_eruption\"",
+    "name": "[末影🔮][3失落秘咒✨史诗][旅行学]虚空喷薄",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:eternal_sentinel\"",
+    "name": "[末影🔮][3失落秘咒✨史诗秘术💫传说][旅行学]不朽哨卫",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:gravitation_pull\"",
+    "name": "[末影🔮][3失落秘咒✨史诗][灾变]引力牵引",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:vortex_punch\"",
+    "name": "[末影🔮][4传奇秘术💫传说][旅行学]涡流升拳",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:supernova\"",
+    "name": "[末影🔮][4传奇秘术💫传说][旅行学]超新星",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:gravity_storm\"",
+    "name": "[末影🔮][4传奇秘术💫传说][灾变]重力风暴",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"fantasy_ending:runic_shield\"",
+    "name": "[梦幻🫧][3失落秘咒✨史诗][梦幻终焉]如尼文护盾",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"fantasy_ending:star_arrow_spell\"",
+    "name": "[梦幻🫧][3失落秘咒✨史诗][梦幻终焉]星辰之矢",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"fantasy_ending:multi_star_arrow\"",
+    "name": "[梦幻🫧][4传奇秘术💫传说][梦幻终焉]多重星辰之矢",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"fantasy_ending:multiple_eldritch_blast\"",
+    "name": "[梦幻🫧][4传奇秘术💫传说][梦幻终焉]魔聚合巫术湮灭射线",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"fantasy_ending:health_reverse\"",
+    "name": "[梦幻🫧][4传奇秘术💫传说][梦幻终焉]生命回溯",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"fantasy_ending:time_stop\"",
+    "name": "[梦幻🫧][5禁咒👑始源][梦幻终焉]时间停止",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:flash_bang\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]闪光弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:gear_shift\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]齿轮迁跃",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:laserbolt\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]激光束",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:surveillance_drone\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]监视无人机",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:rewire\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]重接线路",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:missile_launch\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]导弹发射",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:reboot\"",
+    "name": "[械术⚙][0学徒法术🪄普通][灾变]重启",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:rapid_laser\"",
+    "name": "[械术⚙][1基础魔咒🧙卓越][旅行学]高速光线",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:disabling_swipe\"",
+    "name": "[械术⚙][1基础魔咒🧙卓越][灾变]致残挥击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:construct_watchers\"",
+    "name": "[械术⚙][1基础魔咒🧙卓越][灾变]构造哨卫",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:hardware_update\"",
+    "name": "[械术⚙][1基础魔咒🧙卓越][灾变]硬件更新",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:software_update\"",
+    "name": "[械术⚙][1基础魔咒🧙卓越][灾变]软件更新",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:shutdown\"",
+    "name": "[械术⚙][1基础魔咒🧙卓越][灾变]关机",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:em_pulse\"",
+    "name": "[械术⚙][2高等魔法🧙‍♂️稀有][旅行学]电磁脉冲",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:dos_swarm\"",
+    "name": "[械术⚙][2高等魔法🧙‍♂️稀有][灾变]拒绝服务蜂群",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:lock_on\"",
+    "name": "[械术⚙][2高等魔法🧙‍♂️稀有][灾变]锁定目标",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:ddos\"",
+    "name": "[械术⚙][2高等魔法🧙‍♂️稀有][灾变]分布式拒绝服务",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:emp_blast\"",
+    "name": "[械术⚙][2高等魔法🧙‍♂️稀有][灾变]电磁脉冲爆破",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:magnetron_deployment\"",
+    "name": "[雷霆⚡][3失落秘咒✨史诗][旅行学]磁控机兵布署",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:death_laser\"",
+    "name": "[械术⚙][4传奇秘术💫传说][旅行学]死亡激光",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:mechanized_predator\"",
+    "name": "[雷霆⚡][2高等魔法🧙‍♂️稀有][旅行学]机械掠食队",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:construct_prowler\"",
+    "name": "[械术⚙][4传奇秘术💫传说][灾变]构造潜行者",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:parting_shot\"",
+    "name": "[械术⚙][4传奇秘术💫传说][灾变]临别一枪",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:overcharged\"",
+    "name": "[械术⚙][4传奇秘术💫传说][灾变]超载",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:atomic_laser\"",
+    "name": "[械术⚙][4传奇秘术💫传说][灾变]原子激光",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:intrusion_prevention_system\"",
+    "name": "[械术⚙][4传奇秘术💫传说][灾变]入侵防御系统",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:void_rune\"",
+    "name": "[深渊🕳][1基础魔咒🧙卓越][灾变]召唤虚空符文",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:sinfire_embrace\"",
+    "name": "[深渊🕳][2高等魔法🧙‍♂️稀有][佩罗的镰刀]业火焚身",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:tidal_grab\"",
+    "name": "[深渊🕳][2高等魔法🧙‍♂️稀有][灾变]触手撕裂",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:conjure_amethyst_crab\"",
+    "name": "[深渊🕳][2高等魔法🧙‍♂️稀有][灾变]召唤紫晶蟹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:void_bulwark\"",
+    "name": "[深渊🕳][2高等魔法🧙‍♂️稀有][灾变]虚空壁垒",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:black_fireball\"",
+    "name": "[深渊🕳][3失落秘咒✨史诗][佩罗的镰刀]混沌黑焰·暗黑火球",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:conjure_coral_golem\"",
+    "name": "[深渊🕳][3失落秘咒✨史诗][灾变]召唤珊瑚魔像",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:cryopiercer\"",
+    "name": "[深渊🕳][3失落秘咒✨史诗][灾变]低温穿透者",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:depth_charge\"",
+    "name": "[深渊🕳][3失落秘咒✨史诗][灾变]深水炸弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:abyssal_slash\"",
+    "name": "[深渊🕳][3失落秘咒✨史诗][灾变]潮汐撕裂·深渊斩击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:death_smoke\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][佩罗的镰刀]死烟吞噬",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:black_flame_wings\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][佩罗的镰刀]伪·黑焰之翼",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:chaos_cradle\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][佩罗的镰刀]混沌温床",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:mundus\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][佩罗的镰刀]尘世幻龙·(WIP)世界",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:conjure_coralssus\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][灾变]召唤珊瑚巨像",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:abyssal_blast\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][灾变]深渊爆破",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:abyssal_predator\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][灾变]深渊掠食者",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:dimensional_rift\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][灾变]维度裂隙",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:void_beam\"",
+    "name": "[深渊🕳][4传奇秘术💫传说][灾变]虚空光束",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:bubble_spray\"",
+    "name": "[源流🌊][0学徒法术🪄普通][旅行学]水泡喷雾",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:hydroshot\"",
+    "name": "[源流🌊][0学徒法术🪄普通][旅行学]水能射击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:tidal_grasp\"",
+    "name": "[源流🌊][1基础魔咒🧙卓越][旅行学]潮汐之扼",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:aqua_missles\"",
+    "name": "[源流🌊][2高等魔法🧙‍♂️稀有][旅行学]水能连发",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:coral_barrage\"",
+    "name": "[源流🌊][2高等魔法🧙‍♂️稀有][旅行学]珊瑚弹幕",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:flood_slash\"",
+    "name": "[源流🌊][2高等魔法🧙‍♂️稀有][旅行学]洪流斩",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:tsunami\"",
+    "name": "[源流🌊][2高等魔法🧙‍♂️稀有][旅行学]海啸",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:jet_steam\"",
+    "name": "[源流🌊][3失落秘咒✨史诗][旅行学]蒸汽喷流",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:rainfall\"",
+    "name": "[源流🌊][3失落秘咒✨史诗][旅行学]雨落",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:floodgate\"",
+    "name": "[源流🌊][3失落秘咒✨史诗][旅行学]防洪之闸",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:vortex_of_the_deep\"",
+    "name": "[源流🌊][4传奇秘术💫传说][旅行学]深海漩涡",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:tidal_slash\"",
+    "name": "[源流🌊][4传奇秘术💫传说][旅行学]怒潮斩",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:echo_of_the_abyss\"",
+    "name": "[源流🌊][4传奇秘术💫传说][旅行学]深渊回声",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:firebolt\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通]火焰箭",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:burning_dash\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通]烈焰冲锋",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:fire_breath\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通]火焰吐息",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:blaze_storm\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通]烈焰风暴",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:heat_surge\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通]焰涌",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:wall_of_fire\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通]火墙术",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:burning_judgment\"",
+    "name": "[炽焰🔥][0学徒法术🪄普通][旅行学]腾炎审判",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:scorch\"",
+    "name": "[炽焰🔥][1基础魔咒🧙卓越]灼烧",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:flaming_strike\"",
+    "name": "[炽焰🔥][1基础魔咒🧙卓越]炽焰斩击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:magma_bomb\"",
+    "name": "[炽焰🔥][1基础魔咒🧙卓越]岩浆炸弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:summon_blaze\"",
+    "name": "[炽焰🔥][1基础魔咒🧙卓越][佩罗的镰刀]真理之门的派对·召唤烈焰人",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:lava_bomb\"",
+    "name": "[炽焰🔥][1基础魔咒🧙卓越][旅行学]熔岩炸弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:fireball\"",
+    "name": "[炽焰🔥][2高等魔法🧙‍♂️稀有]巨型火球",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:flaming_barrage\"",
+    "name": "[炽焰🔥][2高等魔法🧙‍♂️稀有]炽焰追踪弹幕",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:gyro_slash\"",
+    "name": "[炽焰🔥][2高等魔法🧙‍♂️稀有][旅行学]螺旋斩",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:ashen_breath\"",
+    "name": "[炽焰🔥][2高等魔法🧙‍♂️稀有][灾变]灰烬吐息",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:hellish_blade\"",
+    "name": "[炽焰🔥][2高等魔法🧙‍♂️稀有][灾变]地狱之刃",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:bone_storm\"",
+    "name": "[炽焰🔥][2高等魔法🧙‍♂️稀有][灾变]白骨风暴",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:ignited_onslaught\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][旅行学]炽燃侵袭",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:meteor_storm\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][旅行学]炎星灾陨",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:infernal_strike\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][灾变]炼狱打击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:incineration\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][灾变]焚化·腾炎焚葬",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:meteor_spew\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][灾变]陨星喷射",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:tectonic_tremble\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][灾变]地壳震动",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:conjure_ignited_reinforcement\"",
+    "name": "[炽焰🔥][3失落秘咒✨史诗][灾变]召唤炽燃增援",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:annihilation\"",
+    "name": "[炽焰🔥][4传奇秘术💫传说][旅行学]湮灭",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:extinction\"",
+    "name": "[炽焰🔥][4传奇秘术💫传说][旅行学]灭绝",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:scorched_earth\"",
+    "name": "[炽焰🔥][4传奇秘术💫传说][灾变]焦土策略",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:abyss_fireball\"",
+    "name": "[炽焰🔥][4传奇秘术💫传说][灾变]深渊火球",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:heartstop\"",
+    "name": "[猩红🩸][0学徒法术🪄普通]止心术",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:ray_of_siphoning\"",
+    "name": "[猩红🩸][0学徒法术🪄普通]血吸光束",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:blood_needles\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越]猩红之刺脉",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:blood_step\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越]血步",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:devour\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越]噬咬·嗜血啃咬",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:wither_skull\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越]凋灵之首",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:raise_dead\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越]亡者复生·驱役亡灵",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:acupuncture\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越]猩红刺狱",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:eek\"",
+    "name": "[猩红🩸][1基础魔咒🧙卓越][旅行学]惧悚",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:blood_slash\"",
+    "name": "[猩红🩸][2高等魔法🧙‍♂️稀有]猩红斩击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:sacrifice\"",
+    "name": "[猩红🩸][2高等魔法🧙‍♂️稀有]献祭",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:blood_howl\"",
+    "name": "[猩红🩸][2高等魔法🧙‍♂️稀有][旅行学]血嚎",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:vigor_siphon\"",
+    "name": "[猩红🩸][2高等魔法🧙‍♂️稀有][旅行学]生机虹吸",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:cursed_rush\"",
+    "name": "[猩红🩸][2高等魔法🧙‍♂️稀有][灾变]诅咒冲锋",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:piercing_bone\"",
+    "name": "[猩红🩸][2高等魔法🧙‍♂️稀有][灾变]穿刺骨矛",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:nocturnal_swarm\"",
+    "name": "[猩红🩸][3失落秘咒✨史诗][旅行学]夜影幽群",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:hemorrhaging_impact\"",
+    "name": "[猩红🩸][3失落秘咒✨史诗][灾变]出血冲击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:pilfer\"",
+    "name": "[猩红🩸][3失落秘咒✨史诗][灾变]行窃术",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:crimson_moon\"",
+    "name": "[猩红🩸][4传奇秘术💫传说][佩罗的镰刀]绯红赤月",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:call_forth_the_dead_king\"",
+    "name": "[猩红🩸][4传奇秘术💫传说][旅行学]觐见死王",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:guiding_bolt\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]曳光弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:wisp\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]圣灵",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:heal\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]治疗",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:cloud_of_regeneration\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]再生云域",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:fortify\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]神圣守护",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:divine_smite\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]神圣打击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:healing_circle\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]治愈之环",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:blessing_of_life\"",
+    "name": "[神圣⭐][0学徒法术🪄普通]生命祝福",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:sunbeam\"",
+    "name": "[神圣⭐][1基础魔咒🧙卓越]烈阳射线",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:holy_lance\"",
+    "name": "[神圣⭐][1基础魔咒🧙卓越][佩罗的镰刀]圣枪",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:greater_heal\"",
+    "name": "[神圣⭐][2高等魔法🧙‍♂️稀有]强效治疗",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:cleanse\"",
+    "name": "[神圣⭐][3失落秘咒✨史诗]净化",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:haste\"",
+    "name": "[神圣⭐][3失落秘咒✨史诗]急迫",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:angel_wing\"",
+    "name": "[神圣⭐][3失落秘咒✨史诗]天使之翼",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:holy_bell\"",
+    "name": "[神圣⭐][3失落秘咒✨史诗][佩罗的镰刀]圣钟",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:nero_holy_ray\"",
+    "name": "[神圣⭐][3失落秘咒✨史诗][佩罗的镰刀]尼禄枢机的圣光射线",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:summon_desert_dwellers\"",
+    "name": "[神圣⭐][2高等魔法🧙‍♂️稀有][旅行学]沙海居群",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:zero_flare\"",
+    "name": "[神圣⭐][0学徒法术🪄普通][旅行学]零炽",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:sword_of_the_ancients\"",
+    "name": "[神圣⭐][4传奇秘术💫传说][旅行学]古众之利剑·骸骨斩首者",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:acid_orb\"",
+    "name": "[自然🍃][0学徒法术🪄普通]腐蚀喷吐·酸液球",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:poison_arrow\"",
+    "name": "[自然🍃][0学徒法术🪄普通]毒箭射击",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:oakskin\"",
+    "name": "[自然🍃][0学徒法术🪄普通]树皮·橡肤术",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:poison_breath\"",
-    "name": "[自然🍃][0学徒法术🪄]毒雾喷射",
+    "name": "[自然🍃][0学徒法术🪄普通]毒雾喷射",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:stomp\"",
-    "name": "[自然🍃][0学徒法术🪄]践踏",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:blight\"",
-    "name": "[自然🍃][2高等魔法🧙‍♂️]枯萎术",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"peyroscythe:young_for_you\"",
-    "name": "[远古📜][4传奇秘术💫][佩罗的镰刀]让你年轻",
-    "min_version": "1.20.1",
-    "max_version": "1.20.1"
-  },
-  {
-    "id": "\"irons_spellbooks:earthquake\"",
-    "name": "[自然🍃][1基础魔咒🧙]地震",
+    "name": "[自然🍃][0学徒法术🪄普通]践踏",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
   {
     "id": "\"irons_spellbooks:gluttony\"",
-    "name": "[自然🍃][0学徒法术🪄]暴食",
+    "name": "[自然🍃][0学徒法术🪄普通]暴食",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:firefly_swarm\"",
+    "name": "[自然🍃][1基础魔咒🧙卓越]萤火虫群",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:poison_splash\"",
+    "name": "[自然🍃][1基础魔咒🧙卓越]毒液飞溅",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:root\"",
+    "name": "[自然🍃][1基础魔咒🧙卓越]纠缠根须",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:earthquake\"",
+    "name": "[自然🍃][1基础魔咒🧙卓越]地震",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:aerial_collapse\"",
+    "name": "[自然🍃][1基础魔咒🧙卓越][旅行学]空者塌落",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:spider_aspect\"",
+    "name": "[自然🍃][2高等魔法🧙‍♂️稀有]蛛之势",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:blight\"",
+    "name": "[自然🍃][2高等魔法🧙‍♂️稀有]枯萎术",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:sandfall\"",
+    "name": "[自然🍃][0学徒法术🪄普通][旅行学]沙碑倾泻",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:primal_pack\"",
+    "name": "[自然🍃][2高等魔法🧙‍♂️稀有][旅行学]原始族群",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:amethyst_puncture\"",
+    "name": "[自然🍃][2高等魔法🧙‍♂️稀有][灾变]紫晶穿刺",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:monolith_crash\"",
+    "name": "[自然🍃][2高等魔法🧙‍♂️稀有][灾变]巨石坠落",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:desert_winds\"",
+    "name": "[自然🍃][2高等魔法🧙‍♂️稀有][灾变]沙漠之风",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:earthshatter\"",
+    "name": "[自然🍃][3失落秘咒✨史诗][旅行学]大地碎裂",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:sandstorm\"",
+    "name": "[自然🍃][3失落秘咒✨史诗][灾变]沙尘暴",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:ryan_tempest_edge\"",
+    "name": "[自然🍃][4传奇秘术💫传说][佩罗的镰刀]剑圣莱恩的剑刃风暴",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:primordial_steed\"",
+    "name": "[自然🍃][4传奇秘术💫传说][旅行学]远古之骑",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:pharaohs_wrath\"",
+    "name": "[自然🍃][4传奇秘术💫传说][灾变]法老之怒",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:thoths_witness\"",
+    "name": "[自然🍃][4传奇秘术💫传说][灾变]图特之证",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:illusion_crazy\"",
+    "name": "[远古📜][3失落秘咒✨史诗][佩罗的镰刀]幻灭·疯狂幻象",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:illusion_fear\"",
+    "name": "[远古📜][3失落秘咒✨史诗][佩罗的镰刀]幻灭·恐惧幻象",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:eldritch_blast\"",
+    "name": "[远古📜][4传奇秘术💫传说]邪术冲击波·巫术湮灭射线",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:sculk_tentacles\"",
+    "name": "[远古📜][4传奇秘术💫传说]幽匿之触",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:abyssal_shroud\"",
+    "name": "[远古📜][4传奇秘术💫传说]深渊庇佑",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:planar_sight\"",
+    "name": "[远古📜][4传奇秘术💫传说]位面视觉",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:sonic_boom\"",
+    "name": "[远古📜][4传奇秘术💫传说]音爆",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:telekinesis\"",
+    "name": "[远古📜][4传奇秘术💫传说]念力",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:made_in_heaven\"",
+    "name": "[远古📜][4传奇秘术💫传说][佩罗的镰刀]天堂制造",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:young_for_you\"",
+    "name": "[远古📜][4传奇秘术💫传说][佩罗的镰刀]让你年轻",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:paralyze_screech\"",
+    "name": "[远古📜][4传奇秘术💫传说][旅行学]瘫痪尖啸",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:psychic_bolt\"",
+    "name": "[远古📜][4传奇秘术💫传说][旅行学]心灵飞弹",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:reversal\"",
+    "name": "[远古📜][4传奇秘术💫传说][旅行学]逆转",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:shadowed_miasma\"",
+    "name": "[远古📜][4传奇秘术💫传说][旅行学]暗影瘴气",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:spectral_blink\"",
+    "name": "[远古📜][4传奇秘术💫传说][旅行学]幽影闪现",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"traveloptics:the_forgotten_beast\"",
+    "name": "[远古📜][4传奇秘术💫传说][旅行学]遗世凶兽",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"peyroscythe:made_in_heaven_real\"",
+    "name": "[远古📜][5禁咒👑始源][佩罗的镰刀]真·天堂制造",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:electrocute\"",
+    "name": "[雷霆⚡][0学徒法术🪄普通]电刑",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:ball_lightning\"",
+    "name": "[雷霆⚡][0学徒法术🪄普通]闪电球",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:shockwave\"",
+    "name": "[雷霆⚡][0学徒法术🪄普通]冲击波",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:chain_lightning\"",
+    "name": "[雷霆⚡][1基础魔咒🧙卓越]连锁闪电",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:charge\"",
+    "name": "[雷霆⚡][2高等魔法🧙‍♂️稀有]超负荷",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:lightning_lance\"",
+    "name": "[雷霆⚡][2高等魔法🧙‍♂️稀有]雷鸣长枪",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:ascension\"",
+    "name": "[雷霆⚡][2高等魔法🧙‍♂️稀有]飞升",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:thunderstorm\"",
+    "name": "[雷霆⚡][2高等魔法🧙‍♂️稀有]雷暴",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"cataclysm_spellbooks:aerial_assault\"",
+    "name": "[雷霆⚡][2高等魔法🧙‍♂️稀有][灾变]空中突袭",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "\"irons_spellbooks:lightning_bolt\"",
+    "name": "[雷霆⚡][3失落秘咒✨史诗]落雷",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   }

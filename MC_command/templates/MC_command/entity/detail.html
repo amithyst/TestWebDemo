@@ -1,0 +1,122 @@
+
+{% extends 'MC_command/base.html' %}
+
+{% block title %}实体详情: {{ entity.title }}{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h1>{{ entity.title }}</h1>
+        </div>
+        <div class="card-body">
+            <div class="details-grid">
+                <dt>创建者:</dt> <dd>{{ entity.user.username }}</dd>
+                <dt>实体类型:</dt> <dd>{{ entity.entity_type.name }} (<code>{{ entity.entity_type.entity_id }}</code>)</dd>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>生成结果</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>完整 /summon 命令</strong> (可直接在游戏中使用)</p>
+            <div class="textarea-container">
+                <textarea id="summon-command" readonly>{{ summon_command_string }}</textarea>
+                <button class="copy-btn" onclick="copyToClipboard('summon-command')">复制</button>
+            </div>
+
+            <p><strong>NBT 数据结构 (JSON)</strong> (用于调试或理解结构)</p>
+            <div class="textarea-container">
+                <textarea id="data-json" readonly>{{ data_structure_json }}</textarea>
+                <button class="copy-btn" onclick="copyToClipboard('data-json')">复制</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2>配置详情</h2>
+        </div>
+        <div class="card-body">
+            {% if entity.components.all %}
+                <h3>自定义NBT组件</h3>
+                <ul>
+                {% for comp in entity.components.all %}
+                    <li><code>{{ comp.component_type.nbt_key }}</code>: {{ comp.value }}</li>
+                {% endfor %}
+                </ul>
+                <hr>
+            {% endif %}
+
+            {% if entity.entityequipmentslot_set.all %}
+                <h3>装备</h3>
+                <ul>
+                {% for slot in entity.entityequipmentslot_set.all %}
+                    <li><strong>{{ slot.get_slot_display }}:</strong> {{ slot.item.title }}</li>
+                {% endfor %}
+                </ul>
+                <hr>
+            {% endif %}
+
+            {% if entity.trades.all %}
+                <h3>交易</h3>
+                <ul>
+                {% for trade in entity.trades.all %}
+                    <li>
+                        收购: {{ trade.buy_item1.title }}{% if trade.buy_item2 %} + {{ trade.buy_item2.title }}{% endif %}<br>
+                        出售: {{ trade.sell_item.title }}
+                    </li>
+                {% endfor %}
+                </ul>
+                <hr>
+            {% endif %}
+            
+            {% if entity.attributes.all %}
+                <h3>属性修改器</h3>
+                <ul>
+                {% for attr in entity.attributes.all %}
+                    <li>
+                        {{ attr.attribute.name }}: <strong>{{ attr.amount }}</strong> 
+                        (操作: {{ attr.get_operation_display }})
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if entity.potion_effects.all %}
+                <hr>
+                <h3>药水效果</h3>
+                <ul>
+                {% for p_effect in entity.potion_effects.all %}
+                    <li>
+                        {{ p_effect.effect.name }}: 等级 <strong>{{ p_effect.amplifier }}</strong>, 持续时间 <strong>{{ p_effect.duration }}</strong> ticks
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-actions">
+        <a href="{% url 'MC_command:entity_edit' entity.id %}" class="btn btn-edit">编辑</a>
+        <a href="{% url 'MC_command:entity_index' %}" class="cancel-link">返回列表</a>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        function copyToClipboard(elementId) {
+            const textarea = document.getElementById(elementId);
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile devices
+            try {
+                navigator.clipboard.writeText(textarea.value);
+                alert('已复制到剪贴板！');
+            } catch (err) {
+                alert('复制失败，请手动复制。');
+            }
+        }
+    </script>
+{% endblock %}

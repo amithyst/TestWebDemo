@@ -1,0 +1,94 @@
+
+[
+  {
+    "name": "自定义名称",
+    "nbt_key": "CustomName",
+    "value_type": "json",
+    "description": "设置实体的自定义名称。请输入JSON文本，例如 '{\"text\":\"精英卫士\",\"color\":\"red\"}'",
+    "tags": []
+  },
+  {
+    "name": "始终显示名称",
+    "nbt_key": "CustomNameVisible",
+    "value_type": "boolean",
+    "description": "设置为 true 时，无论是否看着实体，其名称总会显示。",
+    "tags": []
+  },
+  {
+    "name": "禁用AI",
+    "nbt_key": "NoAI",
+    "value_type": "boolean",
+    "description": "设置为 true 时，生物将不会有任何移动或行为。",
+    "tags": ["mob"]
+  },
+  {
+    "name": "静音",
+    "nbt_key": "Silent",
+    "value_type": "boolean",
+    "description": "设置为 true 时，实体将不会发出任何声音。",
+    "tags": []
+  },
+  {
+    "name": "无重力",
+    "nbt_key": "NoGravity",
+    "value_type": "boolean",
+    "description": "设置为 true 时，实体将不受重力影响。",
+    "tags": []
+  },
+  {
+    "name": "无敌",
+    "nbt_key": "Invulnerable",
+    "value_type": "boolean",
+    "description": "设置为 true 时，实体将不会受到任何伤害。",
+    "tags": []
+  },
+  {
+    "name": "无法被清除",
+    "nbt_key": "PersistenceRequired",
+    "value_type": "boolean",
+    "description": "设置为 true 时，即使玩家远离，实体也不会被游戏自动清除。",
+    "tags": ["mob"]
+  },
+  {
+    "name": "显示手臂",
+    "nbt_key": "ShowArms",
+    "value_type": "boolean",
+    "description": "【盔甲架专用】设置为 true 时，盔甲架会显示出手臂。",
+    "tags": ["armor_stand"]
+  },
+  {
+    "name": "隐藏底盘",
+    "nbt_key": "NoBasePlate",
+    "value_type": "boolean",
+    "description": "【盔甲架专用】设置为 true 时，盔甲架会隐藏底部的石质底盘。",
+    "tags": ["armor_stand"]
+  },
+  {
+    "name": "小型盔甲架",
+    "nbt_key": "Small",
+    "value_type": "boolean",
+    "description": "【盔甲架专用】设置为 true 时，盔甲架会变为小型。",
+    "tags": ["armor_stand"]
+  },
+  {
+    "name": "标记",
+    "nbt_key": "Marker",
+    "value_type": "boolean",
+    "description": "【盔甲架专用】设置为 true 时，盔甲架的碰撞箱会变得非常小且无法被交互。",
+    "tags": ["armor_stand"]
+  },
+  {
+    "name": "村民数据",
+    "nbt_key": "VillagerData",
+    "value_type": "json",
+    "description": "【商人专用】设置村民的职业、等级和栖息地。例如：{\"profession\":\"minecraft:librarian\",\"type\":\"minecraft:plains\",\"level\":5}",
+    "tags": ["merchant"]
+  },
+  {
+    "name": "年龄",
+    "nbt_key": "Age",
+    "value_type": "integer",
+    "description": "【可繁殖生物专用】设置生物的年龄。0为成年，正数为繁殖冷却，负数为幼年（-24000为刚出生）。",
+    "tags": ["breedable"]
+  }
+]

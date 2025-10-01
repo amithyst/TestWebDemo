@@ -97,7 +97,7 @@
   },
   {
     "id": "forge:block_reach",
-    "name": "🙌方块触及距离",
+    "name": "[forge]🙌方块触及距离",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
@@ -290,7 +290,7 @@
   },
   {
     "id": "caelus:fall_flying",
-    "name": "[caelus]🪶跌落飞行",
+    "name": "[caelus]🪶能否鞘翅飞行",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   },
@@ -369,6 +369,144 @@
   {
     "id": "fantasy_ending:out_of_world_damage_resistance",
     "name": "[铁魔法附属-梦幻终焉]🌠界外伤害抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:armor_pierce",
+    "name": "[属性库]🗡护甲穿透",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:armor_shred",
+    "name": "[属性库]🗡护甲削减",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:arrow_damage",
+    "name": "[属性库]🏹箭矢伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:arrow_velocity",
+    "name": "[属性库]🏹箭矢速度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:cold_damage",
+    "name": "[属性库]🥶寒冷伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:creative_flight",
+    "name": "[属性库]🛸创造飞行",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:crit_chance",
+    "name": "[属性库]❗暴击几率",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:crit_damage",
+    "name": "[属性库]❗暴击伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:current_hp_damage",
+    "name": "[属性库]🪄当前生命值伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:dodge_chance",
+    "name": "[属性库]🥾闪避几率",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:draw_speed",
+    "name": "[属性库]🏹拉弓速度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:elytra_flight",
+    "name": "[属性库]🦋鞘翅飞行",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:experience_gained",
+    "name": "[属性库]🪄经验获取",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:fire_damage",
+    "name": "[属性库]🔥火焰伤害",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:ghost_health",
+    "name": "[属性库]🪄幽灵生命值",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:healing_received",
+    "name": "[属性库]🩸治疗接收量",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:life_steal",
+    "name": "[属性库]🩸生命偷取",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:mining_speed",
+    "name": "[属性库]⛏挖掘速度",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:overheal",
+    "name": "[属性库]🩸过量治疗",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:prot_pierce",
+    "name": "[属性库]🪄保护穿透",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "attributeslib:prot_shred",
+    "name": "[属性库]🪄保护削减",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "traveloptics:aqua_magic_resist",
+    "name": "[旅行光学]🌊源流魔法抗性",
+    "min_version": "1.20.1",
+    "max_version": "1.20.1"
+  },
+  {
+    "id": "traveloptics:aqua_spell_power",
+    "name": "[旅行光学]🌊源流魔法强度",
     "min_version": "1.20.1",
     "max_version": "1.20.1"
   }

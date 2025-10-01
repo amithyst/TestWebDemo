@@ -5,6 +5,11 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError # 引入验证错误
 
+# 实体更新新加
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+
+
 # ==============================================================================
 # 1. 基础与版本控制模型 (无变化)
 # ==============================================================================
@@ -267,35 +272,87 @@ class AppliedEnchantment(models.Model):
     class Meta:
         unique_together = ('command', 'enchantment')
 
-# --- 修正后的模型 ---
+# --- 修改后的模型 ---
 class AppliedAttribute(models.Model):
     """
-    存储应用到物品上的属性修改器。
-    替代了原先的 AttributeModifier 模型。
+    存储应用到物品或实体上的属性修改器。
+    【修改】: 增加了通用关系，使其可以关联到任何模型。
     """
-    command = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE, related_name="attributes")
-    attribute = models.ForeignKey(AttributeType, on_delete=models.CASCADE) 
+    # --- 1. 旧的直接外键，设为可选 ---
+    command = models.ForeignKey(
+        GeneratedCommand,
+        on_delete=models.CASCADE,
+        related_name="attributes",
+        null=True,  # 允许为空
+        blank=True, # 允许为空
+        help_text="[旧] 直接关联到物品配置"
+    )
+
+    # --- 2. 新增的通用关系字段 ---
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        help_text="关联对象的类型 (物品或实体)"
+    )
+    object_id = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="关联对象的ID"
+    )
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    # --- 其它字段保持不变 ---
+    attribute = models.ForeignKey(AttributeType, on_delete=models.CASCADE)
     amount = models.FloatField()
     operation = models.IntegerField(choices=[(0, "add_value"), (1, "add_multiplied_base"), (2, "add_multiplied_total")], default=0)
     slot = models.CharField(max_length=20, choices=[("any", "Any"), ("mainhand", "Main Hand"), ("offhand", "Off Hand"), ("head", "Head"), ("chest", "Chest"), ("legs", "Legs"), ("feet", "Feet")], default="any")
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, help_text="修饰符的唯一ID，自动生成。")
-    
-    # --- 这里是关键改动 ---
     modifier_name = models.CharField(
         max_length=100,
-        blank=True,  # 允许该字段在表单中为空
-        null=True,   # 允许数据库中该字段为 NULL
+        blank=True,
+        null=True,
         help_text="[重要] 仅用于 1.20.4 及更早版本。1.20.5+ 版本已废弃此字段。"
     )
 
+    def clean(self):
+        # 确保 command 和 content_object 只有一个被设置
+        if self.command and self.content_object:
+            raise ValidationError("一个属性修改器不能同时关联到旧的 'command' 和新的 'content_object'。")
+        # if not self.command and not self.content_object:
+        #     raise ValidationError("一个属性修改器必须关联到 'command' 或 'content_object'。")
+
     def __str__(self):
-        # 增加一个更有用的字符串表示
-        return f"{self.attribute.name} on {self.command.title}"
+        # 改进 __str__ 以处理两种关联方式
+        target = self.command or self.content_object
+        return f"{self.attribute.name} on {target}"
 
 
 class AppliedPotionEffect(models.Model):
-    """将一个药水效果应用到一个生成的命令上"""
-    command = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE, related_name="potion_effects", verbose_name="所属命令")
+    """
+    将一个药水效果应用到一个物品或实体上。
+    【修改】: 增加了通用关系。
+    """
+    # --- 1. 旧的直接外键，设为可选 ---
+    command = models.ForeignKey(
+        GeneratedCommand,
+        on_delete=models.CASCADE,
+        related_name="potion_effects",
+        verbose_name="所属命令",
+        null=True, blank=True,
+        help_text="[旧] 直接关联到物品配置"
+    )
+
+    # --- 2. 新增的通用关系字段 ---
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE,
+        null=True, blank=True
+    )
+    object_id = models.PositiveIntegerField(
+        null=True, blank=True
+    )
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    # --- 其它字段保持不变 ---
     effect = models.ForeignKey(PotionEffectType, on_delete=models.CASCADE, verbose_name="药水效果")
     amplifier = models.PositiveIntegerField(default=0, help_text="效果等级, 从0开始 (0=I, 1=II)")
     duration = models.PositiveIntegerField(default=600, help_text="持续时间 (单位: ticks, 20 ticks = 1s)")
@@ -304,11 +361,12 @@ class AppliedPotionEffect(models.Model):
     show_icon = models.BooleanField(default=True, help_text="是否在HUD中显示效果图标")
 
     class Meta:
-        verbose_name = "应用的药水效果"
-        verbose_name_plural = "应用的药水效果"
+        verbose_name = "应用的效果"
+        verbose_name_plural = "应用的效果 (药水/属性)"
 
     def __str__(self):
-        return f"{self.command.title} - {self.effect.name} (等级 {self.amplifier})"
+        target = self.command or self.content_object
+        return f"{target} - {self.effect.name} (等级 {self.amplifier})"
 
 
 class WrittenBookContent(models.Model):
@@ -434,3 +492,139 @@ class AppliedSpell(models.Model):
 
     def __str__(self):
         return f"[{self.index}] {self.spell.name} (Lv. {self.level}) for '{self.infusion_config.command.title}'"
+    
+
+#--------------------------------------------------------------------------------实体模型--------------------------------------------------------------------------------#
+
+# ==============================================================================
+# 6. 实体生成器模型 (新增)
+# ==============================================================================
+
+class EntityTag(models.Model):
+    """【无需修改】存储实体的标签分类，例如 'undead', 'merchant', 'mob'"""
+    name = models.CharField(max_length=50, unique=True, help_text="例如 'undead', 'merchant', 'mob'")
+    description = models.CharField(max_length=200, blank=True)
+    def __str__(self): return self.name
+    class Meta:
+        verbose_name = "实体标签"
+        verbose_name_plural = "[🏷️]实体标签"
+
+
+class EntityType(models.Model):
+    """【无需修改】存储实体类型定义"""
+    entity_id = models.CharField(max_length=100, unique=True, help_text="例如 'minecraft:zombie'")
+    name = models.CharField(max_length=100)
+    tags = models.ManyToManyField(EntityTag, blank=True)
+    def __str__(self): return self.name
+    class Meta:
+        verbose_name = "实体种类"
+        verbose_name_plural = "[🐑]实体种类"
+
+
+class EntityComponentType(models.Model):
+    """
+    【修改】定义一个实体可用的 NBT 组件 (数据值)。
+    这是实现需求 #2 和 #6 的核心。
+    """
+    VALUE_TYPE_CHOICES = [
+        ('boolean', '布尔值 (是/否)'),
+        ('integer', '整数'),
+        ('float', '浮点数'),
+        ('string', '字符串'),
+        ('position_vector', '坐标向量 [x, y, z]'),
+        ('json', '自定义JSON文本'),
+    ]
+    name = models.CharField(max_length=100, help_text="显示名称, e.g., '禁用AI'")
+    nbt_key = models.CharField(max_length=100, help_text="NBT键, e.g., 'NoAI'")
+    value_type = models.CharField(max_length=20, choices=VALUE_TYPE_CHOICES)
+    tags = models.ManyToManyField(EntityTag, blank=True, help_text="将此组件限制在拥有特定标签的实体上")
+    description = models.TextField(blank=True, help_text="为用户解释这个组件的作用")
+    def __str__(self): return self.name
+    class Meta:
+        verbose_name = "实体组件定义"
+        verbose_name_plural = "[⚙️]实体组件定义"
+
+
+class GeneratedEntity(models.Model):
+    """
+    【修改】用户创建的完整实体配置。
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="entities")
+    title = models.CharField(max_length=100, help_text="为这个实体配置起一个名字")
+    entity_type = models.ForeignKey(EntityType, on_delete=models.PROTECT)
+
+    # 【修改】使用 'through' 模型来处理装备槽位 (需求 #1)
+    equipment = models.ManyToManyField(
+        GeneratedCommand,
+        through='EntityEquipmentSlot',
+        blank=True,
+        related_name="equipped_by_entities"
+    )
+
+    # 【修改】复用属性和药水效果 (需求 #9) - 这里设置反向关联
+    attributes = GenericRelation(AppliedAttribute, related_query_name='entity')
+    potion_effects = GenericRelation(AppliedPotionEffect, related_query_name='entity')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    def __str__(self): return self.title
+    class Meta:
+        verbose_name = "实体配置"
+        verbose_name_plural = "<Σ>完整实体配置"
+
+class AppliedEntityComponent(models.Model):
+    """【无需修改】将一个组件应用到一个具体实体配置上。"""
+    entity = models.ForeignKey(GeneratedEntity, on_delete=models.CASCADE, related_name="components")
+    component_type = models.ForeignKey(EntityComponentType, on_delete=models.CASCADE)
+    # 用一个文本字段存储各种类型的值，在生成命令时再解析
+    value = models.CharField(max_length=500)
+    class Meta:
+        verbose_name = "应用的实体组件"
+        verbose_name_plural = "应用的实体组件"
+        unique_together = ('entity', 'component_type')
+
+# --- 【新增模型】: 用于处理装备槽位 ---
+class EntityEquipmentSlot(models.Model):
+    """
+    通过模型 (Through Model)，连接 GeneratedEntity 和 GeneratedCommand，并指定槽位。
+    """
+    SLOT_CHOICES = [
+        ('mainhand', '主手'), ('offhand', '副手'),
+        ('head', '头部'), ('chest', '胸部'),
+        ('legs', '腿部'), ('feet', '脚部'),
+    ]
+    entity = models.ForeignKey(GeneratedEntity, on_delete=models.CASCADE)
+    item = models.ForeignKey(GeneratedCommand, on_delete=models.CASCADE)
+    slot = models.CharField(max_length=10, choices=SLOT_CHOICES)
+    # 新增掉落几率
+    drop_chance = models.FloatField(default=1.0, help_text="物品的掉落几率 (0.0 到 1.0)")
+
+    class Meta:
+        unique_together = ('entity', 'slot') # 每个槽位只能有一件装备
+        verbose_name = "实体装备槽"
+        verbose_name_plural = "实体装备槽"
+
+
+# --- 【新增模型】: 用于处理村民交易 ---
+class TradeRecipe(models.Model):
+    """
+    定义一个村民或流浪商人的单条交易。
+    """
+    trader = models.ForeignKey(GeneratedEntity, on_delete=models.CASCADE, related_name="trades", limit_choices_to={'entity_type__tags__name__in': ['merchant']})
+    
+    # 交易输入
+    buy_item1 = models.ForeignKey(GeneratedCommand, on_delete=models.PROTECT, related_name='+')
+    buy_item2 = models.ForeignKey(GeneratedCommand, on_delete=models.PROTECT, related_name='+', null=True, blank=True)
+
+    # 交易输出
+    sell_item = models.ForeignKey(GeneratedCommand, on_delete=models.PROTECT, related_name='+')
+
+    # 交易属性
+    max_uses = models.PositiveIntegerField(default=10, help_text="最大交易次数")
+    xp = models.PositiveIntegerField(default=1, help_text="给予玩家的经验值")
+    price_multiplier = models.FloatField(default=0.0)
+    
+    class Meta:
+        ordering = ['id']
+        verbose_name = "村民交易"
+        verbose_name_plural = "村民交易"

@@ -5,6 +5,8 @@ from django.core.management.base import BaseCommand, CommandError
 from MC_command.models import (MinecraftVersion, Material, ItemType, 
                                Enchantment, AttributeType, PotionEffectType,
                                BooleanComponentType, Spell  # <--- 1. 在这里导入 Spell 模型
+                               ,# --- 新增：导入实体相关的模型 ---
+                               EntityTag, EntityType, EntityComponentType
 )
 
 class Command(BaseCommand):
@@ -177,6 +179,75 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'  Successfully created spell: {spell.name}'))
         self.stdout.write(self.style.SUCCESS(f'Total {count} new spells imported.'))
 
+    # --- 新增：导入实体标签 ---
+    def import_entity_tags(self, data):
+        """导入实体标签"""
+        count = 0
+        for tag_data in data:
+            tag, created = EntityTag.objects.update_or_create(
+                name=tag_data['name'],
+                defaults={'description': tag_data.get('description', '')}
+            )
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created entity tag: {tag.name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new entity tags imported.'))
+
+    # --- 新增：导入实体类型 ---
+    def import_entity_types(self, data):
+        """导入实体类型及其标签关联"""
+        count = 0
+        for type_data in data:
+            entity_type, created = EntityType.objects.update_or_create(
+                entity_id=type_data['entity_id'],
+                defaults={'name': type_data.get('name', type_data['entity_id'])}
+            )
+
+            # 处理多对多关系 (标签)
+            if 'tags' in type_data:
+                entity_type.tags.clear() # 清除旧的关联
+                for tag_name in type_data['tags']:
+                    try:
+                        tag = EntityTag.objects.get(name=tag_name)
+                        entity_type.tags.add(tag)
+                    except EntityTag.DoesNotExist:
+                        self.stdout.write(self.style.ERROR(f'  Tag "{tag_name}" not found for entity type "{entity_type.name}". Please import entity_tags.json first.'))
+            
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created entity type: {entity_type.name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new entity types imported.'))
+
+    # --- 新增：导入实体组件类型 ---
+    def import_entity_component_types(self, data):
+        """导入实体组件类型及其标签关联"""
+        count = 0
+        for comp_data in data:
+            component_type, created = EntityComponentType.objects.update_or_create(
+                nbt_key=comp_data['nbt_key'],
+                defaults={
+                    'name': comp_data.get('name', comp_data['nbt_key']),
+                    'value_type': comp_data.get('value_type', 'string'),
+                    'description': comp_data.get('description', '')
+                }
+            )
+
+            # 处理多对多关系 (标签)
+            if 'tags' in comp_data:
+                component_type.tags.clear()
+                for tag_name in comp_data['tags']:
+                    try:
+                        tag = EntityTag.objects.get(name=tag_name)
+                        component_type.tags.add(tag)
+                    except EntityTag.DoesNotExist:
+                        self.stdout.write(self.style.ERROR(f'  Tag "{tag_name}" not found for component type "{component_type.name}". Please import entity_tags.json first.'))
+
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created entity component type: {component_type.name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new entity component types imported.'))
+
+
     def handle(self, *args, **options):
         file_path = options['file_path']
         # 修正：移除旧的 '..' 片段，因为 'BASE_DIR' 已经指向项目根目录
@@ -218,6 +289,17 @@ class Command(BaseCommand):
         elif file_path == 'spells.json':
             self.stdout.write(self.style.HTTP_INFO('Importing spells...'))
             self.import_spells(data)
+         # --- 新增：在这里添加对实体JSON文件的处理 ---
+        elif file_path == 'entity_tags.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing entity tags...'))
+            self.import_entity_tags(data)
+        elif file_path == 'entity_types.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing entity types...'))
+            self.import_entity_types(data)
+        elif file_path == 'entity_component_types.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing entity component types...'))
+            self.import_entity_component_types(data)
+        # --- 新增结束 ---
         else:
             self.stdout.write(self.style.WARNING(f'No specific importer for "{file_path}". Please check the filename.'))
             # --- 4. 更新提示信息，加入新的可用文件 ---

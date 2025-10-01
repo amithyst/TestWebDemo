@@ -40,6 +40,13 @@ python manage.py import_components materials.json
 python manage.py import_components item_types.json
 python manage.py import_components boolean_components.json
 python manage.py import_components spells.json
+
+python manage.py import_components entity_tags.json
+
+python manage.py import_components entity_types.json
+
+python manage.py import_components entity_component_types.json
+
 ```
 
 更新静态文件

@@ -1,0 +1,27 @@
+
+[
+  {
+    "name": "mob",
+    "description": "适用于大多数生物，通常拥有生命值、AI等通用属性。"
+  },
+  {
+    "name": "undead",
+    "description": "亡灵生物，通常会在阳光下燃烧。"
+  },
+  {
+    "name": "armor_stand",
+    "description": "盔甲架独有的标签，用于控制其姿态、底盘等特殊属性。"
+  },
+  {
+    "name": "merchant",
+    "description": "拥有交易能力的实体，如村民和流浪商人。"
+  },
+  {
+    "name": "breedable",
+    "description": "能够被玩家繁殖的生物。"
+  },
+  {
+    "name": "tameable",
+    "description": "能够被玩家驯服的生物，如狼、猫。"
+  }
+]

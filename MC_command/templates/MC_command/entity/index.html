@@ -1,8 +1,40 @@
+
 {% extends 'MC_command/base.html' %}
 
-{% block title %}实体{% endblock %}
+{% block title %}我的实体配置{% endblock %}
 
 {% block content %}
     <a href="{% url 'MC_command:home' %}" class="cancel-link">返回上一级</a>
-    <h1>实体页面（尚未实装#200433）</h1>
+    <div class="header">
+        <h1>我的实体配置</h1>
+        <a href="{% url 'MC_command:entity_create' %}" class="btn">创建新实体</a>
+    </div>
+
+    <div class="card-grid">
+        {% for entity in entity_list %}
+            <div class="command-card">
+                <div class="card-body">
+                    <h3><a href="{% url 'MC_command:entity_detail' entity.id %}">{{ entity.title }}</a></h3>
+                    <div class="card-meta">
+                        <span><strong>实体类型:</strong> {{ entity.entity_type.name }}</span>
+                        <span style="margin-left: 20px;"></span>
+                        <span><strong>上次更新:</strong> {{ entity.updated_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'MC_command:entity_detail' entity.id %}" class="action-btn btn-view">详情</a>
+                    <a href="{% url 'MC_command:entity_edit' entity.id %}" class="action-btn btn-edit">编辑</a>
+                    <form action="{% url 'MC_command:entity_delete' entity.id %}" method="post" onsubmit="return confirm('您确定要删除此配置吗？');" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn btn-delete">删除</button>
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <h2>列表为空</h2>
+                <p>您还没有创建任何实体配置。点击右上角的“创建新实体”开始吧！</p>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

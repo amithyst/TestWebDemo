@@ -1,0 +1,81 @@
+
+{% extends 'MC_command/base.html' %}
+
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><h1>{{ form_title }}</h1></div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {# 1. 渲染主表单 (实体名称、类型) #}
+            <fieldset>
+                <legend>基本配置</legend>
+                
+                {# --- 关键修改：确保显示非字段错误 --- #}
+                {% if form.non_field_errors %}
+                    <div class="errorlist non-field-errors">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                {% for field in form %}
+                    <div class="form-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                        {# 显示字段自身的错误 #}
+                        <div class="errorlist">{{ field.errors }}</div>
+                    </div>
+                {% endfor %}
+            </fieldset>
+
+            {# 2. 渲染所有内联表单集 (这部分使用 include，无需修改) #}
+            {% include 'MC_command/entity/_formset_table.html' with formset=formsets.components prefix='components' title='自定义NBT组件' %}
+            {% include 'MC_command/entity/_formset_table.html' with formset=formsets.equipment prefix='equipment' title='装备' %}
+            {% include 'MC_command/entity/_formset_table.html' with formset=formsets.trades prefix='trades' title='交易' %}
+            {% include 'MC_command/entity/_formset_table.html' with formset=formsets.attributes prefix='attributes' title='属性' %}
+            {% include 'MC_command/entity/_formset_table.html' with formset=formsets.potion_effects prefix='potions' title='药水效果' %}
+            
+            {# 3. 提交按钮 #}
+            <div class="form-actions">
+                <button type="submit" class="btn">保存</button>
+                <a href="{% if entity %}{% url 'MC_command:entity_detail' entity.id %}{% else %}{% url 'MC_command:entity_index' %}{% endif %}" class="cancel-link">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 通用的 "添加新行" 逻辑
+    document.querySelectorAll('.add-row-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const prefix = this.dataset.formsetPrefix;
+            const template = document.getElementById(`${prefix}-empty-form-template`);
+            const totalFormsInput = document.getElementById(`id_${prefix}-TOTAL_FORMS`);
+            if (!template || !totalFormsInput) {
+                console.error("Formset elements not found for prefix:", prefix);
+                return;
+            }
+            
+            let totalForms = parseInt(totalFormsInput.value);
+            
+            // 用新表单的索引替换模板中的 '__prefix__'
+            const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
+            const container = document.getElementById(`${prefix}-form-container`);
+            
+            container.insertAdjacentHTML('beforeend', newRowHtml);
+            
+            totalFormsInput.value = totalForms + 1;
+        });
+    });
+});
+</script>
+{% endblock %}

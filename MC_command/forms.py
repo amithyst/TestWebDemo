@@ -15,7 +15,9 @@ from .models import (
     Enchantment,AppliedEnchantment, AttributeType, AppliedAttribute, 
     PotionEffectType,AppliedPotionEffect, AppliedFireworkExplosion,
     BooleanComponentType,AppliedBooleanComponent, 
-    Spell, AppliedSpell,SpellInfusion # <--- 在这里导入新模型
+    Spell, AppliedSpell,SpellInfusion, # <--- 在这里导入新模型
+    GeneratedEntity, EntityType, EntityComponentType, AppliedEntityComponent,
+    EntityEquipmentSlot, TradeRecipe
 )
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
@@ -257,4 +259,111 @@ class SpellInfusionForm(forms.ModelForm):
             'spell_wheel': '启用/禁用 法术轮盘',
             'must_equip': '必须装备于[法术书位]才能施法',
             'max_spells': '最大法术槽位',
+        }
+
+
+# ==============================================================================
+# 新增: 实体相关表单
+# ==============================================================================
+
+
+# --- 2. 为“实体配置”本身创建一个主表单 ---
+
+class GeneratedEntityForm(forms.ModelForm):
+    """用于创建和编辑实体配置的主表单。"""
+    entity_type = forms.ModelChoiceField(
+        queryset=EntityType.objects.all().order_by('name'),
+        label="实体种类",
+        help_text="选择你要生成的实体类型。"
+    )
+
+    class Meta:
+        model = GeneratedEntity
+        fields = ['title', 'entity_type']
+        labels = {
+            'title': '配置名称',
+        }
+        help_texts = {
+            'title': '为这个实体配置起一个易于识别的名字。'
+        }
+
+
+# --- 3. 为“应用的实体组件”创建内联表单 ---
+
+class AppliedEntityComponentForm(forms.ModelForm):
+    """用于在实体上应用各种NBT组件 (如 NoAI, ShowArms) 的内联表单。"""
+    component_type = forms.ModelChoiceField(
+        queryset=EntityComponentType.objects.all().order_by('name'),
+        label="组件类型",
+        widget=forms.Select(attrs={
+            # 添加class，方便未来用JS根据实体标签进行过滤
+            'class': 'entity-component-select',
+        })
+    )
+    
+    value = forms.CharField(
+        label="组件值",
+        help_text="根据组件类型输入值 (e.g., 'true', '1', '示例文字')。",
+        widget=forms.TextInput(attrs={'class': 'component-value-input'})
+    )
+
+    class Meta:
+        model = AppliedEntityComponent
+        fields = ['component_type', 'value']
+
+
+# --- 4. 为“实体装备槽”创建内联表单 ---
+
+class EntityEquipmentSlotForm(forms.ModelForm):
+    """用于为实体装备物品的内联表单。"""
+    item = forms.ModelChoiceField(
+        queryset=GeneratedCommand.objects.all().order_by('title'),
+        label="选择物品",
+        help_text="从已创建的物品配置中选择一件装备。",
+        widget=forms.Select(attrs={'class': 'item-select'}) # 添加class方便使用select2等插件
+    )
+
+    class Meta:
+        model = EntityEquipmentSlot
+        fields = ['item', 'slot', 'drop_chance']
+        labels = {
+            'slot': '装备槽位',
+            'drop_chance': '掉落几率 (0.0-1.0)',
+        }
+
+
+# --- 5. 为“村民交易”创建内联表单 ---
+
+class TradeRecipeForm(forms.ModelForm):
+    """用于定义村民交易配方的内联表单。"""
+    # 为了提升体验，可以给所有物品选择字段加上class
+    widget_attrs = {'class': 'item-select'}
+
+    buy_item1 = forms.ModelChoiceField(
+        queryset=GeneratedCommand.objects.all().order_by('title'),
+        label="收购物品1",
+        widget=forms.Select(attrs=widget_attrs)
+    )
+    buy_item2 = forms.ModelChoiceField(
+        queryset=GeneratedCommand.objects.all().order_by('title'),
+        required=False, # 第二个收购物品是可选的
+        label="收购物品2 (可选)",
+        widget=forms.Select(attrs=widget_attrs)
+    )
+    sell_item = forms.ModelChoiceField(
+        queryset=GeneratedCommand.objects.all().order_by('title'),
+        label="出售物品",
+        widget=forms.Select(attrs=widget_attrs)
+    )
+
+    class Meta:
+        model = TradeRecipe
+        fields = [
+            'buy_item1', 'buy_item2', 'sell_item',
+            'max_uses', 'xp', 'price_multiplier'
+        ]
+        labels = {
+            'max_uses': '最大使用次数',
+            'xp': '奖励经验',
+            'price_multiplier': '价格乘数',
         }
