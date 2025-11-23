@@ -90,5 +90,40 @@
     "value_type": "integer",
     "description": "【可繁殖生物专用】设置生物的年龄。0为成年，正数为繁殖冷却，负数为幼年（-24000为刚出生）。",
     "tags": ["breedable"]
+  },
+  {
+    "name": "主人UUID",
+    "nbt_key": "Owner",
+    "value_type": "string",
+    "description": "【可驯服生物专用】设置生物的主人UUID。",
+    "tags": ["tameable"]
+  },
+  {
+    "name": "召唤者UUID",
+    "nbt_key": "Summoner",
+    "value_type": "string",
+    "description": "【可驯服生物专用】设置生物的召唤者UUID。",
+    "tags": ["tameable"]
+  },
+  {
+    "name": "Forge信息",
+    "nbt_key": "ForgeCaps",
+    "value_type": "json",
+    "description": "【Forge信息】 设置实体的Forge能力数据。",
+    "tags": []
+  },
+  {
+    "name": "生命",
+    "nbt_key": "Health",
+    "value_type": "integer",
+    "description": "设置实体的当前生命值。",
+    "tags": []
+  },
+  {
+    "name": "自定义名称可见性",
+    "nbt_key": "CustomNameVisible",
+    "value_type": "boolean",
+    "description": "设置为 true 时，实体的自定义名称总是可见。",
+    "tags": []
   }
 ]

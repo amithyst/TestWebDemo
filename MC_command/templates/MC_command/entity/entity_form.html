@@ -10,31 +10,46 @@
         <form method="post" novalidate>
             {% csrf_token %}
 
-            {# 1. 渲染主表单 (实体名称、类型) #}
+            {# 1. 渲染主表单 (现在包含乘客和来源物品) #}
             <fieldset>
                 <legend>基本配置</legend>
-                
-                {# --- 关键修改：确保显示非字段错误 --- #}
-                {% if form.non_field_errors %}
-                    <div class="errorlist non-field-errors">
-                        {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                
+                {% if form.non_field_errors %}<div class="errorlist non-field-errors"><p>{{ form.non_field_errors.as_text }}</p></div>{% endif %}
                 {% for field in form %}
                     <div class="form-field">
                         {{ field.label_tag }}
                         {{ field }}
                         {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
-                        {# 显示字段自身的错误 #}
                         <div class="errorlist">{{ field.errors }}</div>
                     </div>
                 {% endfor %}
             </fieldset>
 
-            {# 2. 渲染所有内联表单集 (这部分使用 include，无需修改) #}
+            {# --- 新增：为粒子效果云(AEC)属性创建专门的渲染区域 --- #}
+            <fieldset id="aec-properties-group" class="inline-group" style="display: none;">
+                <legend>粒子效果云属性</legend>
+                <div class="inline-group-content">
+                    {% with aec_formset=formsets.aec_properties %}
+                        {{ aec_formset.management_form }}
+                        {% if aec_formset.non_form_errors %}<div class="errorlist">{{ aec_formset.non_form_errors }}</div>{% endif %}
+                        
+                        {# 因为是OneToOne，我们只渲染第一个表单 #}
+                        {% for form in aec_formset %}
+                            {% for field in form.visible_fields %}
+                            <div class="form-field">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                                <div class="errorlist">{{ field.errors }}</div>
+                            </div>
+                            {% endfor %}
+                            {# 隐藏ID和DELETE字段 #}
+                            {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </fieldset>
+
+            {# 2. 渲染其他所有内联表单集 #}
             {% include 'MC_command/entity/_formset_table.html' with formset=formsets.components prefix='components' title='自定义NBT组件' %}
             {% include 'MC_command/entity/_formset_table.html' with formset=formsets.equipment prefix='equipment' title='装备' %}
             {% include 'MC_command/entity/_formset_table.html' with formset=formsets.trades prefix='trades' title='交易' %}
@@ -54,7 +69,31 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 通用的 "添加新行" 逻辑
+    // --- 新增：动态显示/隐藏AEC属性区域的逻辑 ---
+    const entityTypeSelect = document.getElementById('id_entity_type');
+    const aecPropertyGroup = document.getElementById('aec-properties-group');
+    const entityTypeData = JSON.parse('{{ entity_type_data_json|escapejs|default:"{}" }}');
+
+    function toggleAECProperties() {
+        if (!entityTypeSelect || !aecPropertyGroup) return;
+        
+        const selectedPk = entityTypeSelect.value;
+        const entityIdString = entityTypeData[selectedPk];
+        
+        if (entityIdString === 'minecraft:area_effect_cloud') {
+            aecPropertyGroup.style.display = 'block';
+        } else {
+            aecPropertyGroup.style.display = 'none';
+        }
+    }
+
+    if (entityTypeSelect) {
+        entityTypeSelect.addEventListener('change', toggleAECProperties);
+        // 页面加载时立即执行一次，以确保编辑页面状态正确
+        toggleAECProperties();
+    }
+
+    // --- 已有的通用 "添加新行" 逻辑 ---
     document.querySelectorAll('.add-row-btn').forEach(button => {
         button.addEventListener('click', function() {
             const prefix = this.dataset.formsetPrefix;
@@ -66,13 +105,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             let totalForms = parseInt(totalFormsInput.value);
-            
-            // 用新表单的索引替换模板中的 '__prefix__'
             const newRowHtml = template.innerHTML.replace(/__prefix__/g, totalForms);
             const container = document.getElementById(`${prefix}-form-container`);
-            
             container.insertAdjacentHTML('beforeend', newRowHtml);
-            
             totalFormsInput.value = totalForms + 1;
         });
     });

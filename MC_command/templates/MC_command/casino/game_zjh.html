@@ -1,0 +1,77 @@
+{% extends 'MC_command/base.html' %}
+{% block title %}扎金花{% endblock %}
+{% block content %}
+
+<div style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h2>🃏 极速扎金花 (Three Card Brag)</h2>
+    <div class="balance-box">当前余额: <span id="balance">{{ wallet.balance }}</span></div>
+    <hr>
+
+    <div style="background: #333; color: gold; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <p>规则：豹子 > 同花 > 顺子 > 对子 > 单张</p>
+        <p style="font-size: 0.8em; color: #ccc;">(系统只比拼牌型大小，不比花色)</p>
+    </div>
+
+    <form id="zjh-form" onsubmit="playGame(event)">
+        {% csrf_token %}
+        <div style="margin: 20px 0;">
+            <label>下注金额 (1赔3): </label>
+            <input type="number" name="bet" value="100" min="10" style="padding: 5px; width: 100px;">
+        </div>
+        <button type="submit" class="btn-play" style="background: #dc3545;">发牌开牌</button>
+    </form>
+
+    <div id="result-area" style="margin-top: 20px; display: none;">
+        <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+            <div>
+                <h4>你的手牌</h4>
+                <div id="user-hand" style="font-size: 1.5em; font-weight: bold; color: #007bff;">?</div>
+            </div>
+            <div>
+                <h4>庄家手牌</h4>
+                <div id="sys-hand" style="font-size: 1.5em; font-weight: bold; color: #dc3545;">?</div>
+            </div>
+        </div>
+        <h3 id="outcome-msg"></h3>
+    </div>
+    <br>
+    <a href="{% url 'MC_command:casino_lobby' %}">返回大厅</a>
+</div>
+
+<script>
+function playGame(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    document.getElementById('outcome-msg').innerText = '发牌中...';
+    document.getElementById('result-area').style.display = 'block';
+
+    fetch("{% url 'MC_command:casino_api' 'zjh' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.status === 'error') {
+            alert(data.msg);
+            return;
+        }
+        document.getElementById('balance').innerText = data.balance;
+        
+        // 动画效果模拟
+        document.getElementById('user-hand').innerText = data.data.user_hand;
+        setTimeout(() => {
+            document.getElementById('sys-hand').innerText = data.data.sys_hand;
+            document.getElementById('outcome-msg').innerText = data.msg;
+            
+            if(data.is_win) {
+                document.getElementById('outcome-msg').style.color = 'green';
+            } else {
+                document.getElementById('outcome-msg').style.color = 'red';
+            }
+        }, 500); // 延迟0.5秒亮庄家牌，增加紧张感
+    });
+}
+</script>
+{% endblock %}

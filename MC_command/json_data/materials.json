@@ -4,8 +4,16 @@
   {"system_name": "minecraft:iron", "display_name": "🦾铁"},
   {"system_name": "minecraft:golden", "display_name": "🏅金"},
   {"system_name": "minecraft:diamond", "display_name": "💎钻石"},
+  {"system_name": "minecraft:redstone", "display_name": "♦红石"},
+  {"system_name": "minecraft:emerald", "display_name": "🔹绿宝石"},
+  {"system_name": "minecraft:lapis", "display_name": "💠青金石"},
   {"system_name": "minecraft:netherite", "display_name": "🕋下界合金"},
   {"system_name": "minecraft:leather", "display_name": "🎽皮革"},
   {"system_name": "minecraft:chainmail", "display_name": "⛓锁链"},
-  {"system_name": "minecraft:turtle", "display_name": "🐢海龟"}
+  {"system_name": "minecraft:turtle", "display_name": "🐢海龟"},
+  {"system_name": "waifu_of_god:than_de_armor", "display_name": "[永恒修炼]神帝铠"},
+  {"system_name": "waifu_of_god:than_de", "display_name": "[永恒修炼]神帝王"},
+  {"system_name": "waifu_of_god:linh_thach", "display_name": "[永恒修炼]灵石"},
+  {"system_name": "waifu_of_god:loi_than_giap", "display_name": "[永恒修炼]⚡雷神"},
+  {"system_name": "traveloptics:mechanized_exoskeleton", "display_name": "[旅行学]⚡机械外骨骼"}
 ]

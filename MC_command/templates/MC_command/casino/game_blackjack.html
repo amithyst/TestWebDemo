@@ -1,0 +1,169 @@
+{% extends 'MC_command/base.html' %}
+{% block title %}21点 (Blackjack){% endblock %}
+
+{% block content %}
+<style>
+    /* 复用扎金花的卡牌样式，保持风格统一 */
+    .card {
+        width: 70px; height: 105px; 
+        border: 1px solid #999; border-radius: 6px;
+        background: white; display: inline-flex; 
+        justify-content: center; align-items: center;
+        font-size: 28px; margin: 5px; position: relative;
+        box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+    }
+    .card.back {
+        background: repeating-linear-gradient(
+          45deg, #b71c1c, #b71c1c 10px, #8e0000 10px, #8e0000 20px
+        );
+        border: 2px solid white;
+        color: transparent;
+    }
+    .card.red { color: #d32f2f; }
+    .card.black { color: #212121; }
+    
+    .bj-table {
+        background: #1b5e20; /* 深绿色桌布 */
+        color: white;
+        padding: 40px; border-radius: 20px;
+        border: 12px solid #4e342e; /* 木质边框 */
+        text-align: center;
+        max-width: 800px; margin: 0 auto;
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+    }
+    
+    .score-bubble {
+        background: rgba(0,0,0,0.6);
+        padding: 5px 15px; border-radius: 15px;
+        font-size: 0.9em; margin-bottom: 10px; display: inline-block;
+    }
+    
+    .btn-action {
+        padding: 12px 30px; border: none; border-radius: 5px;
+        font-size: 16px; cursor: pointer; margin: 0 10px;
+        font-weight: bold; text-transform: uppercase;
+        transition: transform 0.1s;
+    }
+    .btn-action:active { transform: scale(0.95); }
+    .btn-hit { background: #ffc107; color: black; } /* 要牌 - 黄色 */
+    .btn-stand { background: #f44336; color: white; } /* 停牌 - 红色 */
+    .btn-start { background: #2196f3; color: white; width: 100%; max-width: 200px;}
+</style>
+
+<div class="bj-table">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; opacity: 0.8;">
+        <span>VIP等级: Lv.{{ wallet.vip_level }}</span>
+        <span>余额: <span id="balance" style="color: gold; font-size: 1.2em;">{{ wallet.balance }}</span></span>
+    </div>
+
+    <div>
+        <div class="score-bubble">庄家 Dealer</div>
+        <div id="dealer-cards" style="min-height: 120px; display: flex; justify-content: center;">
+            <div class="card back"></div><div class="card back"></div>
+        </div>
+    </div>
+
+    <div id="msg-area" style="height: 40px; margin: 20px 0; font-size: 1.2em; color: #fff176; text-shadow: 1px 1px 2px black;">
+        准备开始...
+    </div>
+
+    <div>
+        <div id="player-cards" style="min-height: 120px; display: flex; justify-content: center;">
+            <div class="card back"></div><div class="card back"></div>
+        </div>
+        <div class="score-bubble">你 Player <span id="player-score"></span></div>
+    </div>
+
+    <div id="controls-start" style="margin-top: 30px;">
+        <label style="font-size: 1.2em; color: gold;">底注 (Min 50):</label>
+        <br>
+        <input type="number" id="ante-input" value="50" min="50" step="10" 
+            style="width: 80px; text-align: center; padding: 5px; font-size: 1.2em;">
+        <br><br>
+        <button onclick="doAction('start')" class="btn-action btn-start">发牌 (Deal)</button>
+    </div>
+
+    <div id="controls-play" style="margin-top: 30px; display: none;">
+        <button onclick="doAction('hit')" class="btn-action btn-hit">👇 要牌 (Hit)</button>
+        <button onclick="doAction('stand')" class="btn-action btn-stand">✋ 停牌 (Stand)</button>
+    </div>
+</div>
+
+<script>
+// 计算简易点数用于前端显示（实际逻辑以服务器为准）
+function calcScore(cards) {
+    let score = 0;
+    let aces = 0;
+    cards.forEach(c => {
+        let v = parseInt(c.val); // 确保是数字
+        if(v >= 10 && v <= 13) score += 10;
+        else if(v === 14) { score += 11; aces++; }
+        else score += v;
+    });
+    while(score > 21 && aces > 0) { score -= 10; aces--; }
+    return score;
+}
+
+function renderHand(cards, containerId, hideSecondCard=false) {
+    const div = document.getElementById(containerId);
+    div.innerHTML = '';
+    cards.forEach(c => {
+        const color = (['♥️','♦️'].includes(c.suit)) ? 'red' : 'black';
+        div.innerHTML += `<div class="card ${color}">${c.rank}<br>${c.suit}</div>`;
+    });
+    
+    // 如果需要隐藏第二张牌（庄家回合进行中），我们在前端伪造一张背面牌
+    // 注意：后端传来的数据此时其实只有一张牌，所以这里我们补一张背面
+    if (hideSecondCard) {
+        div.innerHTML += `<div class="card back"></div>`;
+    }
+}
+
+function doAction(act) {
+    const ante = document.getElementById('ante-input').value;
+    const fd = new FormData();
+    fd.append('action', act);
+    fd.append('game_type', 'blackjack');
+    fd.append('ante', ante);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch("{% url 'MC_command:casino_action_api' %}", {
+        method: 'POST', body: fd
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.status === 'error') {
+            alert(data.msg); return;
+        }
+        updateUI(data);
+    });
+}
+
+function updateUI(data) {
+    const state = data.state;
+    document.getElementById('balance').innerText = data.balance;
+    document.getElementById('msg-area').innerText = data.msg;
+
+    // 渲染玩家牌
+    renderHand(state.p_hand, 'player-cards');
+    document.getElementById('player-score').innerText = `(${calcScore(state.p_hand)}点)`;
+
+    // 渲染庄家牌
+    // 逻辑：如果游戏还在进行 (step == playing)，后端只给一张牌，我们前端补一张背面
+    // 如果游戏结束 (step == finished)，后端给全部牌，我们直接显示
+    const isPlaying = state.step === 'playing';
+    
+    if (isPlaying) {
+        renderHand(state.d_hand, 'dealer-cards', true); // 开启背面补全模式
+        document.getElementById('controls-start').style.display = 'none';
+        document.getElementById('controls-play').style.display = 'block';
+    } else {
+        renderHand(state.d_hand, 'dealer-cards', false); // 显示所有牌
+        document.getElementById('controls-start').style.display = 'block';
+        document.getElementById('controls-play').style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

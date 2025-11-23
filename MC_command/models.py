@@ -546,24 +546,38 @@ class EntityComponentType(models.Model):
 
 
 class GeneratedEntity(models.Model):
-    """
-    【修改】用户创建的完整实体配置。
-    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="entities")
     title = models.CharField(max_length=100, help_text="为这个实体配置起一个名字")
     entity_type = models.ForeignKey(EntityType, on_delete=models.PROTECT)
-
-    # 【修改】使用 'through' 模型来处理装备槽位 (需求 #1)
+    
     equipment = models.ManyToManyField(
         GeneratedCommand,
         through='EntityEquipmentSlot',
         blank=True,
         related_name="equipped_by_entities"
     )
-
-    # 【修改】复用属性和药水效果 (需求 #9) - 这里设置反向关联
     attributes = GenericRelation(AppliedAttribute, related_query_name='entity')
     potion_effects = GenericRelation(AppliedPotionEffect, related_query_name='entity')
+
+    # --- 新增：骑乘功能 (需求 #1) ---
+    passengers = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False, # A骑B，不等于B骑A，所以设为False
+        related_name='ridden_by',
+        verbose_name="乘客实体"
+    )
+
+    # --- 新增：用于物品实体和投射物的功能 (需求 #3, #4) ---
+    source_item = models.ForeignKey(
+        GeneratedCommand,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='used_by_entities',
+        help_text="关联的物品配置 (用于'物品实体'的Item标签, 或'投射物'的TridentItem等标签)",
+        verbose_name="来源物品"
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -577,7 +591,7 @@ class AppliedEntityComponent(models.Model):
     entity = models.ForeignKey(GeneratedEntity, on_delete=models.CASCADE, related_name="components")
     component_type = models.ForeignKey(EntityComponentType, on_delete=models.CASCADE)
     # 用一个文本字段存储各种类型的值，在生成命令时再解析
-    value = models.CharField(max_length=500)
+    value = models.CharField(max_length=5000)
     class Meta:
         verbose_name = "应用的实体组件"
         verbose_name_plural = "应用的实体组件"
@@ -605,10 +619,10 @@ class EntityEquipmentSlot(models.Model):
         verbose_name_plural = "实体装备槽"
 
 
-# --- 【新增模型】: 用于处理村民交易 ---
 class TradeRecipe(models.Model):
     """
-    定义一个村民或流浪商人的单条交易。
+    【修改后】定义一个村民或流浪商人的单条交易。
+    新增了可选的数量覆盖字段。
     """
     trader = models.ForeignKey(GeneratedEntity, on_delete=models.CASCADE, related_name="trades", limit_choices_to={'entity_type__tags__name__in': ['merchant']})
     
@@ -619,6 +633,17 @@ class TradeRecipe(models.Model):
     # 交易输出
     sell_item = models.ForeignKey(GeneratedCommand, on_delete=models.PROTECT, related_name='+')
 
+    # --- 新增：数量覆盖字段 ---
+    buy_item1_count = models.PositiveIntegerField(
+        null=True, blank=True, help_text="留空则使用所选物品配置的默认数量"
+    )
+    buy_item2_count = models.PositiveIntegerField(
+        null=True, blank=True, help_text="留空则使用所选物品配置的默认数量"
+    )
+    sell_item_count = models.PositiveIntegerField(
+        null=True, blank=True, help_text="留空则使用所选物品配置的默认数量"
+    )
+
     # 交易属性
     max_uses = models.PositiveIntegerField(default=10, help_text="最大交易次数")
     xp = models.PositiveIntegerField(default=1, help_text="给予玩家的经验值")
@@ -628,3 +653,210 @@ class TradeRecipe(models.Model):
         ordering = ['id']
         verbose_name = "村民交易"
         verbose_name_plural = "村民交易"
+
+# --- 新增模型：用于存储所有可用的粒子效果类型 ---
+class ParticleType(models.Model):
+    """存储所有可用的粒子效果ID"""
+    particle_id = models.CharField(max_length=100, unique=True, help_text="粒子的ID, 例如 'minecraft:flame'")
+    name = models.CharField(max_length=100, help_text="用于显示的名称, 例如 '火焰'")
+    min_version = models.ForeignKey(MinecraftVersion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+    max_version = models.ForeignKey(MinecraftVersion, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
+
+    class Meta:
+        verbose_name = "粒子效果类型"
+        verbose_name_plural = "[✨]粒子效果类型"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+    
+# --- 新增模型：用于存储粒子效果云的独有属性 ---
+class AreaEffectCloudProperties(models.Model):
+    """
+    存储 `area_effect_cloud` 实体的独有NBT属性。
+    与 GeneratedEntity 是一对一关系。
+    """
+    entity = models.OneToOneField(
+        GeneratedEntity,
+        on_delete=models.CASCADE,
+        related_name="aec_properties",
+        verbose_name="所属实体配置",
+        # 这是一个很好的实践，限制这个配置只能关联到 area_effect_cloud 类型的实体
+        limit_choices_to={'entity_type__entity_id': 'minecraft:area_effect_cloud'}
+    )
+    
+    duration = models.IntegerField(default=600, help_text="效果云的总持续时间 (ticks)")
+    wait_time = models.IntegerField(default=20, help_text="效果云生成后，开始施加效果前的等待时间 (ticks)")
+    reapplication_delay = models.IntegerField(default=40, help_text="对同一个实体重复施加效果的间隔时间 (ticks)")
+    duration_on_use = models.IntegerField(default=0, help_text="每次有实体受影响时，总持续时间减少的量 (ticks)")
+    radius = models.FloatField(default=3.0, help_text="效果云的初始半径（米）")
+    radius_on_use = models.FloatField(default=-0.5, help_text="每次有实体受影响时，半径变化的量（可以为负数）")
+    radius_per_tick = models.FloatField(default=-0.005, help_text="每 tick 半径变化的量（可以为负数，实现缩小）")
+    
+    # 粒子效果相关的字段
+    # --- 这里是修改点 ---
+    particle = models.ForeignKey(
+        ParticleType,
+        on_delete=models.PROTECT, # 保护，防止意外删除正在被使用的粒子效果
+        null=True, blank=True, # 允许为空
+        help_text="选择效果云要显示的粒子效果"
+    )
+    # 对于复杂的粒子参数 (如 minecraft:dust)，我们可以用一个JSON字段
+    # particle_params = models.JSONField(blank=True, null=True, help_text="复杂粒子的参数，例如颜色、大小等")
+
+    class Meta:
+        verbose_name = "粒子效果云属性"
+        verbose_name_plural = "粒子效果云属性"
+
+    def __str__(self):
+        return f"为 '{self.entity.title}' 配置的效果云"
+
+
+
+# ==============================================================================
+# 7. 赌博小游戏与经济系统 (新增)
+# ==============================================================================
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from decimal import Decimal
+
+class UserWallet(models.Model):
+    """
+    用户资产钱包。
+    包含金币余额、VIP统计数据以及'黑幕'控制参数。
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="wallet")
+    balance = models.DecimalField(max_digits=20, decimal_places=2, default=0.00, verbose_name="当前金币余额")
+    
+    # VIP 统计字段
+    total_recharged = models.DecimalField(max_digits=20, decimal_places=2, default=0.00, verbose_name="历史累计充值(RMB)")
+    total_earnings = models.DecimalField(max_digits=20, decimal_places=2, default=0.00, verbose_name="历史游戏盈利总额")
+    
+    # 黑幕字段
+    black_curtain_rate = models.FloatField(
+        default=1.0, 
+        help_text="运气修正值。1.0=正常，0.5=霉运(胜率减半)，2.0=欧皇(胜率翻倍)。用于后台控制该玩家输赢。"
+    )
+    is_flagged = models.BooleanField(default=False, verbose_name="重点监控", help_text="标记为问题赌狗，后台特殊显示")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def vip_level(self):
+        """
+        计算VIP等级。
+        逻辑：每充值100元升1级，或者每赢10000金币升1级。取两者最高。
+        """
+        # 简单的硬编码逻辑，你可以根据需求修改
+        level_by_charge = int(self.total_recharged // 100)
+        level_by_earnings = int(self.total_earnings // 10000)
+        raw_level = max(level_by_charge, level_by_earnings)
+        return min(raw_level, 10) # 假设最高VIP 10级
+
+    @property
+    def fee_rate(self):
+        """
+        计算赌场抽水比例 (House Edge)。
+        VIP越高，抽水越低。
+        基础抽水 5%，每级VIP减少 0.3%，最低 1%。
+        """
+        base_fee = 0.05 # 5%
+        discount = self.vip_level * 0.003
+        final_fee = max(base_fee - discount, 0.01) # 至少抽 1%
+        return final_fee
+
+    def __str__(self):
+        return f"{self.user.username} 的钱包 (VIP{self.vip_level})"
+
+    class Meta:
+        verbose_name = "用户钱包(黑幕配置)"
+        verbose_name_plural = "💰用户钱包(黑幕配置)"
+
+
+class GameTransaction(models.Model):
+    """
+    交易流水表。
+    管理员在这里'添加记录'来充值，而不是直接改钱包。
+    """
+    TRANS_TYPES = [
+        ('recharge', '后台充值(增加VIP)'),
+        ('admin_grant', '系统赠送(不加VIP)'),
+        ('game_bet', '游戏下注'),
+        ('game_win', '游戏派彩'),
+        ('withdraw', '提现/扣除'),
+    ]
+
+    wallet = models.ForeignKey(UserWallet, on_delete=models.CASCADE, related_name="transactions")
+    amount = models.DecimalField(max_digits=20, decimal_places=2, verbose_name="变动金额")
+    trans_type = models.CharField(max_length=20, choices=TRANS_TYPES, default='game_bet', verbose_name="交易类型")
+    description = models.CharField(max_length=255, blank=True, verbose_name="备注/游戏名")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        # 在保存前，先检查是否是新建记录（也就是没有ID的时候）
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # 只有新建流水时才触发余额变动，防止管理员修改备注导致二次加钱
+        if is_new:
+            self._update_wallet()
+
+    def _update_wallet(self):
+        """核心逻辑：根据流水类型更新钱包余额和VIP进度"""
+        w = self.wallet
+        amt = Decimal(self.amount)
+
+        if self.trans_type == 'recharge':
+            w.balance += amt
+            w.total_recharged += amt # 只有充值才加VIP进度
+        elif self.trans_type == 'admin_grant':
+            w.balance += amt
+        elif self.trans_type == 'game_bet':
+            w.balance -= abs(amt) # 下注扣钱
+        elif self.trans_type == 'game_win':
+            w.balance += amt
+            # 只有净胜值才算earnings，这里简单处理，只要是派彩都累积，或者你可以在view里计算净利
+            w.total_earnings += amt 
+        elif self.trans_type == 'withdraw':
+            w.balance -= abs(amt)
+        
+        w.save()
+
+    def __str__(self):
+        return f"{self.get_trans_type_display()} - {self.amount}"
+
+    class Meta:
+        verbose_name = "资金流水"
+        verbose_name_plural = "🧾资金流水"
+
+# --- 信号：创建用户时自动创建钱包 ---
+@receiver(post_save, sender=User)
+def create_user_wallet(sender, instance, created, **kwargs):
+    if created:
+        UserWallet.objects.create(user=instance)
+
+class CasinoGameSession(models.Model):
+    """
+    存储正在进行中的牌局状态。
+    当一局游戏结束（结算）后，这个记录可以标记为完成或删除。
+    """
+    GAME_TYPES = [
+        ('blackjack', '21点'),
+        ('zjh', '扎金花'),
+        ('holdem', '德州扑克'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    game_type = models.CharField(max_length=20, choices=GAME_TYPES)
+    
+    # 核心：存储JSON状态
+    # 包含：player_hand, dealer_hand, community_cards, pot_size, current_stage, deck_cursor...
+    state_data = models.JSONField(default=dict) 
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} playing {self.game_type}"

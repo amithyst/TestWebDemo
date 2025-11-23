@@ -17,7 +17,7 @@ from .models import (
     BooleanComponentType,AppliedBooleanComponent, 
     Spell, AppliedSpell,SpellInfusion, # <--- 在这里导入新模型
     GeneratedEntity, EntityType, EntityComponentType, AppliedEntityComponent,
-    EntityEquipmentSlot, TradeRecipe
+    EntityEquipmentSlot, TradeRecipe, AreaEffectCloudProperties # <-- 新增导入
 )
 from .widgets import ColorPickerWidget # <--- 导入我们的小部件
 
@@ -268,24 +268,51 @@ class SpellInfusionForm(forms.ModelForm):
 
 
 # --- 2. 为“实体配置”本身创建一个主表单 ---
-
 class GeneratedEntityForm(forms.ModelForm):
-    """用于创建和编辑实体配置的主表单。"""
+    """
+    【修改后】用于创建和编辑实体配置的主表单。
+    新增了 passengers 和 source_item 字段。
+    """
     entity_type = forms.ModelChoiceField(
         queryset=EntityType.objects.all().order_by('name'),
         label="实体种类",
         help_text="选择你要生成的实体类型。"
     )
 
+    # --- 新增字段 ---
+    passengers = forms.ModelMultipleChoiceField(
+        queryset=GeneratedEntity.objects.all().order_by('title'),
+        required=False,
+        label="乘客",
+        help_text="选择一个或多个已配置好的实体作为乘客。",
+        widget=forms.SelectMultiple(attrs={'class': 'passenger-select'})
+    )
+    source_item = forms.ModelChoiceField(
+        queryset=GeneratedCommand.objects.all().order_by('title'),
+        required=False,
+        label="来源物品",
+        help_text="为物品实体或投射物选择一个物品配置。",
+        widget=forms.Select(attrs={'class': 'item-select'})
+    )
+
     class Meta:
         model = GeneratedEntity
-        fields = ['title', 'entity_type']
+        fields = ['title', 'entity_type', 'passengers', 'source_item'] # <-- 添加新字段
         labels = {
             'title': '配置名称',
         }
         help_texts = {
             'title': '为这个实体配置起一个易于识别的名字。'
         }
+
+    def __init__(self, *args, **kwargs):
+        """
+        重写初始化方法，以在编辑时从“乘客”列表中排除实体自身。
+        """
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            # 如果是编辑现有实体，则更新 queryset
+            self.fields['passengers'].queryset = GeneratedEntity.objects.exclude(pk=self.instance.pk)
 
 
 # --- 3. 为“应用的实体组件”创建内联表单 ---
@@ -335,8 +362,10 @@ class EntityEquipmentSlotForm(forms.ModelForm):
 # --- 5. 为“村民交易”创建内联表单 ---
 
 class TradeRecipeForm(forms.ModelForm):
-    """用于定义村民交易配方的内联表单。"""
-    # 为了提升体验，可以给所有物品选择字段加上class
+    """
+    【修改后】用于定义村民交易配方的内联表单。
+    新增了数量覆盖字段。
+    """
     widget_attrs = {'class': 'item-select'}
 
     buy_item1 = forms.ModelChoiceField(
@@ -346,7 +375,7 @@ class TradeRecipeForm(forms.ModelForm):
     )
     buy_item2 = forms.ModelChoiceField(
         queryset=GeneratedCommand.objects.all().order_by('title'),
-        required=False, # 第二个收购物品是可选的
+        required=False,
         label="收购物品2 (可选)",
         widget=forms.Select(attrs=widget_attrs)
     )
@@ -358,12 +387,26 @@ class TradeRecipeForm(forms.ModelForm):
 
     class Meta:
         model = TradeRecipe
+        # --- 修改点：在 fields 列表中加入新字段 ---
         fields = [
-            'buy_item1', 'buy_item2', 'sell_item',
+            'buy_item1', 'buy_item1_count', 
+            'buy_item2', 'buy_item2_count', 
+            'sell_item', 'sell_item_count',
             'max_uses', 'xp', 'price_multiplier'
         ]
+        # --- 修改点：为新字段添加更友好的标签 ---
         labels = {
+            'buy_item1_count': '数量 (可选)',
+            'buy_item2_count': '数量 (可选)',
+            'sell_item_count': '数量 (可选)',
             'max_uses': '最大使用次数',
             'xp': '奖励经验',
             'price_multiplier': '价格乘数',
         }
+
+class AreaEffectCloudPropertiesForm(forms.ModelForm):
+    """用于在内联中编辑粒子效果云属性的表单。"""
+    class Meta:
+        model = AreaEffectCloudProperties
+        # 包含所有字段，除了自动关联的 'entity'
+        exclude = ['entity']

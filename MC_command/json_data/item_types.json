@@ -19,6 +19,7 @@
   { "system_name": "firework_rocket", "display_name": "烟花火箭🧨", "function_type": "firework" },
   { "system_name": "ingot", "display_name": "锭", "function_type": "all" },
   { "system_name": "block", "display_name": "块", "function_type": "all" },
+  { "system_name": "paper", "display_name": "纸💸", "function_type": "all" },
   { "system_name": "written_book", "display_name": "成书📕", "function_type": "written_book" },
   { "system_name": "irons_spellbooks:wimpy_spell_book", "display_name": "[铁魔法]无用之书📚", "function_type": "magic_book" },
   { "system_name": "irons_spellbooks:blood_staff", "display_name": "[铁魔法]猩红神杖🪄", "function_type": "wand" },
@@ -35,5 +36,17 @@
   {"system_name": "traveloptics:titanlord_scepter_tectonic", "display_name": "[旅行光学] 地壳·泰坦领主权杖🪄", "function_type": "wand" },
   { "system_name": "traveloptics:titanlord_scepter_retro", "display_name": "[旅行光学] 复古·泰坦领主权杖🪄", "function_type": "wand" },
   { "system_name": "traveloptics:wand_of_final_light", "display_name": "[旅行光学] 终焉光辉之杖🪄", "function_type": "wand" },
-  { "system_name": "traveloptics:titanlord_scepter", "display_name": "[旅行光学] 泰坦领主权杖🪄", "function_type": "wand" }
+  { "system_name": "traveloptics:titanlord_scepter", "display_name": "[旅行光学] 泰坦领主权杖🪄", "function_type": "wand" },
+  { "system_name": "fantasy_ending:faded_dragon", "display_name": "[梦幻终焉] 假龙头盔", "function_type": "all" },
+  { "system_name": "kiem", "display_name": "[永恒修炼]剑kiem", "function_type": "weapon" },
+  { "system_name": "quyen", "display_name": "[永恒修炼]权quyen", "function_type": "weapon" },
+  { "system_name": "ha_pham", "display_name": "[永恒修炼]下品", "function_type": "all"},
+  { "system_name": "trung_pham", "display_name": "[永恒修炼]中品", "function_type": "all" },
+  { "system_name": "cao_pham", "display_name": "[永恒修炼]上品", "function_type": "all" },
+  { "system_name": "thuong_pham", "display_name": "[永恒修炼]极品", "function_type": "all" },
+  { "system_name": "huyen_pham", "display_name": "[永恒修炼]玄品", "function_type": "all" },
+  { "system_name": "tien_pham", "display_name": "[永恒修炼]天品", "function_type": "all" },
+  { "system_name": "thanh_pham", "display_name": "[永恒修炼]圣品", "function_type": "all" },
+  {"system_name": "than_pham", "display_name": "[永恒修炼]神品", "function_type": "all"},
+  { "system_name": "hon_nguyen_pham", "display_name": "[永恒修炼]混沌品", "function_type": "all" }
 ]

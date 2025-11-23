@@ -5,7 +5,7 @@ from .models import (AppliedEnchantment, AppliedAttribute,
                      AppliedBooleanComponent,
                      SpellInfusion, AppliedSpell  # <--- 1. 导入新模型
                      ,    # ... 你已有的模型 ...
-                    GeneratedEntity, AppliedEntityComponent, EntityEquipmentSlot, TradeRecipe, GeneratedCommand
+                    GeneratedEntity, AppliedEntityComponent, EntityEquipmentSlot, TradeRecipe, GeneratedCommand,AreaEffectCloudProperties # <-- 新增导入
                      )
 import copy # 导入copy模块用于深拷贝(实体更新加入)
 
@@ -334,52 +334,133 @@ COMPONENT_REGISTRY = {
 
 #--------------------------------------------------------------------------------实体部分-----------------------------------------------------------------------------
 
-# --- 2. 核心辅助函数：为单个物品生成 NBT 'tag' 字典 ---
+# mc_commands/components.py
+# mc_commands/components.py
+# mc_commands/components.py
 
 def _generate_item_nbt_tag(item_command: GeneratedCommand):
     """
-    接收一个 GeneratedCommand 对象，返回其完整的 NBT tag 字典。
-    这个函数会复用上面定义的 COMPONENT_REGISTRY 来组装物品数据。
+    【与/give命令逻辑对齐】
+    如果 custom_name 是普通文本，则自动包装成 {"text":"..."} JSON 字符串。
     """
     if not item_command:
         return {}
 
     nbt_data = {}
     
-    # --- a. 处理显示名称 (display Name) 和 Lore ---
     display_tag = {}
     if item_command.custom_name:
-        # 假设 custom_name 是原始JSON字符串
-        display_tag['Name'] = item_command.custom_name
+        custom_name_str = item_command.custom_name.strip()
+        # 检查是否已经是JSON格式，如果不是，则进行包装
+        if custom_name_str.startswith('{') and custom_name_str.endswith('}'):
+            display_tag['Name'] = custom_name_str
+        else:
+            # 自动包装成JSON text component
+            display_tag['Name'] = json.dumps({"text": custom_name_str}, ensure_ascii=False)
+
     if item_command.lore:
-        # Lore 需要是JSON字符串数组
-        lore_list = [line.strip() for line in item_command.lore.split('\\n')]
-        display_tag['Lore'] = lore_list
+        lore_list = []
+        for line in item_command.lore.split('\\n'):
+            line = line.strip()
+            if not line:
+                continue
+            # 同样，对Lore的每一行也进行包装
+            if line.startswith('{') and line.endswith('}'):
+                lore_list.append(line)
+            else:
+                lore_list.append(json.dumps({"text": line}, ensure_ascii=False))
+        
+        if lore_list:
+            display_tag['Lore'] = lore_list
     
     if display_tag:
         nbt_data['display'] = display_tag
 
-    # --- b. 遍历物品组件注册表，生成所有组件的 NBT ---
+    # 组件NBT部分保持不变
     for key, config in COMPONENT_REGISTRY.items():
-        # 获取关联的管理器 (e.g., item_command.enchantments)
         related_manager = getattr(item_command, key, None)
         if related_manager and related_manager.exists():
-            # 获取NBT生成函数 (e.g., generate_nbt_enchantments)
             nbt_generator = config.get('generate_nbt')
             if nbt_generator:
                 component_nbt = nbt_generator(related_manager)
-                
-                # 特殊处理 _raw_nbt，它用于直接拼接NBT字符串
                 if '_raw_nbt' in component_nbt:
-                    # 我们需要将这些字符串合并到顶层，但这在字典结构中很难处理
-                    # 在最终命令生成时，需要特殊逻辑来解析它
-                    # 这里我们暂时将其存储在一个特殊键下
-                    nbt_data.setdefault('_raw_nbt_from_item', []).extend(component_nbt['_raw_nbt'])
+                    nbt_data.setdefault('_raw_nbt', []).extend(component_nbt['_raw_nbt'])
                 else:
                     nbt_data.update(component_nbt)
 
     return nbt_data
 
+
+# ... 在 _generate_item_nbt_tag 函数之后 ...
+
+# --- 新增辅助函数：为粒子效果云(AEC)生成独有NBT ---
+def _generate_aec_properties_nbt(entity: GeneratedEntity):
+    """为粒子效果云实体生成其独有的NBT数据。"""
+    # 检查实体是否有关联的AEC属性，如果没有则返回空字典
+    if not hasattr(entity, 'aec_properties'):
+        return {}
+
+    props = entity.aec_properties
+
+    # 将模型字段映射到NBT键名
+    aec_nbt = {
+        "Duration": props.duration,
+        "WaitTime": props.wait_time,
+        "ReapplicationDelay": props.reapplication_delay,
+        "DurationOnUse": props.duration_on_use,
+        "Radius": props.radius,
+        "RadiusOnUse": props.radius_on_use,
+        "RadiusPerTick": props.radius_per_tick,
+        "Particle": props.particle_type,
+    }
+
+    # 处理药水效果 (对于AEC，药水效果在根NBT中，而不是ActiveEffects)
+    # 注意：这里的逻辑与物品的药水效果生成非常相似
+    effects_list = []
+    for effect in entity.potion_effects.all():
+        effects_list.append({
+            'Id': effect.effect.effect_id, 'Amplifier': effect.amplifier, 'Duration': effect.duration,
+            'Ambient': 1 if effect.is_ambient else 0, 'ShowParticles': 1 if effect.show_particles else 0,
+            'ShowIcon': 1 if effect.show_icon else 0
+        })
+
+    if effects_list:
+        aec_nbt['CustomPotionEffects'] = effects_list
+
+    return aec_nbt
+
+
+# --- 新增辅助函数：为物品实体或投射物生成来源物品NBT ---
+def _generate_entity_source_item_nbt(entity: GeneratedEntity):
+    """为需要关联物品的实体（如物品实体、三叉戟）生成对应的NBT标签。"""
+    if not entity.source_item:
+        return {}
+
+    item_command = entity.source_item
+
+    # 定义实体类型到NBT键名的映射
+    nbt_key_map = {
+        'minecraft:item': 'Item',
+        'minecraft:trident': 'TridentItem',
+        'minecraft:firework_rocket': 'FireworksItem',
+        # 未来可以扩展更多投射物...
+    }
+
+    nbt_key = nbt_key_map.get(entity.entity_type.entity_id)
+
+    # 如果当前实体类型不需要来源物品NBT，则返回空
+    if not nbt_key:
+        return {}
+
+    item_data = {
+        'id': item_command.item_id,
+        'Count': item_command.count,
+    }
+    tag_data = _generate_item_nbt_tag(item_command)
+    if tag_data:
+        item_data['tag'] = tag_data
+
+    return {nbt_key: item_data}
 
 # --- 3. 各部分实体 NBT 生成函数 ---
 
@@ -505,20 +586,120 @@ def _generate_entity_potion_effects_nbt(entity: GeneratedEntity):
 
 # --- 4. 主入口函数 ---
 
-def generate_entity_nbt(entity: GeneratedEntity):
+# --- 用下面的【完整代码块】替换掉从 `_generate_entity_components_nbt` 到 `generate_entity_nbt` 的所有旧函数 ---
+
+def generate_entity_nbt(entity: GeneratedEntity, processed_ids=None):
     """
-    主函数：接收一个 GeneratedEntity 对象，生成并返回其完整的 NBT 字典。
+    【重构后】的主函数：接收一个 GeneratedEntity 对象，生成并返回其完整的 NBT 字典。
+    支持递归生成乘客NBT，并能根据实体类型处理特殊逻辑。
     """
     if not isinstance(entity, GeneratedEntity):
         raise TypeError("Input must be a GeneratedEntity instance.")
 
-    # 使用深拷贝以确保原始对象不被修改
-    final_nbt = copy.deepcopy(_generate_entity_components_nbt(entity))
-    
-    # 逐个调用各部分的NBT生成函数，并合并结果
-    final_nbt.update(_generate_entity_equipment_nbt(entity))
-    final_nbt.update(_generate_entity_trades_nbt(entity))
-    final_nbt.update(_generate_entity_attributes_nbt(entity))
-    final_nbt.update(_generate_entity_potion_effects_nbt(entity))
-    
+    # --- 递归保护：防止无限循环（例如 A骑B, B骑A）---
+    if processed_ids is None:
+        processed_ids = set()
+    if entity.id in processed_ids:
+        return {"id": entity.entity_type.entity_id, "error": "Recursive passenger loop detected"}
+    processed_ids.add(entity.id)
+
+    # --- 1. 生成基础NBT组件 ---
+    final_nbt = {}
+    for applied_comp in entity.components.all():
+        key = applied_comp.component_type.nbt_key
+        value_type = applied_comp.component_type.value_type
+        raw_value = applied_comp.value
+        try:
+            # --- 【新增】对 CustomName 的特殊处理逻辑 ---
+            if key == 'CustomName':
+                # 检查输入的值是否已经是JSON格式，如果不是，则自动包装
+                if raw_value.startswith('{') and raw_value.endswith('}'):
+                    final_nbt[key] = raw_value
+                else:
+                    # 将普通文本包装成 {"text":"..."} 的JSON字符串
+                    final_nbt[key] = json.dumps({"text": raw_value}, ensure_ascii=False)
+                continue # 处理完毕，跳过后面的通用逻辑
+            # --- 特殊处理结束 ---
+
+            # 通用逻辑保持不变
+            if value_type == 'boolean': final_nbt[key] = 1 if raw_value.lower() in ['true', '1'] else 0
+            elif value_type == 'integer': final_nbt[key] = int(raw_value)
+            elif value_type == 'float': final_nbt[key] = float(raw_value)
+            else: final_nbt[key] = raw_value
+        except (ValueError, TypeError): continue
+
+    # --- 2. 生成装备和交易 (逻辑不变) ---
+    # 装备
+    armor_items = [{}, {}, {}, {}]
+    hand_items = [{}, {}]
+    slot_map = {'feet': (armor_items, 0), 'legs': (armor_items, 1), 'chest': (armor_items, 2), 'head': (armor_items, 3), 'mainhand': (hand_items, 0), 'offhand': (hand_items, 1)}
+    for slot in entity.entityequipmentslot_set.all():
+        if slot.slot in slot_map:
+            item_nbt = {'id': slot.item.item_id, 'Count': slot.item.count}
+            tag_data = _generate_item_nbt_tag(slot.item)
+            if tag_data: item_nbt['tag'] = tag_data
+            target_list, index = slot_map[slot.slot]
+            target_list[index] = item_nbt
+    final_nbt.update({'ArmorItems': armor_items, 'HandItems': hand_items})
+    # 交易
+    if entity.trades.exists():
+        recipes = []
+        for trade in entity.trades.all():
+            recipe = {'maxUses': trade.max_uses, 'xp': trade.xp, 'priceMultiplier': trade.price_multiplier}
+            
+            # --- 核心修改逻辑 ---
+            # 定义要处理的物品和对应的数量覆盖字段
+            items_to_process = [
+                ('buy_item1', 'buy_item1_count', 'buy'),
+                ('buy_item2', 'buy_item2_count', 'buyB'),
+                ('sell_item', 'sell_item_count', 'sell')
+            ]
+            
+            for item_field, count_field, nbt_key in items_to_process:
+                item_command = getattr(trade, item_field, None)
+                if item_command:
+                    # 优先使用覆盖数量，否则使用物品配置的默认数量
+                    override_count = getattr(trade, count_field, None)
+                    count = override_count or item_command.count
+                    
+                    item_nbt = {'id': item_command.item_id, 'Count': count}
+                    tag_data = _generate_item_nbt_tag(item_command)
+                    if tag_data:
+                        item_nbt['tag'] = tag_data
+                    
+                    recipe[nbt_key] = item_nbt
+            # --- 修改结束 ---
+
+            recipes.append(recipe)
+        final_nbt.update({'Offers': {'Recipes': recipes}})
+
+    # --- 3. 根据实体类型，处理【特殊逻辑】 ---
+    entity_type_id = entity.entity_type.entity_id
+
+    # a. 如果是粒子效果云 (AEC)
+    if entity_type_id == 'minecraft:area_effect_cloud':
+        final_nbt.update(_generate_aec_properties_nbt(entity))
+    # b. 否则，对于普通实体，生成属性和激活药水效果
+    else:
+        # 基础属性
+        if entity.attributes.exists():
+            attributes_list = [{'Name': attr.attribute.attribute_id, 'Base': attr.amount} for attr in entity.attributes.all()]
+            final_nbt['Attributes'] = attributes_list
+        # 激活的药水效果
+        if entity.potion_effects.exists():
+            effects_list = [{'Id': e.effect.effect_id, 'Amplifier': e.amplifier, 'Duration': e.duration, 'Ambient': 1 if e.is_ambient else 0, 'ShowParticles': 1 if e.show_particles else 0, 'ShowIcon': 1 if e.show_icon else 0} for e in entity.potion_effects.all()]
+            final_nbt['ActiveEffects'] = effects_list
+
+    # c. 处理需要来源物品的实体 (物品实体、投射物等)
+    final_nbt.update(_generate_entity_source_item_nbt(entity))
+
+    # --- 4. 递归生成乘客NBT ---
+    if entity.passengers.exists():
+        passengers_list = []
+        for passenger_entity in entity.passengers.all():
+            # 创建一个新的processed_ids副本，以处理同一层级的多个不同乘客
+            passenger_nbt = generate_entity_nbt(passenger_entity, processed_ids=copy.copy(processed_ids))
+            passengers_list.append(passenger_nbt)
+        final_nbt['Passengers'] = passengers_list
+
     return final_nbt

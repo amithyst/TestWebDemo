@@ -6,7 +6,7 @@ from MC_command.models import (MinecraftVersion, Material, ItemType,
                                Enchantment, AttributeType, PotionEffectType,
                                BooleanComponentType, Spell  # <--- 1. 在这里导入 Spell 模型
                                ,# --- 新增：导入实体相关的模型 ---
-                               EntityTag, EntityType, EntityComponentType
+                               EntityTag, EntityType, EntityComponentType,ParticleType
 )
 
 class Command(BaseCommand):
@@ -247,6 +247,26 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f'  Successfully created entity component type: {component_type.name}'))
         self.stdout.write(self.style.SUCCESS(f'Total {count} new entity component types imported.'))
 
+    # --- 新增：导入粒子效果 ---
+    def import_particles(self, data):
+        """导入粒子效果类型"""
+        count = 0
+        for p_data in data:
+            min_version = self.get_version_object(p_data.get('min_version'), 'particle', p_data['name'])
+            max_version = self.get_version_object(p_data.get('max_version'), 'particle', p_data['name'])
+
+            particle, created = ParticleType.objects.update_or_create(
+                particle_id=p_data['id'],
+                defaults={
+                    'name': p_data['name'],
+                    'min_version': min_version,
+                    'max_version': max_version,
+                }
+            )
+            if created:
+                count += 1
+                self.stdout.write(self.style.SUCCESS(f'  Successfully created particle: {particle.name}'))
+        self.stdout.write(self.style.SUCCESS(f'Total {count} new particles imported.'))
 
     def handle(self, *args, **options):
         file_path = options['file_path']
@@ -299,10 +319,19 @@ class Command(BaseCommand):
         elif file_path == 'entity_component_types.json':
             self.stdout.write(self.style.HTTP_INFO('Importing entity component types...'))
             self.import_entity_component_types(data)
+        # --- 新增 elif 块 ---
+        elif file_path == 'particles.json':
+            self.stdout.write(self.style.HTTP_INFO('Importing particles...'))
+            self.import_particles(data)
         # --- 新增结束 ---
+
         else:
             self.stdout.write(self.style.WARNING(f'No specific importer for "{file_path}". Please check the filename.'))
-            # --- 4. 更新提示信息，加入新的可用文件 ---
-            self.stdout.write(self.style.WARNING('Available files: versions.json, materials.json, item_types.json, enchantments.json, attributes.json, effects.json, boolean_components.json, spells.json'))
-
+            # --- 更新提示信息 ---
+            self.stdout.write(self.style.WARNING(
+                'Available files: versions.json, materials.json, item_types.json, enchantments.json, '
+                'attributes.json, effects.json, boolean_components.json, spells.json, '
+                'entity_tags.json, entity_types.json, entity_component_types.json, '
+                'particles.json' # <-- 添加到提示
+            ))
         self.stdout.write(self.style.SUCCESS('Import process finished.'))

@@ -8,16 +8,40 @@
     {% if user.is_authenticated %}
         {# --- 如果用户已登录，显示这些内容 --- #}
         <p>请选择一个分类进入：</p>
-        <ul>
-            <li><a href="{% url 'MC_command:item_index' %}">物品</a></li>
-            <li><a href="{% url 'MC_command:entity_index' %}">实体</a></li>
-            <li><a href="{% url 'MC_command:book_index' %}">书籍</a></li>
+        
+        {# 使用简单的卡片或列表样式 #}
+        <ul style="line-height: 2;">
+            <li>
+                <a href="{% url 'MC_command:item_index' %}">🗡️ <strong>物品生成器</strong> (Item)</a> 
+                - 创建神级武器、工具
+            </li>
+            <li>
+                <a href="{% url 'MC_command:entity_index' %}">🐑 <strong>实体生成器</strong> (Entity)</a> 
+                - 召唤自定义生物、Boss
+            </li>
+            <li>
+                <a href="{% url 'MC_command:book_index' %}">📖 <strong>成书生成器</strong> (Book)</a> 
+                - 编写剧情书本
+            </li>
+            
+            <hr> {# 分割线 #}
+            
+            <li>
+                <a href="{% url 'MC_command:casino_lobby' %}" style="color: #d32f2f; font-weight: bold;">
+                    🎲 娱乐大厅 (Casino)
+                </a>
+                - <span style="color: #666; font-size: 0.9em;">小赌怡情，赢取积分升级VIP！</span>
+            </li>
         </ul>
 
     {% else %}
         {# --- 如果用户未登录，显示这些内容 --- #}
-        <p>欢迎使用命令生成器！请先登录以访问全部功能。</p>
-        <a href="{% url 'admin:login' %}" style="text-decoration: none; padding: 10px; background-color: #4CAF50; color: white; border-radius: 5px;">前往登录</a>
+        <div style="text-align: center; margin-top: 50px;">
+            <p>欢迎使用命令生成器！请先登录以访问全部功能。</p>
+            <a href="{% url 'admin:login' %}" style="display: inline-block; padding: 10px 20px; background-color: #4CAF50; color: white; border-radius: 5px; text-decoration: none;">
+                前往登录
+            </a>
+        </div>
     {% endif %}
 
 {% endblock %}

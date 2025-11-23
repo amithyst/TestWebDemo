@@ -1,0 +1,79 @@
+
+[
+  {
+    "id": "minecraft:effect",
+    "name": "效果"
+  },
+  {
+    "id": "minecraft:entity_effect",
+    "name": "实体效果 (药水)"
+  },
+  {
+    "id": "minecraft:ambient_entity_effect",
+    "name": "环境实体效果"
+  },
+  {
+    "id": "minecraft:flame",
+    "name": "火焰"
+  },
+  {
+    "id": "minecraft:soul_fire_flame",
+    "name": "灵魂火焰"
+  },
+  {
+    "id": "minecraft:smoke",
+    "name": "烟"
+  },
+  {
+    "id": "minecraft:large_smoke",
+    "name": "大烟"
+  },
+  {
+    "id": "minecraft:explosion",
+    "name": "爆炸"
+  },
+  {
+    "id": "minecraft:crit",
+    "name": "暴击"
+  },
+  {
+    "id": "minecraft:damage_indicator",
+    "name": "伤害指示器"
+  },
+  {
+    "id": "minecraft:heart",
+    "name": "爱心"
+  },
+  {
+    "id": "minecraft:angry_villager",
+    "name": "愤怒村民"
+  },
+  {
+    "id": "minecraft:happy_villager",
+    "name": "开心村民"
+  },
+  {
+    "id": "minecraft:note",
+    "name": "音符"
+  },
+  {
+    "id": "minecraft:totem_of_undying",
+    "name": "不死图腾"
+  },
+  {
+    "id": "minecraft:end_rod",
+    "name": "末地烛"
+  },
+  {
+    "id": "minecraft:dragon_breath",
+    "name": "龙息"
+  },
+  {
+    "id": "minecraft:witch",
+    "name": "女巫"
+  },
+  {
+    "id": "minecraft:enchant",
+    "name": "附魔"
+  }
+]

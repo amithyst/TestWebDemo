@@ -40,6 +40,48 @@
             <h2>配置详情</h2>
         </div>
         <div class="card-body">
+            
+            {# --- 新增：显示来源物品 --- #}
+            {% if entity.source_item %}
+                <h3>来源物品</h3>
+                <ul>
+                    <li><a href="{% url 'MC_command:detail' entity.source_item.id %}">{{ entity.source_item.title }}</a></li>
+                </ul>
+                <hr>
+            {% endif %}
+
+            {# --- 新增：显示乘客 --- #}
+            {% if entity.passengers.all %}
+                <h3>乘客</h3>
+                <ul>
+                {% for passenger in entity.passengers.all %}
+                    <li><a href="{% url 'MC_command:entity_detail' passenger.id %}">{{ passenger.title }}</a> ({{ passenger.entity_type.name }})</li>
+                {% endfor %}
+                </ul>
+                <hr>
+            {% endif %}
+
+            {# --- 新增：显示粒子效果云属性 --- #}
+            {% if entity.aec_properties %}
+                <h3>粒子效果云属性</h3>
+                <ul>
+                    <li><strong>粒子类型:</strong> <code>{{ entity.aec_properties.particle_type }}</code></li>
+                    <li><strong>半径:</strong> {{ entity.aec_properties.radius }}</li>
+                    <li><strong>持续时间:</strong> {{ entity.aec_properties.duration }} ticks</li>
+                    <li><strong>等待时间:</strong> {{ entity.aec_properties.wait_time }} ticks</li>
+                </ul>
+                {# 显示AEC携带的药水效果 #}
+                {% if entity.potion_effects.all %}
+                    <h5>携带的药水效果:</h5>
+                    <ul>
+                    {% for p_effect in entity.potion_effects.all %}
+                        <li>{{ p_effect.effect.name }}: 等级 <strong>{{ p_effect.amplifier }}</strong>, 持续时间 <strong>{{ p_effect.duration }}</strong> ticks</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+                <hr>
+            {% endif %}
+
             {% if entity.components.all %}
                 <h3>自定义NBT组件</h3>
                 <ul>
@@ -54,7 +96,7 @@
                 <h3>装备</h3>
                 <ul>
                 {% for slot in entity.entityequipmentslot_set.all %}
-                    <li><strong>{{ slot.get_slot_display }}:</strong> {{ slot.item.title }}</li>
+                    <li><strong>{{ slot.get_slot_display }}:</strong> <a href="{% url 'MC_command:detail' slot.item.id %}">{{ slot.item.title }}</a></li>
                 {% endfor %}
                 </ul>
                 <hr>
@@ -65,34 +107,30 @@
                 <ul>
                 {% for trade in entity.trades.all %}
                     <li>
-                        收购: {{ trade.buy_item1.title }}{% if trade.buy_item2 %} + {{ trade.buy_item2.title }}{% endif %}<br>
-                        出售: {{ trade.sell_item.title }}
+                        收购: <a href="{% url 'MC_command:detail' trade.buy_item1.id %}">{{ trade.buy_item1.title }}</a>{% if trade.buy_item2 %} + <a href="{% url 'MC_command:detail' trade.buy_item2.id %}">{{ trade.buy_item2.title }}</a>{% endif %}<br>
+                        出售: <a href="{% url 'MC_command:detail' trade.sell_item.id %}">{{ trade.sell_item.title }}</a>
                     </li>
                 {% endfor %}
                 </ul>
                 <hr>
             {% endif %}
             
-            {% if entity.attributes.all %}
-                <h3>属性修改器</h3>
+            {# 普通实体的属性和药水效果 (AEC的药水效果在上面显示) #}
+            {% if entity.attributes.all and not entity.aec_properties %}
+                <h3>属性</h3>
                 <ul>
                 {% for attr in entity.attributes.all %}
-                    <li>
-                        {{ attr.attribute.name }}: <strong>{{ attr.amount }}</strong> 
-                        (操作: {{ attr.get_operation_display }})
-                    </li>
+                    <li>{{ attr.attribute.name }}: <strong>{{ attr.amount }}</strong> (操作: {{ attr.get_operation_display }})</li>
                 {% endfor %}
                 </ul>
+                <hr>
             {% endif %}
 
-            {% if entity.potion_effects.all %}
-                <hr>
-                <h3>药水效果</h3>
+            {% if entity.potion_effects.all and not entity.aec_properties %}
+                <h3>激活的药水效果</h3>
                 <ul>
                 {% for p_effect in entity.potion_effects.all %}
-                    <li>
-                        {{ p_effect.effect.name }}: 等级 <strong>{{ p_effect.amplifier }}</strong>, 持续时间 <strong>{{ p_effect.duration }}</strong> ticks
-                    </li>
+                    <li>{{ p_effect.effect.name }}: 等级 <strong>{{ p_effect.amplifier }}</strong>, 持续时间 <strong>{{ p_effect.duration }}</strong> ticks</li>
                 {% endfor %}
                 </ul>
             {% endif %}
@@ -110,7 +148,7 @@
         function copyToClipboard(elementId) {
             const textarea = document.getElementById(elementId);
             textarea.select();
-            textarea.setSelectionRange(0, 99999); // For mobile devices
+            textarea.setSelectionRange(0, 99999);
             try {
                 navigator.clipboard.writeText(textarea.value);
                 alert('已复制到剪贴板！');

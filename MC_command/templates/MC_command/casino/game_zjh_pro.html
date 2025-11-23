@@ -1,0 +1,131 @@
+{% extends 'MC_command/base.html' %}
+{% block title %}沉浸式扎金花{% endblock %}
+
+{% block content %}
+<style>
+    .card {
+        width: 60px; height: 90px; 
+        border: 1px solid #ccc; border-radius: 5px;
+        background: white; display: inline-flex; 
+        justify-content: center; align-items: center;
+        font-size: 24px; margin: 5px; position: relative;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+    .card.back {
+        background: repeating-linear-gradient(
+          45deg, #606dbc, #606dbc 10px, #465298 10px, #465298 20px
+        );
+        color: transparent;
+    }
+    .card.red { color: #d32f2f; }
+    .card.black { color: #212121; }
+    
+    .game-table {
+        background: #2e7d32; color: white;
+        padding: 30px; border-radius: 15px;
+        border: 10px solid #1b5e20;
+        text-align: center;
+        min-height: 400px;
+    }
+</style>
+
+<div class="game-table">
+    <div class="info-panel">
+        Pot: <span id="pot-display" style="color: yellow; font-weight: bold;">0</span>
+        | 余额: <span id="balance">{{ wallet.balance }}</span>
+    </div>
+
+    <div style="margin: 20px;">
+        <p>庄家</p>
+        <div id="dealer-cards">
+            <div class="card back"></div><div class="card back"></div><div class="card back"></div>
+        </div>
+    </div>
+
+    <hr style="border-color: #1b5e20; opacity: 0.5;">
+
+    <div style="margin: 20px;">
+        <p>你</p>
+        <div id="player-cards">
+            <div class="card back"></div><div class="card back"></div><div class="card back"></div>
+        </div>
+    </div>
+
+    <div id="action-bar" style="margin-top: 30px;">
+        <span style="color: #fff; margin-right: 10px;">底注 (Min 100):</span>
+        <input type="number" id="bet-input" value="100" min="100" step="50" style="width:80px;">
+        <button onclick="doAction('start')" class="btn btn-primary">开始新局</button>
+    </div>
+    
+    <div id="play-controls" style="display:none; margin-top: 10px;">
+        <button onclick="doAction('look')" class="btn btn-info">👀 看牌</button>
+        <button onclick="doAction('bet')" class="btn btn-warning">💰 加注</button>
+        <button onclick="doAction('compare')" class="btn btn-danger">⚔️ 开牌(双倍)</button>
+        <button onclick="doAction('fold')" class="btn btn-secondary">🏳️ 弃牌</button>
+    </div>
+    
+    <div id="msg-area" style="height: 30px; margin-top: 10px; font-weight: bold;"></div>
+</div>
+
+<script>
+// 渲染卡牌HTML
+function renderCards(cardsData, containerId, isHidden=false) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    
+    cardsData.forEach(card => {
+        if (isHidden) {
+            container.innerHTML += `<div class="card back"></div>`;
+        } else {
+            // 根据花色决定颜色
+            const colorClass = (card.suit === '♥️' || card.suit === '♦️') ? 'red' : 'black';
+            container.innerHTML += `<div class="card ${colorClass}">${card.rank}${card.suit}</div>`;
+        }
+    });
+}
+
+function doAction(act) {
+    const betVal = document.getElementById('bet-input').value;
+    
+    // 构建FormData
+    const fd = new FormData();
+    fd.append('action', act);
+    fd.append('game_type', 'zjh');
+    fd.append('ante', betVal); // 仅start用
+    fd.append('amount', betVal); // 加注用
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch("{% url 'MC_command:casino_action_api' %}", {
+        method: 'POST', body: fd
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.status === 'error') {
+            alert(data.msg); return;
+        }
+        updateUI(data.state, data.msg, data.balance);
+    });
+}
+
+function updateUI(state, msg, balance) {
+    document.getElementById('balance').innerText = balance;
+    document.getElementById('pot-display').innerText = state.pot;
+    document.getElementById('msg-area').innerText = msg;
+
+    // 按钮状态控制
+    if (state.step === 'finished' || state.step === 'folded') {
+        document.getElementById('play-controls').style.display = 'none';
+        // 游戏结束，显示庄家牌
+        renderCards(state.d_cards, 'dealer-cards', false);
+        renderCards(state.p_cards, 'player-cards', false);
+    } else {
+        document.getElementById('play-controls').style.display = 'block';
+        // 还没看牌？
+        const showPlayer = state.has_looked;
+        renderCards(state.p_cards, 'player-cards', !showPlayer);
+        // 庄家永远是暗牌
+        renderCards(state.d_cards, 'dealer-cards', true);
+    }
+}
+</script>
+{% endblock %}

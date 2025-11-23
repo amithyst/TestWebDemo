@@ -337,7 +337,7 @@
   },
   {
     "name": "[铁魔法附属-梦幻终焉]👻扭曲之魂",
-    "id": "\"fantasy_ending:twisted_soul\"",
+    "id": "fantasy_ending:twisted_soul",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -345,7 +345,7 @@
   },
   {
     "name": "[铁魔法附属-梦幻终焉]🌌虚空崩塌",
-    "id": "\"fantasy_ending:void_collapsing\"",
+    "id": "fantasy_ending:void_collapsing",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -353,7 +353,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🩸鲜血誓约",
-    "id": "\"majospellenchantment:blood_mana_enchant\"",
+    "id": "majospellenchantment:blood_mana_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -361,7 +361,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]😗迅捷咏唱",
-    "id": "\"majospellenchantment:cd_reduction_enchant\"",
+    "id": "majospellenchantment:cd_reduction_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -369,7 +369,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🌞晨曦颂歌",
-    "id": "\"majospellenchantment:daylight_anthem_enchant\"",
+    "id": "majospellenchantment:daylight_anthem_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -377,7 +377,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]😱绝望之力",
-    "id": "\"majospellenchantment:hopeless_power_enchant\"",
+    "id": "majospellenchantment:hopeless_power_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -385,7 +385,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🧙魔力修补",
-    "id": "\"majospellenchantment:mana_mending_enchant\"",
+    "id": "majospellenchantment:mana_mending_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -393,7 +393,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]😵‍💫灵魂收割",
-    "id": "\"majospellenchantment:mana_reaper_enchant\"",
+    "id": "majospellenchantment:mana_reaper_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -401,7 +401,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🧙‍♀️魔力扩容",
-    "id": "\"majospellenchantment:max_mana_enchant\"",
+    "id": "majospellenchantment:max_mana_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -409,7 +409,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]☠亡灵伏特",
-    "id": "\"majospellenchantment:necrovolt_enchant\"",
+    "id": "majospellenchantment:necrovolt_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -417,7 +417,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]❤️‍🔥冥火鼓动",
-    "id": "\"majospellenchantment:nether_heart_enchant\"",
+    "id": "majospellenchantment:nether_heart_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -425,7 +425,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🌃星夜咏叹",
-    "id": "\"majospellenchantment:nocturne_aria_enchant\"",
+    "id": "majospellenchantment:nocturne_aria_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -433,7 +433,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🌊沧海之赐",
-    "id": "\"majospellenchantment:ocean_grace_enchant\"",
+    "id": "majospellenchantment:ocean_grace_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -441,7 +441,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🎆狂欢领袖",
-    "id": "\"majospellenchantment:party_leader_enchant\"",
+    "id": "majospellenchantment:party_leader_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -449,7 +449,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🥾相位猛冲",
-    "id": "\"majospellenchantment:phase_dashed_enchant\"",
+    "id": "majospellenchantment:phase_dashed_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -457,7 +457,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🔥赤莲绽放",
-    "id": "\"majospellenchantment:red_lotus_enchant\"",
+    "id": "majospellenchantment:red_lotus_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -465,7 +465,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]💀死亡驱动",
-    "id": "\"majospellenchantment:spell_streak_enchant\"",
+    "id": "majospellenchantment:spell_streak_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -473,7 +473,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🩸穿刺公",
-    "id": "\"majospellenchantment:vlad_tepes_enchant\"",
+    "id": "majospellenchantment:vlad_tepes_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,
@@ -481,7 +481,7 @@
   },
   {
     "name": "[铁魔法附属-魔女的魔咒]🔔礼堂之声",
-    "id": "\"majospellenchantment:zoophony_enchant\"",
+    "id": "majospellenchantment:zoophony_enchant",
     "min_version": "1.20.1",
     "max_version": "1.20.1",
     "max_level": 127,

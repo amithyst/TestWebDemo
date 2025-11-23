@@ -1,4 +1,7 @@
 # amithyst/testwebdemo/TestWebDemo-aa984f0e28b37ace0788b6c8c16a1b3d096ffd1a/MC_command/views.py
+
+from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
+import random
 from django import forms
 # --- 在文件顶部，确保导入以下所有内容 ---
 import json
@@ -21,8 +24,11 @@ from .models import (Enchantment, AttributeType, PotionEffectType,
                      MinecraftVersion, Material, ItemType, Spell,
                      SpellInfusion, AppliedSpell, GeneratedCommand,
                      # --- 新增：导入实体相关的模型 ---
-                     GeneratedEntity, EntityEquipmentSlot, TradeRecipe,
-                     AppliedEntityComponent, AppliedAttribute, AppliedPotionEffect)
+                         GeneratedEntity, EntityType, EntityComponentType, AppliedEntityComponent,
+    EntityEquipmentSlot, TradeRecipe, AreaEffectCloudProperties, # <-- 确认已导入
+    AppliedAttribute, AppliedPotionEffect, GeneratedCommand, # <-- 确认已导入
+    UserWallet, GameTransaction
+    )
 
 from .models import GeneratedCommand
 from .forms import (
@@ -30,7 +36,8 @@ from .forms import (
     AppliedFireworkExplosionAdminForm, SpellInfusionForm,
     # --- 以下是为实体视图新添加的，请确保它们都在这里 ---
     GeneratedEntityForm, EntityEquipmentSlotForm, TradeRecipeForm,
-    AppliedEntityComponentForm, AppliedAttributeForm, AppliedPotionEffectForm
+    AppliedEntityComponentForm, AppliedAttributeForm, AppliedPotionEffectForm,
+    AreaEffectCloudPropertiesForm # <-- 新增导入
 )
 from .components import COMPONENT_REGISTRY, generate_entity_nbt # <--- 导入实体NBT生成函数
 
@@ -342,79 +349,44 @@ def delete(request, command_id):
 
 # amithyst/testwebdemo/TestWebDemo-aa984f0e28b37ace0788b6c8c16a1b3d096ffd1a/MC_command/views.py
 #旧版1.20.1-1.20.3
+# mc_commands/views.py
+# mc_commands/views.py
+# mc_commands/views.py
 
-# 用下面的函数替换掉您文件中的 _to_snbt 函数
 def _to_snbt(data, parent_key=None):
     """
-    将 Python 对象转换为 Minecraft 命令所用的 SNBT 字符串。
-    此最终版本使用基于“键”的策略来精确控制字符串是否需要加引号。
+    【最终智能版】根据父键(parent_key)来决定如何处理JSON格式的字符串。
     """
-    # 规则1：这些键所对应的字符串值，总是需要加引号
-    QUOTED_STRING_KEYS = {'AttributeName', 'Name'}
-
-    # 规则2：这些键所对应的字符串值，总是不加引号
-    UNQUOTED_STRING_KEYS = {'id', 
-                            # 'Slot'
-                            }
-
-    WHETHER_TO_QUOTE = True  # 默认情况下，字符串值会被加引号
-
-    # --- 函数主体 ---
-
-    # 处理字典类型
     if isinstance(data, dict):
-        items = []
-        for k, v in data.items():
-            # 特殊处理：display 标签的结构是固定的，单独处理，不进入通用递归
-            if k == 'display':
-                display_items = []
-                if 'Name' in v and isinstance(v['Name'], str):
-                    json_str = json.dumps({'text':v['Name']}, ensure_ascii=False, separators=(',', ':'))
-                    display_items.append(f"Name:'{json_str}'")
-                # if 'Lore' in v and isinstance(v['Lore'], list):
-                #     lore_list = [json.dumps({'text':line}, ensure_ascii=False, separators=(',', ':')) for line in v['Lore']]
-                #     display_items.append(f"Lore:[{','.join(lore_list)}]")
-                if 'Lore' in v and isinstance(v['Lore'], list):
-                    lore_list = [f"'{json.dumps({'text':line}, ensure_ascii=False, separators=(',', ':'))}'" for line in v['Lore']]
-                    display_items.append(f"Lore:[{','.join(lore_list)}]")
-                items.append(f"display:{{{','.join(display_items)}}}")
-                continue
+        raw_parts = data.pop('_raw_nbt', [])
+        items = [f"{k}:{_to_snbt(v, parent_key=k)}" for k, v in data.items()]
+        all_parts = items + raw_parts
+        return f"{{{','.join(filter(None, all_parts))}}}"
 
-            # 对于其他所有键，递归调用本函数，并将当前键(k)作为 parent_key 传下去
-            items.append(f"{k}:{_to_snbt(v, parent_key=k)}")
-        return f"{{{','.join(items)}}}"
-
-    # 处理列表类型
     if isinstance(data, list):
-        # 列表中的元素继承列表的键(parent_key)
         return f"[{','.join([_to_snbt(item, parent_key=parent_key) for item in data])}]"
 
-    # 处理字符串类型
     if isinstance(data, str):
-        # UUID 格式特殊，直接返回，不加引号
+        is_json_like = data.startswith('{') and data.endswith('}')
+
+        if is_json_like:
+            # --- 核心判断逻辑 ---
+            # 规则1: 如果父键是 Name, Lore, 或 CustomName，则加单引号
+            if parent_key in ['Name', 'Lore', 'CustomName']:
+                return f"'{data}'"
+            # 规则2: 否则 (例如 ForgeCaps)，直接返回原始字符串，不加引号
+            else:
+                return data
+
+        # 对于非JSON格式的字符串，按原逻辑处理
         if data.startswith('[I;'):
             return data
-        
-        # 应用规则1：如果字符串的键在 QUOTED_STRING_KEYS 列表中，就加引号
-        if parent_key in QUOTED_STRING_KEYS:
-            return json.dumps(data, ensure_ascii=False)
-        
-        # 应用规则2：如果字符串的键在 UNQUOTED_STRING_KEYS 列表中，就不加引号
-        if parent_key in UNQUOTED_STRING_KEYS:
-            return data
+        return json.dumps(data, ensure_ascii=False)
 
-        # 对于未定义的其他情况，为安全起见默认加上引号
-        if WHETHER_TO_QUOTE:
-            return json.dumps(data, ensure_ascii=False)
-        else:
-            return data
-
-    # 处理布尔和数字类型
-    if isinstance(data, bool):return '1b' if data else '0b'
-    if isinstance(data, (int, float)):return str(data)
+    if isinstance(data, bool): return '1b' if data else '0b'
+    if isinstance(data, (int, float)): return str(data)
 
     return str(data)
-
 
 def _generate_command_context(command: GeneratedCommand) -> dict:
     """
@@ -474,23 +446,37 @@ def _generate_command_context(command: GeneratedCommand) -> dict:
         'give_command': give_command,
         'data_json': json.dumps(data_for_json_display, indent=4, ensure_ascii=False),
     }
+# mc_commands/views.py
 
-def _build_nbt_tag_structure(command:GeneratedCommand) -> dict:
+def _build_nbt_tag_structure(command: GeneratedCommand) -> dict:
     """
-    REVISED:Builds a pure Python dictionary for the NBT tag structure.
-    The final string formatting is now handled by the _to_snbt serializer.
+    【与components.py对齐】
+    如果 custom_name 是普通文本，则自动包装成 {"text":"..."} JSON 字符串。
     """
     nbt_data = {}
     display = {}
 
     if command.custom_name:
-        # Store raw string. The serializer will handle JSON formatting.
-        display['Name'] = command.custom_name
+        custom_name_str = command.custom_name.strip()
+        if custom_name_str.startswith('{') and custom_name_str.endswith('}'):
+            display['Name'] = custom_name_str
+        else:
+            display['Name'] = json.dumps({"text": custom_name_str}, ensure_ascii=False)
+
     if command.lore:
-        # Store raw list of strings. The serializer will handle JSON formatting.
-        lore_lines = [line for line in command.lore.splitlines() if line.strip()]
-        if lore_lines:
-            display['Lore'] = lore_lines
+        lore_list = []
+        for line in command.lore.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('{') and line.endswith('}'):
+                lore_list.append(line)
+            else:
+                lore_list.append(json.dumps({"text": line}, ensure_ascii=False))
+
+        if lore_list:
+            display['Lore'] = lore_list
+
     if display:
         nbt_data['display'] = display
 
@@ -611,38 +597,34 @@ def get_compatible_components(request):
 # ==============================================================================
 
 # --- 1. 新的SNBT格式化函数，专为实体NBT设计 ---
+# mc_commands/views.py
 
 def _entity_nbt_to_string(data):
     """
-    将Python字典递归转换为实体命令所用的SNBT字符串。
-    这个版本比物品的 _to_snbt 更通用，能处理字节(b)/浮点(f)等类型。
+    【最终修正版】的序列化器。
+    它能正确合并 _raw_nbt，并能将所有字符串（包括JSON格式的字符串）正确地用双引号包裹。
     """
     if isinstance(data, dict):
-        # 移除内部使用的、值为None的键
+        raw_parts = data.pop('_raw_nbt', [])
+        
         items = [f"{k}:{_entity_nbt_to_string(v)}" for k, v in data.items() if v is not None]
-        return f"{{{','.join(items)}}}"
+        
+        all_parts = items + raw_parts
+        return f"{{{','.join(filter(None, all_parts))}}}"
     
     if isinstance(data, list):
         return f"[{','.join([_entity_nbt_to_string(item) for item in data])}]"
 
     if isinstance(data, str):
-        # 如果字符串本身就是个JSON或者已经被正确引用，直接返回
-        if (data.startswith(('{', '[')) and data.endswith(('}', ']'))) or \
-           (data.startswith("'") and data.endswith("'")) or \
-           (data.startswith('"') and data.endswith('"')):
-            return data
-        # 否则，使用JSON库来安全地添加引号并转义
+        # --- 核心修改点：对所有字符串（包括内容是JSON的字符串）都使用 json.dumps ---
+        # 这会正确地为其添加双引号并处理内部的转义字符。
         return json.dumps(data, ensure_ascii=False)
 
     if isinstance(data, bool): return '1b' if data else '0b'
-    
-    # 依据Python类型来猜测NBT类型
-    if isinstance(data, int): return f"{data}b" # 默认为byte类型，如有需要可扩展为Short/Int/Long
+    if isinstance(data, int): return f"{data}b"
     if isinstance(data, float): return f"{data}f"
 
     return str(data)
-
-
 # --- 2. 更新实体索引视图 ---
 
 @login_required
@@ -663,16 +645,14 @@ def entity_index(request):
 def entity_detail(request, entity_id):
     """显示单个实体配置的详情和生成的 /summon 命令。"""
     entity_obj = get_object_or_404(GeneratedEntity, pk=entity_id, user=request.user)
-    
-    # 1. 调用components.py中的函数生成NBT字典
+
     nbt_data = generate_entity_nbt(entity_obj)
-    
-    # 2. 将NBT字典格式化为字符串
-    nbt_string = _entity_nbt_to_string(nbt_data)
-    
-    # 3. 组装最终命令
+
+    # --- 核心修改点：调用正确的序列化函数 ---
+    nbt_string = _to_snbt(nbt_data) 
+
     summon_command = f"/summon {entity_obj.entity_type.entity_id} ~ ~1 ~ {nbt_string}"
-    
+
     context = {
         'entity': entity_obj,
         'summon_command_string': summon_command,
@@ -680,18 +660,17 @@ def entity_detail(request, entity_id):
     }
     return render(request, 'MC_command/entity/detail.html', context)
 
+
 @login_required
 def entity_create(request):
-    """处理实体创建的视图。"""
-    # 为每个关联模型定义内联表单集
-    # a. 通用关系表单集 (属性和药水效果)
+    """【修改后】处理实体创建的视图，增加了AEC表单集和传递给模板的数据。"""
     AttributeFormSet = generic_inlineformset_factory(AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True)
     PotionEffectFormSet = generic_inlineformset_factory(AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True)
-    
-    # b. 标准外键关系表单集
     ComponentFormSet = inlineformset_factory(GeneratedEntity, AppliedEntityComponent, form=AppliedEntityComponentForm, extra=1, can_delete=True)
     EquipmentFormSet = inlineformset_factory(GeneratedEntity, EntityEquipmentSlot, form=EntityEquipmentSlotForm, extra=1, can_delete=True)
     TradeFormSet = inlineformset_factory(GeneratedEntity, TradeRecipe, form=TradeRecipeForm, extra=1, can_delete=True)
+    # --- 新增：为AEC属性创建表单集 (max_num=1 保证一对一关系) ---
+    AECFormSet = inlineformset_factory(GeneratedEntity, AreaEffectCloudProperties, form=AreaEffectCloudPropertiesForm, extra=1, can_delete=True, max_num=1)
 
     if request.method == 'POST':
         form = GeneratedEntityForm(request.POST)
@@ -701,6 +680,7 @@ def entity_create(request):
             'components': ComponentFormSet(request.POST, prefix='components'),
             'equipment': EquipmentFormSet(request.POST, prefix='equipment'),
             'trades': TradeFormSet(request.POST, prefix='trades'),
+            'aec_properties': AECFormSet(request.POST, prefix='aec'), # <-- 新增
         }
 
         if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
@@ -708,23 +688,16 @@ def entity_create(request):
                 entity_instance = form.save(commit=False)
                 entity_instance.user = request.user
                 entity_instance.save()
+                # Django 的 M2M 字段需要先保存主实例
+                form.save_m2m()
 
                 for fs in formsets.values():
                     fs.instance = entity_instance
                     fs.save()
-            
+
             return redirect(reverse('MC_command:entity_detail', args=[entity_instance.id]))
-        
-        # --- 在这里添加 else 块来打印错误 ---
-        else:
-            print("="*20, "FORM VALIDATION FAILED", "="*20)
-            if not form.is_valid():
-                print("Main Form Errors:", form.errors)
-            for name, fs in formsets.items():
-                if not fs.is_valid():
-                    print(f"Formset '{name}' Errors:", fs.errors)
-                    print(f"Formset '{name}' Non-form Errors:", fs.non_form_errors())
-            print("="*58)
+        # else: (验证失败的打印逻辑可以保留用于调试)
+        #     ...
 
     else: # GET 请求
         form = GeneratedEntityForm()
@@ -734,27 +707,33 @@ def entity_create(request):
             'components': ComponentFormSet(prefix='components'),
             'equipment': EquipmentFormSet(prefix='equipment'),
             'trades': TradeFormSet(prefix='trades'),
+            'aec_properties': AECFormSet(prefix='aec'), # <-- 新增
         }
+
+    # --- 新增：准备实体类型数据给JS使用 ---
+    entity_type_data = {et.pk: et.entity_id for et in EntityType.objects.all()}
 
     context = {
         'form': form,
         'formsets': formsets,
         'form_title': '创建新实体配置',
+        'entity_type_data_json': json.dumps(entity_type_data), # <-- 新增
     }
     return render(request, 'MC_command/entity/entity_form.html', context)
 
 
 @login_required
 def entity_edit(request, entity_id):
-    """处理实体编辑的视图。"""
+    """【修改后】处理实体编辑的视图，增加了AEC表单集和传递给模板的数据。"""
     entity_obj = get_object_or_404(GeneratedEntity, pk=entity_id, user=request.user)
-    
-    # (表单集的定义与 create 视图中完全相同)
+
     AttributeFormSet = generic_inlineformset_factory(AppliedAttribute, form=AppliedAttributeForm, extra=1, can_delete=True)
     PotionEffectFormSet = generic_inlineformset_factory(AppliedPotionEffect, form=AppliedPotionEffectForm, extra=1, can_delete=True)
     ComponentFormSet = inlineformset_factory(GeneratedEntity, AppliedEntityComponent, form=AppliedEntityComponentForm, extra=1, can_delete=True)
     EquipmentFormSet = inlineformset_factory(GeneratedEntity, EntityEquipmentSlot, form=EntityEquipmentSlotForm, extra=1, can_delete=True)
     TradeFormSet = inlineformset_factory(GeneratedEntity, TradeRecipe, form=TradeRecipeForm, extra=1, can_delete=True)
+    # --- 新增：为AEC属性创建表单集 ---
+    AECFormSet = inlineformset_factory(GeneratedEntity, AreaEffectCloudProperties, form=AreaEffectCloudPropertiesForm, extra=1, can_delete=True, max_num=1)
 
     if request.method == 'POST':
         form = GeneratedEntityForm(request.POST, instance=entity_obj)
@@ -764,16 +743,17 @@ def entity_edit(request, entity_id):
             'components': ComponentFormSet(request.POST, instance=entity_obj, prefix='components'),
             'equipment': EquipmentFormSet(request.POST, instance=entity_obj, prefix='equipment'),
             'trades': TradeFormSet(request.POST, instance=entity_obj, prefix='trades'),
+            'aec_properties': AECFormSet(request.POST, instance=entity_obj, prefix='aec'), # <-- 新增
         }
 
         if form.is_valid() and all(fs.is_valid() for fs in formsets.values()):
             with transaction.atomic():
-                entity_instance = form.save()
+                entity_instance = form.save() # m2m 会在这里被自动处理
                 for fs in formsets.values():
                     fs.save()
-            
+
             return redirect(reverse('MC_command:entity_detail', args=[entity_instance.id]))
-            
+
     else: # GET 请求
         form = GeneratedEntityForm(instance=entity_obj)
         formsets = {
@@ -782,16 +762,20 @@ def entity_edit(request, entity_id):
             'components': ComponentFormSet(instance=entity_obj, prefix='components'),
             'equipment': EquipmentFormSet(instance=entity_obj, prefix='equipment'),
             'trades': TradeFormSet(instance=entity_obj, prefix='trades'),
+            'aec_properties': AECFormSet(instance=entity_obj, prefix='aec'), # <-- 新增
         }
-        
+
+    # --- 新增：准备实体类型数据给JS使用 ---
+    entity_type_data = {et.pk: et.entity_id for et in EntityType.objects.all()}
+
     context = {
         'form': form,
         'formsets': formsets,
         'entity': entity_obj,
         'form_title': '编辑实体配置',
+        'entity_type_data_json': json.dumps(entity_type_data), # <-- 新增
     }
     return render(request, 'MC_command/entity/entity_form.html', context)
-
 
 @login_required
 @require_POST
@@ -800,3 +784,534 @@ def entity_delete(request, entity_id):
     entity_obj = get_object_or_404(GeneratedEntity, pk=entity_id, user=request.user)
     entity_obj.delete()
     return redirect(reverse('MC_command:entity_index'))
+# --- 精度控制常量 ---
+CENTS = Decimal('0.01')
+
+
+
+
+# ========================
+# 页面渲染视图
+# ========================
+from .game_engine import score_blackjack, deal_blackjack_card, generate_rigged_hands_zjh
+from .models import CasinoGameSession
+# ==========================
+# 💰 游戏底注配置
+# ==========================
+GAME_MIN_BETS = {
+    'rps': Decimal('20.00'),       # 石头剪刀布：最低 20
+    'zjh': Decimal('100.00'),      # 扎金花(Pro)：最低 100 (因为倍率高)
+    'blackjack': Decimal('50.00'), # 21点：最低 50
+}
+
+@login_required
+def casino_lobby(request):
+    """娱乐大厅：只显示游戏入口"""
+    wallet, _ = UserWallet.objects.get_or_create(user=request.user)
+    return render(request, 'MC_command/casino/lobby.html', {'wallet': wallet})
+
+@login_required
+def game_view_rps(request):
+    """石头剪刀布页面"""
+    wallet, _ = UserWallet.objects.get_or_create(user=request.user)
+    return render(request, 'MC_command/casino/game_rps.html', {'wallet': wallet})
+
+@login_required
+def game_view_zjh(request):
+    """扎金花页面"""
+    wallet, _ = UserWallet.objects.get_or_create(user=request.user)
+    return render(request, 'MC_command/casino/game_zjh.html', {'wallet': wallet})
+
+# --- 页面路由 ---
+@login_required
+def game_view_blackjack(request):
+    wallet, _ = UserWallet.objects.get_or_create(user=request.user)
+    return render(request, 'MC_command/casino/game_blackjack.html', {'wallet': wallet})
+
+# --- 扎金花路由 ---
+@login_required
+def game_view_zjh_pro(request):
+    wallet, _ = UserWallet.objects.get_or_create(user=request.user)
+    return render(request, 'MC_command/casino/game_zjh_pro.html', {'wallet': wallet})
+
+# ========================
+# 游戏算法与黑幕逻辑
+# ========================
+
+
+def _calculate_payout(wallet, bet_amount, odds):
+    """
+    统一的派彩计算器 (含向下取整和向上抽水)
+    """
+    # 1. 理论总奖金 (本金 * 赔率)
+    raw_gross_win = bet_amount * Decimal(str(odds))
+    # 【规则1：用户赢钱向下取整】
+    gross_win = raw_gross_win.quantize(CENTS, rounding=ROUND_FLOOR)
+
+    # 2. 计算抽水 (只对纯利润抽水)
+    profit = gross_win - bet_amount
+    fee = Decimal('0.00')
+    
+    if profit > 0:
+        fee_rate = Decimal(str(wallet.fee_rate))
+        raw_fee = profit * fee_rate
+        # 【规则2：赌场抽成向上取整】
+        fee = raw_fee.quantize(CENTS, rounding=ROUND_CEILING)
+    
+    final_payout = gross_win - fee
+    return final_payout, fee
+
+def _play_rps(user_choice, black_curtain_rate):
+    """
+    石头剪刀布逻辑
+    black_curtain_rate < 1.0 : 玩家容易输 (系统读心)
+    black_curtain_rate > 1.0 : 玩家容易赢 (系统放水)
+    """
+    choices = ['rock', 'paper', 'scissors']
+    # 定义克制关系
+    beats = {'rock': 'scissors', 'paper': 'rock', 'scissors': 'paper'}
+    loses_to = {'rock': 'paper', 'paper': 'scissors', 'scissors': 'rock'}
+    
+    # 基础概率
+    rand = random.random()
+    
+    # --- 黑幕介入 ---
+    # 如果玩家是"重点监控(黑幕值低)"，系统有概率直接出克制牌
+    if black_curtain_rate < 0.9:
+        # 霉运模式：例如 0.6 的黑幕值，意味着有 40% 的概率系统作弊
+        cheat_prob = 1.0 - black_curtain_rate 
+        if rand < cheat_prob:
+            # 系统作弊：选择克制用户的牌
+            sys_choice = loses_to[user_choice]
+            return sys_choice, 'lose', '庄家看穿了你的意图！'
+            
+    # 如果玩家是"欧皇(黑幕值高)"
+    if black_curtain_rate > 1.1:
+        cheat_prob = black_curtain_rate - 1.0
+        if rand < cheat_prob:
+            # 系统放水：选择被用户克制的牌
+            sys_choice = beats[user_choice]
+            return sys_choice, 'win', '运气爆棚！'
+
+    # 正常随机
+    sys_choice = random.choice(choices)
+    
+    if user_choice == sys_choice:
+        return sys_choice, 'draw', '平局，退还本金'
+    elif beats[user_choice] == sys_choice:
+        return sys_choice, 'win', '恭喜获胜！'
+    else:
+        return sys_choice, 'lose', '遗憾落败'
+
+def _play_zjh(black_curtain_rate):
+    """
+    扎金花逻辑 (简化版：只比大小，不比花色)
+    黑幕重点：制造'冤家牌' (Bad Beat)
+    """
+    # 牌力值：豹子(1000+) > 同花顺(800+) > 同花(600+) > 顺子(400+) > 对子(200+) > 单张
+    # 这里简化生成逻辑，直接生成"分数"
+    
+    def generate_hand_score():
+        r = random.random()
+        if r < 0.01: return random.randint(1000, 1100), "豹子" # 1%
+        if r < 0.05: return random.randint(600, 700), "同花"   # 4%
+        if r < 0.15: return random.randint(400, 500), "顺子"   # 10%
+        if r < 0.40: return random.randint(200, 300), "对子"   # 25%
+        return random.randint(1, 100), "散牌"                 # 60%
+
+    user_score, user_desc = generate_hand_score()
+    sys_score, sys_desc = generate_hand_score()
+    
+    # --- 黑幕介入 ---
+    # 所谓冤家牌：如果你拿了同花，庄家必拿豹子；你拿对子，庄家拿大对子。
+    if black_curtain_rate < 0.8:
+        # 霉运模式：如果玩家拿到了好牌(>200)，系统强制生成一副比玩家大一点点的牌
+        if user_score > 200 and random.random() < 0.7:
+            sys_score = user_score + random.randint(1, 50)
+            # 修正描述
+            if sys_score > 1000: sys_desc = "更大的豹子"
+            elif sys_score > 600: sys_desc = "更大的同花"
+            elif sys_score > 400: sys_desc = "更大的顺子"
+            else: sys_desc = "更大的对子"
+
+    # 判定
+    outcome = 'lose'
+    if user_score > sys_score: outcome = 'win'
+    elif user_score == sys_score: outcome = 'draw'
+    
+    details = {
+        'user_hand': user_desc, 
+        'sys_hand': sys_desc, 
+        'score_diff': user_score - sys_score
+    }
+    return details, outcome
+
+
+# ========================
+# 统一 API 入口
+# ========================
+
+@login_required
+@require_POST
+def casino_api(request, game_type):
+    user = request.user
+    wallet = get_object_or_404(UserWallet, user=user)
+    
+    try:
+        bet_amount = Decimal(request.POST.get('bet', '0'))
+    except:
+        return JsonResponse({'status': 'error', 'msg': '金额错误'})
+
+    # --- 新增：底注校验 ---
+    min_bet = GAME_MIN_BETS.get(game_type, Decimal('10.00')) # 默认10
+    if bet_amount < min_bet:
+        return JsonResponse({'status': 'error', 'msg': f'该游戏最低起注 {min_bet} 金币'})
+    # --------------------
+
+    if bet_amount <= 0: return JsonResponse({'status': 'error', 'msg': '下注需>0'})
+    if wallet.balance < bet_amount: return JsonResponse({'status': 'error', 'msg': '余额不足'})
+
+    # 1. 扣除本金
+    # 这里稍微改一下逻辑：如果是扎金花等复杂游戏，可能先扣钱，最后再算输赢
+    GameTransaction.objects.create(
+        wallet=wallet, amount=bet_amount, trans_type='game_bet', description=f"参与 {game_type}"
+    )
+
+    result_data = {}
+    payout = Decimal('0.00')
+    fee = Decimal('0.00')
+    is_win = False
+    
+    # --- 游戏分发 ---
+    
+    if game_type == 'rps':
+        user_choice = request.POST.get('choice')
+        sys_choice, outcome, msg = _play_rps(user_choice, wallet.black_curtain_rate)
+        
+        result_data = {'sys_choice': sys_choice, 'outcome': outcome}
+        
+        if outcome == 'win':
+            is_win = True
+            payout, fee = _calculate_payout(wallet, bet_amount, 2.0) # 1赔2
+        elif outcome == 'draw':
+            payout = bet_amount # 退还本金
+            msg += " (退还本金)"
+
+    elif game_type == 'zjh':
+        # 极速扎金花赔率高，假设 1赔3 (赢了拿回3倍)
+        details, outcome = _play_zjh(wallet.black_curtain_rate)
+        msg = f"你: {details['user_hand']} VS 庄: {details['sys_hand']}"
+        
+        result_data = details
+        
+        if outcome == 'win':
+            is_win = True
+            msg = "你赢了！" + msg
+            payout, fee = _calculate_payout(wallet, bet_amount, 3.0)
+        elif outcome == 'draw':
+             payout = bet_amount
+             msg = "平局 " + msg
+        else:
+            msg = "你输了..." + msg
+
+    # 2. 派彩
+    if payout > 0:
+        trans_type = 'game_win' if is_win else 'admin_grant' # 平局算退款
+        desc = f"赢取 {game_type} (抽水 {fee})" if is_win else f"{game_type} 平局退款"
+        
+        GameTransaction.objects.create(
+            wallet=wallet, amount=payout, trans_type=trans_type, description=desc
+        )
+
+    return JsonResponse({
+        'status': 'success',
+        'balance': wallet.balance,
+        'is_win': is_win,
+        'payout': payout,
+        'msg': msg,
+        'data': result_data
+    })
+
+# ==========================================
+# 统一状态机 API
+# ==========================================
+
+@login_required
+@require_POST
+def casino_action_api(request):
+    """
+    处理所有分步博弈的逻辑
+    Action: start, hit, stand, bet, fold, look, compare
+    """
+    action = request.POST.get('action')
+    game_type = request.POST.get('game_type')
+    user = request.user
+    wallet = get_object_or_404(UserWallet, user=user)
+    
+    # 1. 开始新游戏 (Start)
+    if action == 'start':
+        # 清理旧会话
+        CasinoGameSession.objects.filter(user=user, is_active=True).update(is_active=False)
+        
+        # 扣除底注
+        try:
+            ante = Decimal(request.POST.get('ante', '10'))
+        except:
+            return JsonResponse({'status': 'error', 'msg': '金额格式错误'})
+
+        # --- 新增：底注校验 ---
+        min_bet = GAME_MIN_BETS.get(game_type, Decimal('10.00'))
+        if ante < min_bet:
+            return JsonResponse({'status': 'error', 'msg': f'{game_type} 场次最低起注 {min_bet} 金币！穷鬼勿进！'})
+        # --------------------
+        if wallet.balance < ante: return JsonResponse({'status':'error', 'msg':'余额不足'})
+        
+        # 创建新会话
+        session = CasinoGameSession.objects.create(user=user, game_type=game_type, state_data={})
+        state = {}
+        
+        # --- 初始化 21点 ---
+        if game_type == 'blackjack':
+            GameTransaction.objects.create(wallet=wallet, amount=ante, trans_type='game_bet', description="21点底注")
+            
+            # 发初始牌
+            p_card1 = deal_blackjack_card(0, 1.0) # 第一张随意
+            p_card2 = deal_blackjack_card(p_card1['val'], wallet.black_curtain_rate) # 第二张受控
+            d_card1 = deal_blackjack_card(0, 1.0) # 庄家明牌
+            
+            state = {
+                'step': 'playing',
+                'pot': float(ante),
+                'p_hand': [p_card1, p_card2],
+                'd_hand': [d_card1], # 庄家暗牌暂不生成，结算时再生成，方便控制
+                'd_hidden_val': 0 # 占位
+            }
+
+        # --- 初始化 扎金花 ---
+        elif game_type == 'zjh':
+            GameTransaction.objects.create(wallet=wallet, amount=ante, trans_type='game_bet', description="扎金花底注")
+            
+            # 此时就已经决定了输赢结果（预埋黑幕），但玩家不知道
+            p_cards, d_cards, p_score, d_score = generate_rigged_hands_zjh(wallet.black_curtain_rate)
+            
+            state = {
+                'step': 'blind', # 闷牌阶段
+                'pot': float(ante),
+                'ante': float(ante),
+                'current_bet': float(ante),
+                'p_cards': p_cards,   # 真实牌数据
+                'd_cards': d_cards,
+                'p_score': p_score,
+                'd_score': d_score,
+                'has_looked': False
+            }
+
+        session.state_data = state
+        session.save()
+        
+        return JsonResponse({'status': 'success', 'state': state, 'balance': wallet.balance})
+
+    # 2. 获取当前会话
+    session = CasinoGameSession.objects.filter(user=user, is_active=True, game_type=game_type).last()
+    if not session: return JsonResponse({'status':'error', 'msg':'游戏已结束或不存在'})
+    state = session.state_data
+    
+    # ==================== 21点 逻辑 ====================
+    if game_type == 'blackjack':
+        p_score = score_blackjack(state['p_hand'])
+        
+        if action == 'hit':
+            # 要牌：根据黑幕发牌
+            new_card = deal_blackjack_card(p_score, wallet.black_curtain_rate)
+            state['p_hand'].append(new_card)
+            new_score = score_blackjack(state['p_hand'])
+            
+            if new_score > 21:
+                # 爆牌，直接输
+                state['step'] = 'finished'
+                session.is_active = False
+                msg = "爆牌了！你输了。"
+            else:
+                msg = "要了一张牌..."
+                
+        elif action == 'stand':
+            # 停牌：庄家开始行动
+            # 庄家规则：小于17必须补牌
+            d_hand = state['d_hand']
+            d_score = score_blackjack(d_hand)
+            
+            # 黑幕：如果玩家点数大，且玩家是“非酋”，庄家极大概率拿到刚好比玩家大的牌
+            while d_score < 17:
+                # 这里简化：直接发牌
+                card = deal_blackjack_card(d_score, 1.0) # 庄家正常发牌
+                d_hand.append(card)
+                d_score = score_blackjack(d_hand)
+            
+            state['d_hand'] = d_hand # 更新庄家牌
+            state['step'] = 'finished'
+            session.is_active = False
+            # 定义计算抽水的辅助逻辑 (利用闭包或直接写)
+            def apply_fee(gross_win, principal):
+                profit = gross_win - principal
+                fee = Decimal('0.00')
+                if profit > 0:
+                    # 向上取整计算抽水
+                    raw_fee = profit * Decimal(str(wallet.fee_rate))
+                    fee = raw_fee.quantize(CENTS, rounding=ROUND_CEILING)
+                return gross_win - fee, fee
+            # 结算逻辑
+            if d_score > 21:
+                # 赢：拿回双倍底注
+                principal = Decimal(str(state['pot'])) # 本金
+                gross_win = principal * 2
+                
+                real_payout, fee = apply_fee(gross_win, principal) # <--- 计算抽水
+                
+                wallet.balance += real_payout
+                
+                # 记录带抽水的流水
+                GameTransaction.objects.create(
+                    wallet=wallet, amount=real_payout, trans_type='game_win', 
+                    description=f"21点赢取 (庄爆, 抽水{fee})"
+                )
+                msg = f"庄家爆牌！你赢了 {real_payout} (含本金, 抽水{fee})"
+
+            elif d_score >= p_score: 
+                # 输或平 (21点通常庄赢平局，或者你可以由自己定规则)
+                # 这里假设是庄赢平局，不退钱
+                msg = f"庄家 {d_score} 点，你 {p_score} 点。你输了。"
+                # 如果你想做平局退款：
+                # if d_score == p_score:
+                #    wallet.balance += Decimal(str(state['pot']))
+                #    msg = "平局退还本金"
+            else:
+                # 赢：点数大
+                principal = Decimal(str(state['pot']))
+                gross_win = principal * 2
+                
+                real_payout, fee = apply_fee(gross_win, principal) # <--- 计算抽水
+                
+                wallet.balance += real_payout
+                
+                GameTransaction.objects.create(
+                    wallet=wallet, amount=real_payout, trans_type='game_win', 
+                    description=f"21点赢取 (点数胜, 抽水{fee})"
+                )
+                msg = f"庄家 {d_score} 点，你 {p_score} 点。你赢了 {real_payout} (含本金, 抽水{fee})！"
+            
+            wallet.save()
+            
+    # ==================== 沉浸式扎金花 逻辑 ====================
+    elif game_type == 'zjh':
+        bet_amt = Decimal(request.POST.get('amount', '0'))
+        
+        if action == 'look':
+            state['has_looked'] = True
+            state['step'] = 'seen'
+            msg = "你查看了手牌。"
+            
+        elif action == 'bet':
+            # 加注
+            if wallet.balance < bet_amt: return JsonResponse({'status':'error', 'msg':'余额不足'})
+            GameTransaction.objects.create(wallet=wallet, amount=bet_amt, trans_type='game_bet', description="扎金花加注")
+            state['pot'] += float(bet_amt) * 2 # 假定庄家跟注
+            state['current_bet'] = float(bet_amt)
+            msg = "你加注了，庄家跟注。"
+            
+        elif action == 'fold':
+            # 弃牌
+            state['step'] = 'folded'
+            session.is_active = False
+            msg = "你弃牌了，庄家赢走底池。"
+            
+        elif action == 'compare':
+            # --- 修改开始：支持梭哈 (All-in) 开牌 ---
+            
+            # 1. 计算理论需要的开牌费用 (通常是当前单注的2倍)
+            required_cost = Decimal(str(state['current_bet'])) * 2
+            
+            # 2. 确定实际扣款金额
+            if wallet.balance < 0:
+                return JsonResponse({'status':'error', 'msg':'余额不足，无法开牌'})
+            
+            # 如果余额不足以支付标准费用，就触发梭哈逻辑：扣光所有余额
+            if wallet.balance < required_cost:
+                actual_cost = wallet.balance
+                note = " (梭哈开牌!)"
+            else:
+                actual_cost = required_cost
+                note = " (开牌)"
+
+            # 3. 写入流水
+            GameTransaction.objects.create(
+                wallet=wallet, 
+                amount=actual_cost, 
+                trans_type='game_bet', 
+                description=f"扎金花{note}"
+            )
+            
+            # 4. 更新底池和状态
+            state['pot'] += float(actual_cost)
+            state['step'] = 'finished'
+            session.is_active = False
+            
+            # 5. 结算比大小
+            p_score = state['p_score']
+            d_score = state['d_score']
+            
+            # 构造赢牌/输牌的消息
+            # 注意：这里 state['d_cards'] 已经在生成时确定了
+            # 我们需要在 msg 中告诉前端具体是什么牌型
+            
+            if p_score > d_score:
+                # 1. 计算总奖金 (整个底池)
+                gross_win = Decimal(str(state['pot']))
+                
+                # 2. 计算玩家投入的本金 (底池的一半，因为是1v1且庄家跟注)
+                # 注意：如果是"梭哈"情况，底池可能不完全是2倍关系，但PVE里pot包含庄家跟注
+                # PVE逻辑简化：底池的一半是你的本金，一半是赚的
+                principal = gross_win / 2 
+                
+                # 3. 计算利润
+                profit = gross_win - principal
+                
+                # 4. 计算抽水 (向上取整)
+                fee = Decimal('0.00')
+                if profit > 0:
+                    raw_fee = profit * Decimal(str(wallet.fee_rate))
+                    fee = raw_fee.quantize(CENTS, rounding=ROUND_CEILING)
+                
+                # 5. 实际派彩
+                final_payout = gross_win - fee
+                wallet.balance += final_payout
+                
+                GameTransaction.objects.create(
+                    wallet=wallet, 
+                    amount=final_payout, 
+                    trans_type='game_win', 
+                    description=f"扎金花赢取{note} (抽水{fee})"
+                )
+                msg = f"你赢了！{note} 到手:{final_payout} (抽水{fee})"
+                is_win = True
+            
+
+            elif p_score == d_score:
+                 # 平局退回底池的一半或者全部？这里简单处理退回全部（当做赢）或者退本金
+                 # 扎金花通常没有平局（比花色），这里简单处理为退钱
+                 refund = Decimal(str(state['pot']))
+                 wallet.balance += refund
+                 msg = "平局，退还底池。"
+                 is_win = True # 算作不输
+            else:
+                msg = f"庄家赢了。{note}"
+                is_win = False
+            
+            wallet.save()
+            state['is_win'] = is_win
+            # --- 修改结束 ---
+
+    # 保存状态
+    session.state_data = state
+    session.save()
+    
+    return JsonResponse({'status': 'success', 'state': state, 'balance': wallet.balance, 'msg': msg if 'msg' in locals() else ''})
